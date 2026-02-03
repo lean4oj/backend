@@ -70,7 +70,7 @@ async fn get_olean_meta(
     Session_(session): Session_,
     req: JsonReqult<GetOleanMetaRequest>,
 ) -> JkmxJsonResponse {
-    const EMPTY: JkmxJsonResponse = JkmxJsonResponse::Response(StatusCode::OK, Bytes::from_static(br#"{"consts":[],"dependencies":[]}"#));
+    const EMPTY: JkmxJsonResponse = JkmxJsonResponse::Response(StatusCode::OK, Bytes::from_static(br#"{"consts":[],"dependencies":[],"leanVersion":""}"#));
 
     let Json(GetOleanMetaRequest { module_name }) = req?;
 
@@ -86,7 +86,7 @@ async fn get_olean_meta(
     let Some(consts) = olean::parse_consts(meta) else { return EMPTY };
     let Some(dependencies) = olean::parse_imports(meta) else { return EMPTY };
 
-    let res = format!(r#"{{"consts":{},"dependencies":{}}}"#, WithJson(&*consts), WithJson(&*dependencies));
+    let res = format!(r#"{{"consts":{},"dependencies":{},"leanVersion":"4{}"}}"#, WithJson(&*consts), WithJson(&*dependencies), meta.version);
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 

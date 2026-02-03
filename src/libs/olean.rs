@@ -91,7 +91,7 @@ pub struct OleanMeta<'a> {
 
 impl OleanMeta<'_> {
     #[inline(always)]
-    pub fn is_module(&self) -> bool {
+    pub const fn is_module(&self) -> bool {
         self.sections[6] != 0
     }
 }

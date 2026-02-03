@@ -34,7 +34,7 @@ index e775c0a..10f584d 100644
  pub use self::{
      session::{Expiry, Session},
 diff --git a/tower-sessions-core/src/session.rs b/tower-sessions-core/src/session.rs
-index db49a2e..a5c69d6 100644
+index 2781f14..7ede099 100644
 --- a/tower-sessions-core/src/session.rs
 +++ b/tower-sessions-core/src/session.rs
 @@ -14,12 +14,12 @@ use std::{
@@ -86,7 +86,7 @@ index db49a2e..a5c69d6 100644
      async fn get_record(&self) -> Result<MappedMutexGuard<'_, Record>> {
          let mut record_guard = self.inner.record.lock().await;
  
-@@ -529,13 +529,13 @@ impl Session {
+@@ -531,13 +531,13 @@ impl Session {
      /// ```rust
      /// use std::sync::Arc;
      ///
@@ -102,7 +102,7 @@ index db49a2e..a5c69d6 100644
      /// session.set_expiry(Some(expiry));
      ///
      /// assert_eq!(session.expiry(), Some(expiry));
-@@ -547,34 +547,34 @@ impl Session {
+@@ -549,34 +549,34 @@ impl Session {
              .store(true, atomic::Ordering::Release);
      }
  
@@ -143,7 +143,7 @@ index db49a2e..a5c69d6 100644
              }
          }
      }
-@@ -598,10 +598,7 @@ impl Session {
+@@ -600,10 +600,7 @@ impl Session {
      /// assert!(session.expiry_age() < expected_duration.saturating_add(Duration::seconds(1)));
      /// ```
      pub fn expiry_age(&self) -> Duration {
@@ -155,7 +155,7 @@ index db49a2e..a5c69d6 100644
      }
  
      /// Returns `true` if the session has been modified during the request.
-@@ -661,7 +658,7 @@ impl Session {
+@@ -663,7 +660,7 @@ impl Session {
      /// # Errors
      ///
      /// - If saving to the store fails, we fail with [`Error::Store`].
@@ -164,7 +164,7 @@ index db49a2e..a5c69d6 100644
      pub async fn save(&self) -> Result<()> {
          let mut record_guard = self.get_record().await?;
          record_guard.expiry_date = self.expiry_date();
-@@ -713,7 +710,7 @@ impl Session {
+@@ -715,7 +712,7 @@ impl Session {
      /// # Errors
      ///
      /// - If loading from the store fails, we fail with [`Error::Store`].
@@ -173,7 +173,7 @@ index db49a2e..a5c69d6 100644
      pub async fn load(&self) -> Result<()> {
          let session_id = *self.inner.session_id.lock();
          let Some(ref id) = session_id else {
-@@ -752,7 +749,7 @@ impl Session {
+@@ -754,7 +751,7 @@ impl Session {
      /// # Errors
      ///
      /// - If deleting from the store fails, we fail with [`Error::Store`].
@@ -182,7 +182,7 @@ index db49a2e..a5c69d6 100644
      pub async fn delete(&self) -> Result<()> {
          let session_id = *self.inner.session_id.lock();
          let Some(ref session_id) = session_id else {
-@@ -917,11 +914,11 @@ impl FromStr for Id {
+@@ -919,11 +916,11 @@ impl FromStr for Id {
  pub struct Record {
      pub id: Id,
      pub data: Data,
@@ -196,7 +196,7 @@ index db49a2e..a5c69d6 100644
          Self {
              id: Id::default(),
              data: Data::default(),
-@@ -935,7 +932,7 @@ impl Record {
+@@ -937,7 +934,7 @@ impl Record {
  /// # Examples
  ///
  /// ```rust
@@ -205,7 +205,7 @@ index db49a2e..a5c69d6 100644
  /// use tower_sessions::Expiry;
  ///
  /// // Will be expired on "session end".
-@@ -945,7 +942,7 @@ impl Record {
+@@ -947,7 +944,7 @@ impl Record {
  /// let expiry = Expiry::OnInactivity(Duration::minutes(5));
  ///
  /// // Will be expired at the given timestamp.
@@ -214,7 +214,7 @@ index db49a2e..a5c69d6 100644
  /// let expiry = Expiry::AtDateTime(expired_at);
  /// ```
  #[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
-@@ -967,7 +964,7 @@ pub enum Expiry {
+@@ -969,7 +966,7 @@ pub enum Expiry {
      ///
      /// This value may be extended manually with
      /// [`set_expiry`](Session::set_expiry).
@@ -223,7 +223,7 @@ index db49a2e..a5c69d6 100644
  }
  
  #[cfg(test)]
-@@ -1014,7 +1011,7 @@ mod tests {
+@@ -1016,7 +1013,7 @@ mod tests {
                  Ok(Some(Record {
                      id: initial_id,
                      data: Data::default(),

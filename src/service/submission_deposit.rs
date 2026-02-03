@@ -150,10 +150,10 @@ fn deposit_module_inner(
 
     let dest = cache_path(&hash);
 
-    match fs::hard_link(&*src, &*dest) {
+    match fs::hard_link(src, &*dest) {
         Ok(()) => (),
         Err(e) if e.kind() == io::ErrorKind::AlreadyExists => (),
-        Err(e) if e.kind() == io::ErrorKind::CrossesDevices => { fs::copy(&*src, &*dest)?; }
+        Err(e) if e.kind() == io::ErrorKind::CrossesDevices => { fs::copy(src, &*dest)?; }
         Err(e) => return Err(e),
     }
 
