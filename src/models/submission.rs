@@ -299,7 +299,6 @@ impl Serialize for SubmissionMeta<'_> {
         map.serialize_entry("constName", &*self.submission.const_name)?;
         map.serialize_entry("leanVersion", &format_args!("4{}", self.submission.lean_toolchain))?;
         map.serialize_entry("status", &self.submission.status)?;
-        map.serialize_entry("message", &*self.submission.message)?;
         map.serialize_entry("answerSize", &self.submission.answer_size)?;
         // answer_hash
         map.serialize_entry("answerObj", &*self.submission.answer_obj)?;

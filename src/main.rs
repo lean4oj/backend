@@ -76,7 +76,6 @@
     // pattern_type_macro,
     // pattern_type_range_trait,
     postfix_match,
-    ptr_as_ref_unchecked,
     ptr_cast_array,
     // ptr_metadata,
     result_option_map_or_default,

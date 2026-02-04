@@ -74,8 +74,8 @@ impl const Default for Pagination {
 pub struct Misc {
     app_logo_for_theme: UnitMap,
     redirect_legacy_urls: bool,
-    google_analytics_id: (),
-    plausible_api_endpoint: (),
+    google_analytics_id: Option<&'static str>,
+    plausible_api_endpoint: Option<&'static str>,
     gravatar_cdn: &'static str,
     render_markdown_in_user_bio: bool,
     discussion_reaction_emojis: &'static [&'static str],
@@ -89,14 +89,14 @@ impl const Default for Misc {
         Self {
             app_logo_for_theme: UnitMap {},
             redirect_legacy_urls: true,
-            google_analytics_id: (),
-            plausible_api_endpoint: (),
+            google_analytics_id: option_env!("GOOGLE_ANALYTICS_ID"),
+            plausible_api_endpoint: option_env!("PLAUSIBLE_API_ENDPOINT"),
             gravatar_cdn: "https://cravatar.cn",
             render_markdown_in_user_bio: true,
             discussion_reaction_emojis: &["👍", "👎", "😄", "😕", "❤", "🤔", "🤣", "🌿", "🍋", "🕊"],
             discussion_reaction_allow_custom_emojis: true,
             disabled_emoji_in_math: &["↔", "↪"],
-            lean_versions: &["4.26.0", "4.27.0-rc1", "4.27.0", "4.28.0-rc1"],
+            lean_versions: &["4.28.0-rc1", "4.27.0", "4.27.0-rc1", "4.26.0"],
         }
     }
 }

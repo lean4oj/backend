@@ -1,5 +1,5 @@
 diff --git a/postgres-protocol/Cargo.toml b/postgres-protocol/Cargo.toml
-index 59e218ea..accfff39 100644
+index 723e08f3..4c4af91e 100644
 --- a/postgres-protocol/Cargo.toml
 +++ b/postgres-protocol/Cargo.toml
 @@ -23,5 +23,4 @@ md-5 = "0.10"
@@ -352,7 +352,7 @@ index f4676ae4..fb1d39dc 100644
      }
  
 diff --git a/tokio-postgres/Cargo.toml b/tokio-postgres/Cargo.toml
-index 14d085bc..57cfe387 100644
+index 5ef0a8e3..b8f9182e 100644
 --- a/tokio-postgres/Cargo.toml
 +++ b/tokio-postgres/Cargo.toml
 @@ -2,14 +2,14 @@
@@ -377,7 +377,7 @@ index 14d085bc..57cfe387 100644
  
  [dependencies]
 -async-trait = "0.1"
- bytes = "1.0"
+ bytes = "1.11"
  byteorder = "1.0"
  fallible-iterator = "0.2"
 diff --git a/tokio-postgres/src/binary_copy.rs b/tokio-postgres/src/binary_copy.rs

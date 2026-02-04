@@ -1,6 +1,6 @@
 #![allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 
-use core::{fmt::Write, future::ready, mem::MaybeUninit, str};
+use core::{fmt::Write, future::ready, mem::{MaybeUninit, take}, str};
 use std::time::SystemTime;
 
 use axum::{
@@ -301,6 +301,8 @@ async fn get_submission(
     Session_(session): Session_,
     req: JsonReqult<GetSubmissionRequest>,
 ) -> JkmxJsonResponse {
+    const MESSAGE_LENGTH_LIMIT: usize = 0x4000;
+
     let Json(GetSubmissionRequest { locale, submission_id }) = req?;
 
     let mut conn = get_connection().await?;
@@ -312,7 +314,7 @@ async fn get_submission(
         false
     };
 
-    let Some((submission, problem, submitter)) = if privi {
+    let Some((mut submission, problem, submitter)) = if privi {
         Submission::by_sid_with_problem(submission_id, &mut conn).await
     } else {
         Submission::by_sid_uid_with_problem(submission_id, uid.unwrap_or_default(), &mut conn).await
@@ -325,6 +327,7 @@ async fn get_submission(
     }
 
     let lean_version = submission.lean_toolchain.clone();
+    let message = take(&mut submission.message);
 
     let meta = SubmissionMeta {
         submission,
@@ -333,11 +336,20 @@ async fn get_submission(
         locale: locale.as_deref(),
     };
 
-    let res = format!(
-        r#"{{"meta":{},"content":{{"hash":"{}","leanVersion":"4{lean_version}"}},"permissionRejudge":true,"permissionCancel":true,"permissionSetPublic":true,"permissionDelete":true}}"#,
+    let mut res = format!(
+        r#"{{"meta":{},"content":{{"hash":"{}","leanVersion":"4{lean_version}","message":"#,
         WithJson(meta),
         unsafe { str::from_utf8_unchecked(hash.assume_init_ref()) },
     );
+    if let Some(omitted_len) = message.len().checked_sub(MESSAGE_LENGTH_LIMIT) && omitted_len > 0 {
+        write!(
+            &mut res, r#"{{"data":{},"omittedLength":{omitted_len}}}"#,
+            WithJson(unsafe { message.get_unchecked(..MESSAGE_LENGTH_LIMIT) }),
+        )?;
+    } else {
+        serde_json::to_writer(unsafe { res.as_mut_vec() }, &*message)?;
+    }
+    res.push_str(r#"},"permissionRejudge":true,"permissionCancel":true,"permissionSetPublic":true,"permissionDelete":true}"#);
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
