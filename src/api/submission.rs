@@ -1,13 +1,18 @@
 #![allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 
-use core::{fmt::Write, future::ready, mem::{MaybeUninit, take}, str};
+use core::{
+    fmt::Write,
+    future::ready,
+    mem::{MaybeUninit, take},
+    str,
+};
 use std::time::SystemTime;
 
 use axum::{
     Extension, Json, Router,
     body::Body,
     extract::Query,
-    response::{IntoResponse, Response, Sse},
+    response::{IntoResponse, Response, Sse, sse::KeepAlive},
     routing::{get, post},
 };
 use bytes::Bytes;
@@ -627,7 +632,7 @@ async fn subscribe_submissions(
     if ids.is_empty() { return StatusCode::NO_CONTENT.into_response(); }
 
     let st = UserSubscription::new(&ids);
-    Sse::new(st).into_response()
+    Sse::new(st).keep_alive(KeepAlive::new()).into_response()
 }
 
 #[derive(Deserialize)]

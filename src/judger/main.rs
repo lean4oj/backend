@@ -33,7 +33,7 @@ struct Report<'a> {
     answer: Option<&'a str>,
 }
 
-pub async fn report(
+async fn report(
     sid: u32,
     status: status::Status,
     message: message::Action,
@@ -66,7 +66,7 @@ pub async fn report(
     }
 }
 
-pub async fn read_string<R>(reader: &mut R) -> io::Result<String>
+async fn read_string<R>(reader: &mut R) -> io::Result<String>
 where
     R: AsyncRead + Unpin,
 {
@@ -75,6 +75,13 @@ where
     reader.read_exact(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr(), len as usize) }).await?;
     unsafe { buf.as_mut_vec().set_len(len as usize); }
     Ok(buf)
+}
+
+fn set_nice() -> io::Result<()> {
+    unsafe {
+        libc::setpriority(libc::PRIO_PROCESS, 0, 19);
+    }
+    Ok(())
 }
 
 pub async fn main_loop<S>(sock: S) -> hyper::Result<()>
@@ -120,6 +127,7 @@ where
             cmd.uid(0x10000 + task.sid);
             cmd.gid(0xdeadbeef);
             cmd.as_std_mut().groups(&[]);
+            unsafe { cmd.pre_exec(set_nice); }
         }
         let mut child = match cmd.spawn() {
             Ok(c) => c,
