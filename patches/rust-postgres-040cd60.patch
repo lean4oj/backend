@@ -1,17 +1,29 @@
 diff --git a/postgres-protocol/Cargo.toml b/postgres-protocol/Cargo.toml
-index 723e08f3..4c4af91e 100644
+index 723e08f3..0eb068e2 100644
 --- a/postgres-protocol/Cargo.toml
 +++ b/postgres-protocol/Cargo.toml
-@@ -23,5 +23,4 @@ md-5 = "0.10"
+@@ -21,7 +21,6 @@ fallible-iterator = "0.2"
+ hmac = "0.12"
+ md-5 = "0.10"
  memchr = "2.0"
- rand = "0.9"
+-rand = "0.9"
++rand = "0.10"
  sha2 = "0.10"
 -stringprep = "0.1"
  getrandom = { version = "0.3", optional = true }
 diff --git a/postgres-protocol/src/authentication/sasl.rs b/postgres-protocol/src/authentication/sasl.rs
-index 38ea0eed..dfcc1ffd 100644
+index 38ea0eed..b7e65014 100644
 --- a/postgres-protocol/src/authentication/sasl.rs
 +++ b/postgres-protocol/src/authentication/sasl.rs
+@@ -4,7 +4,7 @@ use base64::display::Base64Display;
+ use base64::engine::general_purpose::STANDARD;
+ use base64::Engine;
+ use hmac::{Hmac, Mac};
+-use rand::{self, Rng};
++use rand::{self, RngExt};
+ use sha2::digest::FixedOutput;
+ use sha2::{Digest, Sha256};
+ use std::fmt::Write;
 @@ -20,21 +20,6 @@ pub const SCRAM_SHA_256: &str = "SCRAM-SHA-256";
  /// The identifier of the SCRAM-SHA-256-PLUS SASL authentication mechanism.
  pub const SCRAM_SHA_256_PLUS: &str = "SCRAM-SHA-256-PLUS";
@@ -291,9 +303,18 @@ index dcfa6425..287c1175 100644
              "string contains embedded null",
          ));
 diff --git a/postgres-protocol/src/password/mod.rs b/postgres-protocol/src/password/mod.rs
-index 5f0bbaba..f4c26110 100644
+index 5f0bbaba..91524592 100644
 --- a/postgres-protocol/src/password/mod.rs
 +++ b/postgres-protocol/src/password/mod.rs
+@@ -11,7 +11,7 @@ use base64::display::Base64Display;
+ use base64::engine::general_purpose::STANDARD;
+ use hmac::{Hmac, Mac};
+ use md5::Md5;
+-use rand::RngCore;
++use rand::Rng;
+ use sha2::digest::FixedOutput;
+ use sha2::{Digest, Sha256};
+ 
 @@ -47,20 +47,9 @@ pub(crate) fn scram_sha_256_salt(password: &[u8], salt: [u8; SCRAM_DEFAULT_SALT_
      // contains prohibited characters (such as non-ASCII whitespace),
      // just skip the SASLprep step and use the original byte
@@ -352,7 +373,7 @@ index f4676ae4..fb1d39dc 100644
      }
  
 diff --git a/tokio-postgres/Cargo.toml b/tokio-postgres/Cargo.toml
-index 5ef0a8e3..b8f9182e 100644
+index 5ef0a8e3..b7243ba5 100644
 --- a/tokio-postgres/Cargo.toml
 +++ b/tokio-postgres/Cargo.toml
 @@ -2,14 +2,14 @@
@@ -380,6 +401,15 @@ index 5ef0a8e3..b8f9182e 100644
  bytes = "1.11"
  byteorder = "1.0"
  fallible-iterator = "0.2"
+@@ -62,7 +61,7 @@ postgres-protocol = { version = "0.6.9", path = "../postgres-protocol" }
+ postgres-types = { version = "0.2.10", path = "../postgres-types" }
+ tokio = { version = "1.27", features = ["io-util"] }
+ tokio-util = { version = "0.7", features = ["codec"] }
+-rand = "0.9.0"
++rand = "0.10.0"
+ whoami = "2.0.1"
+ 
+ [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 diff --git a/tokio-postgres/src/binary_copy.rs b/tokio-postgres/src/binary_copy.rs
 index 8c244371..72ed565e 100644
 --- a/tokio-postgres/src/binary_copy.rs

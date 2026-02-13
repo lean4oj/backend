@@ -5,7 +5,7 @@ using std::exception, std::exception_ptr;
 
 extern "C" {
 lean_object *
-l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8(lean_object *,
+l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object *,
                                                          lean_object *);
 size_t strlen(const char *);
 ssize_t write(int, const void *, size_t);
@@ -34,7 +34,7 @@ void cc() {
 extern "C" lean_object *protect(lean_object *arg1, lean_object *arg2) {
   std::set_terminate(cc);
   try {
-    return l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8(arg1, arg2);
+    return l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(arg1, arg2);
   } catch (exception &e) {
     lean_object *s = lean_mk_string(e.what());
     lean_object *err = lean_mk_io_user_error(s);

@@ -1,9 +1,11 @@
 #![feature(
+    cfg_select,
     const_format_args,
     exit_status_error,
     never_type,
     result_option_map_or_default,
     setgroups,
+	stmt_expr_attributes,
 )]
 
 #[path = "judger/constants.rs"]
@@ -14,6 +16,8 @@ mod logger;
 mod main;
 #[path = "judger/task.rs"]
 mod task;
+#[path = "judger/verified.rs"]
+mod verified;
 
 #[tokio::main]
 async fn main() -> ! {

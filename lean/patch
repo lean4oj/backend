@@ -1,34 +1,25 @@
 diff --git a/l4judger.c b/l4judger.c
-index f9571b0..657fad5 100644
+index a64cd95..1915c53 100644
 --- a/l4judger.c
 +++ b/l4judger.c
-@@ -214,7 +214,7 @@ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_mapMUnsafe_m
- static lean_object* l_Lean_Name_isStd___closed__14;
- static lean_object* l_main___closed__7;
- LEAN_EXPORT lean_object* l_Std_DHashMap_Internal_Raw_u2080_filter___at___00reduceEnv_spec__0(lean_object*, lean_object*);
--LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8___boxed(lean_object*, lean_object*, lean_object*);
+@@ -162,7 +162,7 @@ LEAN_EXPORT lean_object* l_Lean_Name_toStringWithSep___at___00Lean_Name_isVerifi
+ static lean_object* l_main___closed__9;
+ static lean_object* l_MessageAction_toBytes___closed__6;
+ static lean_object* l_main___closed__6;
+-LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object*, lean_object*, lean_object*);
 +lean_object *protect(lean_object*, lean_object*);
- lean_object* l_Lean_PersistentHashMap_mkEmptyEntriesArray(lean_object*, lean_object*);
- static lean_object* l_main___closed__22;
- LEAN_EXPORT lean_object* l_JudgeStatus_Replaying_elim___redArg(lean_object*);
-@@ -5428,7 +5428,7 @@ if (lean_is_scalar(x_5)) {
- }
- lean_ctor_set(x_67, 0, x_23);
- lean_ctor_set(x_67, 1, x_66);
--x_68 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8(x_67, x_30);
-+x_68 = protect(x_67, x_30);
- if (lean_obj_tag(x_68) == 0)
- {
- lean_object* x_69; uint8_t x_70; 
-@@ -6550,14 +6550,14 @@ lean_dec_ref(x_5);
- return x_12;
+ LEAN_EXPORT lean_object* l_MessageAction_Append_elim___redArg(lean_object*, lean_object*);
+ LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
+ lean_object* l_Lean_addSearchPathFromEnv(lean_object*);
+@@ -3407,14 +3407,14 @@ lean_dec_ref(x_1);
+ return x_8;
  }
  }
--LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+-LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
 -_start:
 -{
 -lean_object* x_4; 
--x_4 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__8(x_1, x_2);
+-x_4 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_1, x_2);
 -return x_4;
 -}
 -}
@@ -40,10 +31,19 @@ index f9571b0..657fad5 100644
 +
 +
 +
- LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__12___redArg___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3, lean_object* x_4, lean_object* x_5) {
+ LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object* x_1, lean_object* x_2) {
  _start:
  {
-@@ -6661,7 +6661,7 @@ return x_3;
+@@ -5853,7 +5853,7 @@ if (lean_is_scalar(x_5)) {
+ }
+ lean_ctor_set(x_67, 0, x_23);
+ lean_ctor_set(x_67, 1, x_66);
+-x_68 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_67, x_30);
++x_68 = protect(x_67, x_30);
+ if (lean_obj_tag(x_68) == 0)
+ {
+ lean_object* x_69; uint8_t x_70; 
+@@ -6933,7 +6933,7 @@ return x_5;
  }
  }
  lean_object* initialize_Init(uint8_t builtin);
@@ -52,7 +52,7 @@ index f9571b0..657fad5 100644
  lean_object* initialize_CollectLiterals(uint8_t builtin);
  lean_object* initialize_Lean_Compiler_ImplementedByAttr(uint8_t builtin);
  lean_object* initialize_Lean_Elab_DefView(uint8_t builtin);
-@@ -6676,9 +6676,9 @@ _G_initialized = true;
+@@ -6948,9 +6948,9 @@ _G_initialized = true;
  res = initialize_Init(builtin);
  if (lean_io_result_is_error(res)) return res;
  lean_dec_ref(res);

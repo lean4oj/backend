@@ -9,13 +9,13 @@ use hyper::{
 };
 use serde::Serialize;
 use tokio::{
-    io::{AsyncRead, AsyncReadExt},
+    io::{AsyncRead, AsyncReadExt, AsyncWriteExt},
     process::Command,
 };
 
 use crate::{
     constants::{APPLICATION_JSON_UTF_8, DUMMY_HOST, PASSWORD, USERNAME},
-    task,
+    task, verified,
 };
 
 #[path = "../models/submission/message.rs"]
@@ -77,6 +77,7 @@ where
     Ok(buf)
 }
 
+#[cfg(target_os = "linux")]
 fn set_nice() -> io::Result<()> {
     unsafe {
         libc::setpriority(libc::PRIO_PROCESS, 0, 19);
@@ -84,6 +85,7 @@ fn set_nice() -> io::Result<()> {
     Ok(())
 }
 
+#[allow(clippy::too_many_lines)]
 pub async fn main_loop<S>(sock: S) -> hyper::Result<()>
 where
     S: Read + Write + Send + Unpin + 'static,
@@ -112,12 +114,13 @@ where
             bytes[0], bytes[1], bytes[2], bytes[3],
         );
         let arg = unsafe { lean_path.get_unchecked(lean_path.len() - const { env!("OLEAN_ROOT").len() + 34 }..) };
+        let dirname_arg = unsafe { arg.get_unchecked(..arg.len() - 9) };
 
         let mut cmd = Command::new("l4judger");
         cmd.env("LEAN_PATH", unsafe { lean_path.get_unchecked(..lean_path.len() - 10) });
         cmd.arg(arg);
         cmd.args(task.axioms);
-        cmd.stdin(Stdio::null());
+        cmd.stdin(Stdio::piped());
         cmd.stdout(Stdio::piped());
         cmd.stderr(Stdio::null());
         #[cfg(target_os = "linux")]
@@ -137,34 +140,55 @@ where
                 continue;
             }
         };
+        let mut stdin = child.stdin.take().unwrap();
         let mut stdout = child.stdout.take().unwrap();
 
+        #[cfg(target_os = "linux")]
+        let (mut has_ac, mut path_bank) = (false, Vec::new());
         // main loop
-        while let Ok(status_raw) = stdout.read_u8().await
-           && let Ok(status) = status::Status::try_from(status_raw)
-           && let Ok(message_raw) = stdout.read_u8().await {
-            let message = match message_raw {
-                0 => message::Action::NoAction,
-                1 => {
-                    let Ok(s) = read_string(&mut stdout).await else { break };
-                    message::Action::Replace(Cow::Owned(s))
+        while let Ok(status_raw) = stdout.read_u8().await {
+            if let Ok(status) = status::Status::try_from(status_raw)
+            && let Ok(message_raw) = stdout.read_u8().await {
+                let message = match message_raw {
+                    0 => message::Action::NoAction,
+                    1 => {
+                        let Ok(s) = read_string(&mut stdout).await else { break };
+                        message::Action::Replace(Cow::Owned(s))
+                    }
+                    2 => {
+                        let Ok(s) = read_string(&mut stdout).await else { break };
+                        message::Action::Append(Cow::Owned(s))
+                    }
+                    _ => break,
+                };
+                let Ok(has_answer) = stdout.read_u8().await else { break };
+                let answer = match has_answer {
+                    0 => None,
+                    1 => {
+                        let Ok(s) = read_string(&mut stdout).await else { break };
+                        Some(s)
+                    }
+                    _ => break,
+                };
+                #[cfg(target_os = "linux")]
+                (has_ac = has_ac || status == status::Status::Accepted);
+                let _ = report(task.sid, status, message, answer.as_deref(), &mut sender).await;
+            } else {
+                #[allow(clippy::single_match, unused_variables, reason = "for future extension")]
+                match status_raw {
+                    128 => {
+                        let ret = if let Ok((path, ret)) = verified::run(dirname_arg, &mut stdout).await {
+                            #[cfg(target_os = "linux")]
+                            path_bank.push(path);
+                            u8::from(ret)
+                        } else {
+                            0
+                        };
+                        if stdin.write_u8(ret).await.is_err() { break; }
+                    }
+                    _ => (),
                 }
-                2 => {
-                    let Ok(s) = read_string(&mut stdout).await else { break };
-                    message::Action::Append(Cow::Owned(s))
-                }
-                _ => break,
-            };
-            let Ok(has_answer) = stdout.read_u8().await else { break };
-            let answer = match has_answer {
-                0 => None,
-                1 => {
-                    let Ok(s) = read_string(&mut stdout).await else { break };
-                    Some(s)
-                }
-                _ => break,
-            };
-            let _ = report(task.sid, status, message, answer.as_deref(), &mut sender).await;
+            }
         }
 
         let err = match child.wait().await {
@@ -178,6 +202,11 @@ where
         if let Some(err) = err {
             tracing::warn!("l4judger process failed: {err}");
             let _ = report(task.sid, status::Status::JudgementFailed, message::Action::Replace(Cow::Owned(err)), None, &mut sender).await;
+        }
+
+        #[cfg(target_os = "linux")]
+        if has_ac {
+            tokio::task::spawn_blocking(move || verified::mark(path_bank));
         }
     }
 

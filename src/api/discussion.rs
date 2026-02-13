@@ -342,7 +342,7 @@ async fn query_discussions(
         }
         serde_json::to_writer(unsafe { res.as_mut_vec() }, &discussions)?;
         let count = Discussion::count_aoe(extend, &mut conn).await?;
-        write!(&mut res, r#","permissions":{{"createDiscussion":true,"filterNonpublic":true}},"count":{count}"#)?;
+        write!(&mut res, r#","permissions":{{"createDiscussion":{},"filterNonpublic":false}},"count":{count}"#, s_uid.is_some())?;
         if let Some(publisher) = publisher__inner___ {
             res.push_str(r#","filterPublisher":"#);
             let user_slot: Option<User>;

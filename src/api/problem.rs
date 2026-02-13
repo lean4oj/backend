@@ -244,7 +244,7 @@ async fn query_problem_set(
         res.push(']');
 
         let count = Problem::count_aoe(tag_ids__inner___, extend, &mut conn).await?;
-        write!(&mut res, r#","permissions":{{"createProblem":true,"manageTags":true,"filterByOwner":true,"filterNonpublic":true}},"count":{count}"#)?;
+        write!(&mut res, r#","permissions":{{"createProblem":{},"manageTags":true,"filterByOwner":true,"filterNonpublic":true}},"count":{count}"#, uid.is_some())?;
         if let Some(ref tag_ids) = tag_ids {
             let ltags = LTags {
                 tags: tag_ids.iter().filter_map(|tid| lookup.get(tid).and_then(Option::as_ref)),

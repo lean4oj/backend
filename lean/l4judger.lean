@@ -53,7 +53,6 @@ def kitsune (n : Nat) : ByteArray :=
   .mk #[b0, b1, b2, b3]
 
 inductive JudgeStatus
-  | JudgerReceived
   | TypeChecking
   | AxiomChecking
   | Replaying
@@ -62,7 +61,6 @@ inductive JudgeStatus
   | JudgementFailed
 
 def JudgeStatus.toByte : JudgeStatus → UInt8
-  | .JudgerReceived  => 3
   | .TypeChecking    => 4
   | .AxiomChecking   => 5
   | .Replaying       => 6
@@ -84,6 +82,17 @@ def reportRaw (s : ByteArray) : IO Unit := do
   let stdout ← IO.getStdout
   stdout.write s
   stdout.flush
+
+def Lean.Name.isVerified (name : Name) : IO Bool := do
+  let s := name.toStringWithSep "/" false
+  reportRaw <|
+    .mk #[128] ++ kitsune s.utf8ByteSize ++ s.toByteArray
+  let stdin ← IO.getStdin
+  (
+    λ x ↦ match x with
+      | .mk #[1] => true
+      | _ => false
+  ) <$> stdin.read 1
 
 def report (status : JudgeStatus) (action : MessageAction) (answer : Option String) : IO Unit :=
   reportRaw <|
@@ -167,10 +176,7 @@ def main (args : List String) : IO Unit := do
 
   let mut consts : Std.HashMap Name ConstantInfo := {}
   for mod in cmdState.env.header.modules, data in cmdState.env.header.moduleData, idx in (*...* : Std.Rii Nat) do
-    if !mod.module.getRoot.isStd then
-      for name in data.constNames, ci in data.constants do
-        consts := consts.insert name ci
-    else
+    if ← ((pure mod.module.getRoot.isStd) <||> mod.module.isVerified) then
       for name in data.constNames, ci in data.constants do
         let idx := cmdState.env.const2ModIdx.get? name
         let eff := idx.bind (fun i => cmdState.env.header.modules[i]?)
@@ -179,6 +185,9 @@ def main (args : List String) : IO Unit := do
           | none => false
         if !clean then
           consts := consts.insert name ci
+    else
+      for name in data.constNames, ci in data.constants do
+        consts := consts.insert name ci
   for (name, _) in consts do
     if let some name' := Lean.Compiler.getImplementedBy? cmdState.env name then
       report .WrongAnswer (.Append s!"Use of implemented-by {name} => {name'} is disallowed.") none

@@ -51,10 +51,10 @@ pub const fn from_millis(time: u64) -> SystemTime {
 }
 
 pub fn gen_random_ascii<const N: usize>() -> [Char; N] {
-    use rand::RngCore;
+    use rand::Rng;
     // const SAMPLER: UniformInt<u32> = UniformInt::new_inclusive(33, 126).unwrap();
     #[inline]
-    fn g(rng: &mut impl RngCore) -> Char {
+    fn g(rng: &mut impl Rng) -> Char {
         unsafe { Char::from_u8_unchecked((((u64::from(rng.next_u32()) * 94) >> 32) + 33) as _) }
     }
     let mut rng = rand::rng();
