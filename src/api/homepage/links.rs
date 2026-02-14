@@ -1,14 +1,14 @@
-pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str); 17] {
+pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str); 18] {
     [
-        ("OI Wiki", "https://oi.wiki"),
-        ("Universal Online Judge", "https://uoj.ac"),
-        ("LibreOJ", "https://loj.ac"),
-        ("Luogu", "https://www.luogu.com.cn"),
-        ("QOJ", "https://qoj.ac"),
-        ("PJudge", "https://pjudge.ac"),
-        ("HydroOJ", "https://hydro.ac"),
-        ("Vijos", "https://vijos.org"),
-        ("OIerDb", "https://oier.baoshuo.dev"),
+        ("OI Wiki", "https://oi.wiki/"),
+        ("Universal Online Judge", "https://uoj.ac/"),
+        ("LibreOJ", "https://loj.ac/"),
+        ("Luogu", "https://www.luogu.com.cn/"),
+        ("QOJ", "https://qoj.ac/"),
+        ("PJudge", "https://pjudge.ac/"),
+        ("HydroOJ", "https://hydro.ac/"),
+        ("Vijos", "https://vijos.org/"),
+        ("OIerDb", "https://oier.baoshuo.dev/"),
         ("The Lean Language Reference", "https://lean-lang.org/doc/reference/latest/"),
         ("Mathlib4 Documentation", "https://leanprover-community.github.io/mathlib4_docs/"),
         ("FPiL4", "https://lean-lang.org/functional_programming_in_lean/"),
@@ -31,5 +31,6 @@ pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str)
             },
             "https://leanoj.org/",
         ),
+        ("NyaOJ", "https://oj.vvauted.moe/")
     ]
 }

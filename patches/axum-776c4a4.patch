@@ -1039,10 +1039,10 @@ index cb289219..9965cce0 100644
          assert_eq!(
              memchr::memchr2(b'\r', b'\n', value),
 diff --git a/axum/src/routing/mod.rs b/axum/src/routing/mod.rs
-index 60babd78..0f8a3cb6 100644
+index a76eee5d..3d1579a9 100644
 --- a/axum/src/routing/mod.rs
 +++ b/axum/src/routing/mod.rs
-@@ -432,7 +432,7 @@ where
+@@ -449,7 +449,7 @@ where
          })
      }
  

@@ -29,7 +29,16 @@ where
         target_os = "linux" => {
             tracing::info!(target: "replay-memorizer", "check file {buf}");
             let res = unsafe { libc::getxattr(buf.as_ptr().cast(), XATTR_NAME.as_ptr(), core::ptr::null_mut(), 0) };
-            Ok((buf, res == 0))
+            if res >= 0 {
+                Ok((buf, true))
+            } else {
+                let e = io::Error::last_os_error();
+                if e.raw_os_error() == Some(libc::ENODATA) {
+                    Ok((buf, false))
+                } else {
+                    Err(e)
+                }
+            }
         }
         _ => {
             Err(io::Error::from(io::ErrorKind::Unsupported))
