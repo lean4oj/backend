@@ -14,7 +14,7 @@ compact_str = { version = "0.9.0", features = ["serde"] }
 dashmap = { version = "7.0.0-rc2", features = ["inline-more", "raw-api"] }
 env_logger = { version = "0.11.9", default-features = false, features = ["auto-color", "humantime"] }
 form_urlencoded = "1.2.2"
-futures-util = { version = "0.3.31", features = ["unstable"] }
+futures-util = { version = "0.3.32", features = ["unstable"] }
 hashbrown = { version = "0.16.1", features = ["nightly", "serde"] }
 http = "1.4.0"
 http-body-util = "0.1.3"

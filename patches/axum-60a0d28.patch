@@ -376,7 +376,7 @@ index 90da3e97..1d34f886 100644
                          Ok(res) => Ok(res.into_response()),
                          Err(err) => Ok(f($($ty),*, err).await.into_response()),
 diff --git a/axum/src/extract/path/mod.rs b/axum/src/extract/path/mod.rs
-index 44b2a323..7a99619d 100644
+index f6779a3f..3c7398a3 100644
 --- a/axum/src/extract/path/mod.rs
 +++ b/axum/src/extract/path/mod.rs
 @@ -161,10 +161,19 @@ where
