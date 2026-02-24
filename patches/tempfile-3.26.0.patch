@@ -1,8 +1,8 @@
 diff --git a/src/file/imp/unix.rs b/src/file/imp/unix.rs
-index 403250a..19f6171 100644
+index 987791e..1834305 100644
 --- a/src/file/imp/unix.rs
 +++ b/src/file/imp/unix.rs
-@@ -52,6 +52,7 @@ pub fn create(dir: &Path) -> io::Result<File> {
+@@ -51,6 +51,7 @@ pub fn create(dir: &Path) -> io::Result<File> {
          .read(true)
          .write(true)
          .custom_flags(OFlags::TMPFILE.bits() as i32) // do not mix with `create_new(true)`
@@ -26,7 +26,7 @@ index b3d51c3..4a8fb3b 100644
      /// will not be deleted when this `TempPath` is dropped. This method is equivalent to calling
      /// [`Builder::disable_cleanup`] when creating the original `NamedTempFile`, which see for
 diff --git a/src/util.rs b/src/util.rs
-index 2ac9bea..fc488c2 100644
+index 722b739..4f7d7f6 100644
 --- a/src/util.rs
 +++ b/src/util.rs
 @@ -64,7 +64,12 @@ pub fn create_helper<R>(

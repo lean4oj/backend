@@ -8,7 +8,6 @@
     // async_iterator,
     // box_vec_non_null,
     // bstr,
-    cfg_select,
     const_array,
     const_cmp,
     const_convert,

@@ -315,7 +315,7 @@ index a142b50b..d0da718c 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index f807384e..8de49b43 100644
+index 81daa397..3f9a0f37 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
 @@ -111,13 +111,12 @@ http = "1.0.0"
@@ -710,7 +710,7 @@ index 2eb3b2af..cbe42425 100644
              // https://github.com/snapview/tungstenite-rs/issues/268
              ts::Message::Frame(_) => None,
 diff --git a/axum/src/handler/mod.rs b/axum/src/handler/mod.rs
-index 36c06b8d..ea3183db 100644
+index 135891f7..3753d4e0 100644
 --- a/axum/src/handler/mod.rs
 +++ b/axum/src/handler/mod.rs
 @@ -211,10 +211,10 @@ where

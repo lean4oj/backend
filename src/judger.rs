@@ -1,11 +1,10 @@
 #![feature(
-    cfg_select,
     const_format_args,
     exit_status_error,
     never_type,
     result_option_map_or_default,
     setgroups,
-	stmt_expr_attributes,
+    stmt_expr_attributes,
 )]
 
 #[path = "judger/constants.rs"]
