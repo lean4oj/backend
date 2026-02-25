@@ -116,7 +116,7 @@ where
         let arg = unsafe { lean_path.get_unchecked(lean_path.len() - const { env!("OLEAN_ROOT").len() + 34 }..) };
         let dirname_arg = unsafe { arg.get_unchecked(..arg.len() - 9) };
 
-        let mut cmd = Command::new("l4judger");
+        let mut cmd = Command::new(format!("l4judger-{}", task.version));
         cmd.env("LEAN_PATH", unsafe { lean_path.get_unchecked(..lean_path.len() - 10) });
         cmd.arg(arg);
         cmd.args(task.axioms);
