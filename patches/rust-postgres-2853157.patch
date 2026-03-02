@@ -1,29 +1,17 @@
 diff --git a/postgres-protocol/Cargo.toml b/postgres-protocol/Cargo.toml
-index 723e08f3..0eb068e2 100644
+index 5b14b9dd..1b9ca2b8 100644
 --- a/postgres-protocol/Cargo.toml
 +++ b/postgres-protocol/Cargo.toml
-@@ -21,7 +21,6 @@ fallible-iterator = "0.2"
- hmac = "0.12"
- md-5 = "0.10"
+@@ -23,5 +23,4 @@ md-5 = "0.10"
  memchr = "2.0"
--rand = "0.9"
-+rand = "0.10"
+ rand = "0.10"
  sha2 = "0.10"
 -stringprep = "0.1"
- getrandom = { version = "0.3", optional = true }
+ getrandom = { version = "0.4", optional = true }
 diff --git a/postgres-protocol/src/authentication/sasl.rs b/postgres-protocol/src/authentication/sasl.rs
-index 38ea0eed..b7e65014 100644
+index 1fd2c06c..beb1c894 100644
 --- a/postgres-protocol/src/authentication/sasl.rs
 +++ b/postgres-protocol/src/authentication/sasl.rs
-@@ -4,7 +4,7 @@ use base64::display::Base64Display;
- use base64::engine::general_purpose::STANDARD;
- use base64::Engine;
- use hmac::{Hmac, Mac};
--use rand::{self, Rng};
-+use rand::{self, RngExt};
- use sha2::digest::FixedOutput;
- use sha2::{Digest, Sha256};
- use std::fmt::Write;
 @@ -20,21 +20,6 @@ pub const SCRAM_SHA_256: &str = "SCRAM-SHA-256";
  /// The identifier of the SCRAM-SHA-256-PLUS SASL authentication mechanism.
  pub const SCRAM_SHA_256_PLUS: &str = "SCRAM-SHA-256-PLUS";
@@ -281,7 +269,7 @@ index c25eaa86..74fe275d 100644
              "unexpected EOF",
          )),
 diff --git a/postgres-protocol/src/message/frontend.rs b/postgres-protocol/src/message/frontend.rs
-index dcfa6425..287c1175 100644
+index 0085007d..bc673b89 100644
 --- a/postgres-protocol/src/message/frontend.rs
 +++ b/postgres-protocol/src/message/frontend.rs
 @@ -146,7 +146,7 @@ where
@@ -303,18 +291,9 @@ index dcfa6425..287c1175 100644
              "string contains embedded null",
          ));
 diff --git a/postgres-protocol/src/password/mod.rs b/postgres-protocol/src/password/mod.rs
-index 5f0bbaba..91524592 100644
+index b7f11517..91524592 100644
 --- a/postgres-protocol/src/password/mod.rs
 +++ b/postgres-protocol/src/password/mod.rs
-@@ -11,7 +11,7 @@ use base64::display::Base64Display;
- use base64::engine::general_purpose::STANDARD;
- use hmac::{Hmac, Mac};
- use md5::Md5;
--use rand::RngCore;
-+use rand::Rng;
- use sha2::digest::FixedOutput;
- use sha2::{Digest, Sha256};
- 
 @@ -47,20 +47,9 @@ pub(crate) fn scram_sha_256_salt(password: &[u8], salt: [u8; SCRAM_DEFAULT_SALT_
      // contains prohibited characters (such as non-ASCII whitespace),
      // just skip the SASLprep step and use the original byte
@@ -373,26 +352,9 @@ index f4676ae4..fb1d39dc 100644
      }
  
 diff --git a/tokio-postgres/Cargo.toml b/tokio-postgres/Cargo.toml
-index 5ef0a8e3..b7243ba5 100644
+index 2d77d982..eb5b1eea 100644
 --- a/tokio-postgres/Cargo.toml
 +++ b/tokio-postgres/Cargo.toml
-@@ -2,14 +2,14 @@
- name = "tokio-postgres"
- version = "0.7.16"
- authors = ["Steven Fackler <sfackler@gmail.com>"]
--edition = "2021"
-+edition = "2024"
- license = "MIT OR Apache-2.0"
- description = "A native, asynchronous PostgreSQL client"
- repository = "https://github.com/rust-postgres/rust-postgres"
- readme = "../README.md"
- keywords = ["database", "postgres", "postgresql", "sql", "async"]
- categories = ["database"]
--rust-version = "1.81"
-+rust-version = "1.85"
- 
- [lib]
- test = false
 @@ -47,7 +47,6 @@ with-time-0_3 = ["postgres-types/with-time-0_3"]
  js = ["postgres-protocol/js", "postgres-types/js"]
  
@@ -401,17 +363,8 @@ index 5ef0a8e3..b7243ba5 100644
  bytes = "1.11"
  byteorder = "1.0"
  fallible-iterator = "0.2"
-@@ -62,7 +61,7 @@ postgres-protocol = { version = "0.6.9", path = "../postgres-protocol" }
- postgres-types = { version = "0.2.10", path = "../postgres-types" }
- tokio = { version = "1.27", features = ["io-util"] }
- tokio-util = { version = "0.7", features = ["codec"] }
--rand = "0.9.0"
-+rand = "0.10.0"
- whoami = "2.0.1"
- 
- [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 diff --git a/tokio-postgres/src/binary_copy.rs b/tokio-postgres/src/binary_copy.rs
-index 8c244371..72ed565e 100644
+index a33f36f4..14a7c6e6 100644
 --- a/tokio-postgres/src/binary_copy.rs
 +++ b/tokio-postgres/src/binary_copy.rs
 @@ -49,8 +49,11 @@ impl BinaryCopyInWriter {
@@ -447,7 +400,7 @@ index 8c244371..72ed565e 100644
              "unexpected EOF",
          )))
 diff --git a/tokio-postgres/src/cancel_query.rs b/tokio-postgres/src/cancel_query.rs
-index 2dfd47c0..d9c75121 100644
+index 70fe7d12..e44a77e6 100644
 --- a/tokio-postgres/src/cancel_query.rs
 +++ b/tokio-postgres/src/cancel_query.rs
 @@ -18,7 +18,7 @@ where
@@ -458,9 +411,9 @@ index 2dfd47c0..d9c75121 100644
 +            return Err(Error::connect(io::const_error!(
                  io::ErrorKind::InvalidInput,
                  "unknown host",
-             )))
+             )));
 diff --git a/tokio-postgres/src/cancel_token.rs b/tokio-postgres/src/cancel_token.rs
-index 1652bec7..8edc1e0f 100644
+index 2fc0a90c..60c9758b 100644
 --- a/tokio-postgres/src/cancel_token.rs
 +++ b/tokio-postgres/src/cancel_token.rs
 @@ -31,7 +31,7 @@ impl CancelToken {
@@ -498,7 +451,7 @@ index 1652bec7..8edc1e0f 100644
      }
  }
 diff --git a/tokio-postgres/src/client.rs b/tokio-postgres/src/client.rs
-index dbba5fbe..5b9f2777 100644
+index 6d3b03d3..ca452b7c 100644
 --- a/tokio-postgres/src/client.rs
 +++ b/tokio-postgres/src/client.rs
 @@ -19,12 +19,16 @@ use crate::{
@@ -710,7 +663,7 @@ index dbba5fbe..5b9f2777 100644
  
      /// Returns a builder for a transaction with custom settings.
 diff --git a/tokio-postgres/src/config.rs b/tokio-postgres/src/config.rs
-index f70ee912..581162da 100644
+index 4ef03314..0481a9f1 100644
 --- a/tokio-postgres/src/config.rs
 +++ b/tokio-postgres/src/config.rs
 @@ -16,6 +16,7 @@ use crate::{Client, Connection, Error};
@@ -820,7 +773,7 @@ index 0001cef1..0bac1569 100644
                  "connection timed out",
              ))),
 diff --git a/tokio-postgres/src/copy_in.rs b/tokio-postgres/src/copy_in.rs
-index b3d1a213..ee5b9741 100644
+index 19b82a06..c568243e 100644
 --- a/tokio-postgres/src/copy_in.rs
 +++ b/tokio-postgres/src/copy_in.rs
 @@ -125,8 +125,10 @@ where
@@ -1481,7 +1434,7 @@ index 82bdfdfa..c27370f9 100644
  pub use crate::cancel_token::CancelToken;
  pub use crate::client::Client;
 diff --git a/tokio-postgres/src/prepare.rs b/tokio-postgres/src/prepare.rs
-index e1ea2b04..95829dfd 100644
+index 8484fa33..e5a0ecb7 100644
 --- a/tokio-postgres/src/prepare.rs
 +++ b/tokio-postgres/src/prepare.rs
 @@ -132,7 +132,7 @@ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Resu
@@ -1494,7 +1447,7 @@ index e1ea2b04..95829dfd 100644
          return Ok(type_);
      }
 diff --git a/tokio-postgres/src/query.rs b/tokio-postgres/src/query.rs
-index 424deae0..ea22a360 100644
+index 675c33a8..bda581b9 100644
 --- a/tokio-postgres/src/query.rs
 +++ b/tokio-postgres/src/query.rs
 @@ -172,7 +172,7 @@ where
@@ -1531,7 +1484,7 @@ index 3726a5e8..228d5302 100644
 +    }
  }
 diff --git a/tokio-postgres/src/simple_query.rs b/tokio-postgres/src/simple_query.rs
-index 1696ab23..2aa2796d 100644
+index 1ae55df1..8d6f7349 100644
 --- a/tokio-postgres/src/simple_query.rs
 +++ b/tokio-postgres/src/simple_query.rs
 @@ -31,7 +31,7 @@ impl SimpleColumn {
@@ -1544,7 +1497,7 @@ index 1696ab23..2aa2796d 100644
  
      let buf = encode(client, query)?;
 diff --git a/tokio-postgres/src/to_statement.rs b/tokio-postgres/src/to_statement.rs
-index 8c6ccdcd..e18cbe72 100644
+index 50842ba4..6e715c80 100644
 --- a/tokio-postgres/src/to_statement.rs
 +++ b/tokio-postgres/src/to_statement.rs
 @@ -14,10 +14,12 @@ mod private {
@@ -1564,11 +1517,11 @@ index 8c6ccdcd..e18cbe72 100644
          }
      }
 diff --git a/tokio-postgres/src/transaction.rs b/tokio-postgres/src/transaction.rs
-index 7049416b..aacdb4a3 100644
+index 81e8036b..343ab9db 100644
 --- a/tokio-postgres/src/transaction.rs
 +++ b/tokio-postgres/src/transaction.rs
 @@ -11,7 +11,7 @@ use crate::{
-     SimpleQueryMessage, Statement, ToStatement,
+     ToStatement, bind, query, slice_iter,
  };
  use bytes::Buf;
 -use futures_util::TryStreamExt;
