@@ -147,3 +147,7 @@ extern "C" uint8_t isMalform_level(lean_object *lvl) {
     return 1;
   }
 }
+
+extern "C" uint8_t isMalform_name(lean_object *name) {
+  return 0;
+}
