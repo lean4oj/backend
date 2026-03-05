@@ -12,12 +12,17 @@ abbrev M := ReaderT Environment $ StateM State
 @[extern "isMalform_literal"]
 opaque _root_.Lean.Literal.isMalform : @& Literal → Bool
 
+@[extern "isMalform_level"]
+opaque _root_.Lean.Level.isMalform : @& Level → Bool
+
 def _root_.Lean.Expr.isMalform : Expr → Bool
-  | .lit literal => literal.isMalform
+  | .sort u => u.isMalform
+  | .const _ us => us.any Level.isMalform
   | .app fn arg => fn.isMalform || arg.isMalform
   | .lam _ ty body _
   | .forallE _ ty body _ => ty.isMalform || body.isMalform
   | .letE _ ty val body _ => ty.isMalform || val.isMalform || body.isMalform
+  | .lit literal => literal.isMalform
   | .mdata _ expr
   | .proj _ _ expr => expr.isMalform
   | _ => false
