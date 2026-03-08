@@ -1,6 +1,6 @@
 use serde::Serialize;
 
-use super::super::serde::UnitMap;
+use super::super::serde::{SliceMap, UnitMap};
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -81,7 +81,7 @@ pub struct Misc {
     discussion_reaction_emojis: &'static [&'static str],
     discussion_reaction_allow_custom_emojis: bool,
     disabled_emoji_in_math: &'static [&'static str],
-    lean_versions: &'static [&'static str],
+    lean_versions: &'static SliceMap<&'static str, &'static str>,
 }
 
 impl const Default for Misc {
@@ -96,7 +96,19 @@ impl const Default for Misc {
             discussion_reaction_emojis: &["👍", "👎", "😄", "😕", "❤", "🤔", "🤣", "🌿", "🍋", "🕊"],
             discussion_reaction_allow_custom_emojis: true,
             disabled_emoji_in_math: &["↔", "↪"],
-            lean_versions: &["4.29.0-rc6", "4.29.0-rc5", "4.29.0-rc4", "4.29.0-rc3", "4.29.0-rc2", "4.29.0-rc1", "4.28.0", "4.28.0-rc1", "4.27.0", "4.27.0-rc1", "4.26.0"],
+            lean_versions: SliceMap::from_slice([
+                ("4.28.0", "4.28.0 (latest stable)"),
+                ("4.29.0-rc6", "4.29.0-rc6 (latest, w/o mathlib)"),
+                ("4.29.0-rc5", "4.29.0-rc5 (without mathlib)"),
+                ("4.29.0-rc4", "4.29.0-rc4 (latest mathlib)"),
+                ("4.29.0-rc3", "4.29.0-rc3"),
+                ("4.29.0-rc2", "4.29.0-rc2"),
+                ("4.29.0-rc1", "4.29.0-rc1"),
+                ("4.28.0-rc1", "4.28.0-rc1"),
+                ("4.27.0", "4.27.0"),
+                ("4.27.0-rc1", "4.27.0-rc1"),
+                ("4.26.0", "4.26.0"),
+            ].as_slice()),
         }
     }
 }
