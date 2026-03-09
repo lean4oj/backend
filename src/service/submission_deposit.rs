@@ -217,6 +217,9 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
         if let Some(module_i) = module.strip_prefix(&*task.uid) && module_i.starts_with('.') {
             // nothing
         } else if olean::is_std(&module) {
+            if *module == *"Mathlib" || *module == *"Mathlib.Tactic" {
+                return Ok((InvalidImport, Replace(Cow::Owned(format!("Don't import {module} directly. Try using #min_imports for a lighter dependency set.")))));
+            }
             continue;
         } else {
             return Ok((InvalidImport, Replace(Cow::Owned(format!("{module}: invalid import")))));
