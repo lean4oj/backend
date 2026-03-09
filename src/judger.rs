@@ -1,11 +1,9 @@
 #![feature(
-    const_format_args,
     exit_status_error,
-    never_type,
     result_option_map_or_default,
-    setgroups,
     stmt_expr_attributes,
 )]
+#![cfg_attr(target_os = "linux", feature(setgroups))]
 
 #[path = "judger/constants.rs"]
 mod constants;

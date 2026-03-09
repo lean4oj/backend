@@ -41,8 +41,8 @@ use crate::{
     models::{
         problem::Problem,
         submission::{
-            Submission, SubmissionAoe, SubmissionMessageAction, SubmissionMeta, SubmissionStatus,
-            UserSubscription,
+            StatisticsType, Submission, SubmissionAoe, SubmissionMessageAction, SubmissionMeta,
+            SubmissionStatus, UserSubscription,
         },
         user::User,
     },
@@ -364,6 +364,7 @@ struct QuerySubmissionStatisticsRequest {
     locale: Option<CompactString>,
     problem_id: Option<i32>,
     problem_display_id: Option<i32>, // effectly always the same, compat with frontend only.
+    statistics_type: StatisticsType,
     skip_count: u64,
     take_count: u64,
 }
@@ -372,7 +373,7 @@ async fn query_submission_statistics(
     Session_(session): Session_,
     req: JsonReqult<QuerySubmissionStatisticsRequest>,
 ) -> JkmxJsonResponse {
-    let Json(QuerySubmissionStatisticsRequest { locale, problem_id, problem_display_id, skip_count, take_count }) = req?;
+    let Json(QuerySubmissionStatisticsRequest { locale, problem_id, problem_display_id, statistics_type, skip_count, take_count }) = req?;
 
     let Some(pid) = problem_id.or(problem_display_id) else { bad!(BYTES_NULL) };
     let skip = skip_count.min(i64::MAX.cast_unsigned()).cast_signed();
@@ -392,8 +393,9 @@ async fn query_submission_statistics(
         Problem::by_pid_uid(pid, uid.unwrap_or_default(), &mut conn).await
     }? else { return NO_SUCH_PROBLEM };
 
-    let stat = Submission::stat_aoe(pid, skip, take, &mut conn).await?;
-    let [c0, c1] = Submission::stat_count(pid, &mut conn).await?;
+    let stat = Submission::stat_aoe(pid, statistics_type, skip, take, &mut conn).await?;
+    let count = Submission::stat_count_dedup(pid, &mut conn).await?;
+    let [c0, c100] = Submission::stat_count(pid, &mut conn).await?;
 
     let mut res = r#"{"submissions":["#.to_owned();
     for (submission, user) in stat {
@@ -408,7 +410,7 @@ async fn query_submission_statistics(
         problem = meta.problem;
     }
     if res.len() > 16 { res.pop(); }
-    write!(&mut res, r#"],"scores":[{c0},0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,{c1}],"count":{c1}}}"#)?;
+    write!(&mut res, r#"],"scores":[{c0},0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,{c100}],"count":{count}}}"#)?;
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 

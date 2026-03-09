@@ -23,6 +23,8 @@ mod message;
 pub use message::Action as SubmissionMessageAction;
 mod status;
 pub use status::Status as SubmissionStatus;
+mod statistics;
+pub use statistics::Type as StatisticsType;
 
 use crate::{
     libs::{
@@ -209,13 +211,24 @@ impl Submission {
         stream.and_then(|row| ready(𝒮(row))).try_collect().await
     }
 
-    pub async fn stat_aoe(pid: i32, skip: i64, take: i64, db: &mut Client) -> DBResult<Vec<(Self, User)>> {
-        const SQL: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09' order by sid offset $2 limit $3";
+    pub async fn stat_aoe(pid: i32, type_: StatisticsType, skip: i64, take: i64, db: &mut Client) -> DBResult<Vec<(Self, User)>> {
+        const SQL: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09') order by sid offset $2 limit $3";
+        const SQL_ANSWER_SIZE: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09') order by answer_size, sid offset $2 limit $3";
 
-        let stmt = db.prepare_static(SQL.into()).await?;
+        let stmt = db.prepare_static(
+            if type_ == StatisticsType::MinAnswerSize { SQL_ANSWER_SIZE } else { SQL }.into(),
+        ).await?;
         let params: [&(dyn ToSql + Sync); 3] = [&pid, &skip, &take];
         let stream = db.query_raw(&stmt, params).await?;
         stream.and_then(|row| ready(𝓈(row))).try_collect().await
+    }
+
+    pub async fn stat_count_dedup(pid: i32, db: &mut Client) -> DBResult<u64> {
+        const SQL: &str = "select count(distinct submitter) from lean4oj.submissions where pid = $1 and status = '\x09'";
+
+        let stmt = db.prepare_static(SQL.into()).await?;
+        let row = db.query_one(&stmt, &[&pid]).await?;
+        row.try_get::<_, i64>(0).map(i64::cast_unsigned)
     }
 
     pub async fn stat_count(pid: i32, db: &mut Client) -> DBResult<[u64; 2]> {
