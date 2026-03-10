@@ -212,8 +212,8 @@ impl Submission {
     }
 
     pub async fn stat_aoe(pid: i32, type_: StatisticsType, skip: i64, take: i64, db: &mut Client) -> DBResult<Vec<(Self, User)>> {
-        const SQL: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09') order by sid offset $2 limit $3";
-        const SQL_ANSWER_SIZE: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09') order by answer_size, sid offset $2 limit $3";
+        const SQL: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09' order by submitter, sid) order by sid offset $2 limit $3";
+        const SQL_ANSWER_SIZE: &str = "select * from (select distinct on (submitter) sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, uid, password, username, email, register_time, ac, nickname, bio, avatar_info from lean4oj.submissions inner join lean4oj.users on submitter = uid where pid = $1 and status = '\x09' order by submitter, answer_size, sid) order by answer_size, sid offset $2 limit $3";
 
         let stmt = db.prepare_static(
             if type_ == StatisticsType::MinAnswerSize { SQL_ANSWER_SIZE } else { SQL }.into(),
