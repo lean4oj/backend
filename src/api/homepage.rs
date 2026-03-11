@@ -51,16 +51,24 @@ struct Countdowns<'a> {
 }
 
 impl Countdowns<'_> {
-    fn countdowns(locale: Option<&str>) -> [(&'static str, u64); 4] {
+    fn countdowns(locale: Option<&str>) -> [(&'static str, u64); 5] {
         [
             // ("WC 2026", 1_770_336_000_000),
             // ("RMM 2026", 1_772_002_800_000),
             ("China TST 2026-1", 1_772_841_600_000),
             (
                 match locale {
+                    Some("en_US") => "2026 Pi Day Contest",
+                    Some("ja_JP") => "2026円周率の日コンテスト",
+                    _ => "2026 Pi节挑战赛",
+                },
+                1_773_534_600_000
+            ),
+            (
+                match locale {
                     Some("en_US") => "Yau Contest 2026",
                     Some("ja_JP") => "ヤウコンテスト2026",
-                    _ => "丘成桐大学生数学竞赛2026",
+                    _ => "2026丘成桐大学生数学竞赛",
                 },
                 1_778_889_600_000,
             ),
