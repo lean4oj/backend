@@ -46,21 +46,27 @@ impl const Default for HitokotoConfig {
 
 #[repr(transparent)]
 #[derive(Serialize)]
-struct Countdowns {
-    items: &'static SliceMap<&'static str, u64>,
+struct Countdowns<'a> {
+    items: &'a SliceMap<&'static str, u64>,
 }
 
-impl const Default for Countdowns {
-    fn default() -> Self {
-        Self {
-            items: SliceMap::from_slice([
-                // ("WC 2026", 1_770_336_000_000),
-                // ("RMM 2026", 1_772_002_800_000),
-                ("China TST 2026-1", 1_772_841_600_000),
-                ("IMO 2026", 1_784_075_400_000),
-                ("IOI 2026", 1_786_215_600_000),
-            ].as_slice()),
-        }
+impl Countdowns<'_> {
+    fn countdowns(locale: Option<&str>) -> [(&'static str, u64); 4] {
+        [
+            // ("WC 2026", 1_770_336_000_000),
+            // ("RMM 2026", 1_772_002_800_000),
+            ("China TST 2026-1", 1_772_841_600_000),
+            (
+                match locale {
+                    Some("en_US") => "Yau Contest 2026",
+                    Some("ja_JP") => "ヤウコンテスト2026",
+                    _ => "丘成桐大学生数学竞赛2026",
+                },
+                1_778_889_600_000,
+            ),
+            ("IMO 2026", 1_784_075_400_000),
+            ("IOI 2026", 1_786_215_600_000),
+        ]
     }
 }
 
@@ -105,7 +111,7 @@ const N_PROBLEMS: usize = Pagination::default().homepage_problem_list as usize;
 struct HomepageResponse<'a> {
     announcements: Vec<Discussion>,
     hitokoto: HitokotoConfig,
-    countdown: Countdowns,
+    countdown: Countdowns<'a>,
     friend_links: FriendLinks<'a>,
     top_users: Vec<User>,
     latest_updated_problems: SmallVec<[Inner2; N_PROBLEMS]>,
@@ -143,6 +149,7 @@ async fn get_homepage(
 
     let mut announcements = Discussion::by_ids(ANNOUNCEMENT_IDS.into_iter(), &mut conn).await?;
     for d in &mut announcements { d.backdoor(locale.as_deref()); }
+    let countdowns = Countdowns::countdowns(locale.as_deref());
     let links = links::friend_links(locale.as_deref());
     let mut latest_updated_problems = get_latest_updated_problems(locale.as_deref(), &mut conn).await?;
 
@@ -159,7 +166,7 @@ async fn get_homepage(
     let res = HomepageResponse {
         announcements,
         hitokoto: const { HitokotoConfig::default() },
-        countdown: const { Countdowns::default() },
+        countdown: Countdowns { items: SliceMap::from_slice(&countdowns) },
         friend_links: FriendLinks { links: SliceMap::from_slice(&links) },
         top_users,
         latest_updated_problems,

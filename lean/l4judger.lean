@@ -181,7 +181,7 @@ def main (args : List String) : IO Unit := do
         let idx := cmdState.env.const2ModIdx.get? name
         let eff := idx.bind (fun i => cmdState.env.header.modules[i]?)
         let clean := match eff with
-          | some e => e.module.getRoot.isStd
+          | some e => ← ((pure e.module.getRoot.isStd) <||> e.module.isVerified)
           | none => false
         if !clean then
           consts := consts.insert name ci

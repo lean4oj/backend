@@ -1,4 +1,4 @@
-pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str); 18] {
+pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str); 19] {
     [
         ("OI Wiki", "https://oi.wiki/"),
         ("Universal Online Judge", "https://uoj.ac/"),
@@ -13,6 +13,7 @@ pub const fn friend_links(locale: Option<&str>) -> [(&'static str, &'static str)
         ("Mathlib4 Documentation", "https://leanprover-community.github.io/mathlib4_docs/"),
         ("FPiL4", "https://lean-lang.org/functional_programming_in_lean/"),
         ("TPiL4", "https://lean-lang.org/theorem_proving_in_lean4/"),
+        ("Mathlib4 Search", "https://leansearch.net/"),
         (
             match locale {
                 Some("en_US") => "Banana Space",
