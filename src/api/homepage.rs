@@ -51,7 +51,7 @@ struct Countdowns<'a> {
 }
 
 impl Countdowns<'_> {
-    fn countdowns(locale: Option<&str>) -> [(&'static str, u64); 5] {
+    const fn countdowns(locale: Option<&str>) -> [(&'static str, u64); 5] {
         [
             // ("WC 2026", 1_770_336_000_000),
             // ("RMM 2026", 1_772_002_800_000),

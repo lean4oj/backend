@@ -1,5 +1,5 @@
 import Batteries.Tactic.OpenPrivate
-import CollectLiterals
+import CollectUtils
 import Lean.Compiler.ImplementedByAttr
 import Lean.Elab.DefView
 import Lean.Elab.Import
@@ -159,7 +159,7 @@ def main (args : List String) : IO Unit := do
     report .WrongAnswer (.Append "Failed to extract answer") none
     return
 
-  let (malform, state) := CollectLiterals.collect `Lean4OJ.answer cmdState.env {}
+  let (malform, state) := CollectUtils.collect `Lean4OJ.answer cmdState.env {}
   if malform then
     report .WrongAnswer (.Append "Malformed module") none
     return
@@ -181,9 +181,9 @@ def main (args : List String) : IO Unit := do
         let idx := cmdState.env.const2ModIdx.get? name
         let eff := idx.bind (fun i => cmdState.env.header.modules[i]?)
         let clean := match eff with
-          | some e => ← ((pure e.module.getRoot.isStd) <||> e.module.isVerified)
-          | none => false
-        if !clean then
+          | some e => (pure e.module.getRoot.isStd) <||> e.module.isVerified
+          | none => pure false
+        if !(← clean) then
           consts := consts.insert name ci
     else
       for name in data.constNames, ci in data.constants do

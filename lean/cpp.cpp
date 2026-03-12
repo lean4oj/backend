@@ -46,25 +46,63 @@ extern "C" lean_object *protect(lean_object *arg1, lean_object *arg2) {
   }
 }
 
-extern "C" uint8_t isMalform_literal(lean_object *lit) {
-  switch (lit->m_tag) {
-  case 0: {
-    lean_object *nat = lean_ctor_get(lit, 0);
-    if (!lean_is_scalar(nat) && lean_is_mpz(nat)) {
-      mpz_ptr r = (mpz_ptr)(nat + 1);
-      return r->_mp_size < 0;
-    }
-    break;
+extern "C" uint8_t isMalform_nat(lean_object *nat) {
+  if (!lean_is_scalar(nat) && lean_is_mpz(nat)) {
+    mpz_ptr r = (mpz_ptr)(nat + 1);
+    return r->_mp_size < 0;
+  } else {
+    return 0;
   }
-  }
-  return 0;
 }
 
 std::set<lean_object *> whitelist;
 
+extern "C" uint8_t isMalform_name(lean_object *name) {
+  if (lean_is_scalar(name))
+    return (uint64_t)name != 1;
+  if (whitelist.contains(name))
+    return 0;
+  if (name->m_other != 2 || name->m_cs_sz != 32)
+    return 1;
+  const lean_ctor_object *c = (lean_ctor_object *)name;
+
+  uint64_t claimed_hash = (uint64_t)c->m_objs[2];
+  lean_object *subname = c->m_objs[0];
+  lean_object *arg = c->m_objs[1];
+  uint64_t lhs = l_Lean_Name_hash___override(subname);
+  uint64_t rhs;
+
+  switch (name->m_tag) {
+  case 1: { // str
+    rhs = lean_string_hash(arg);
+    break;
+  }
+  case 2: { // num
+    if (lean_is_scalar(arg)) {
+      rhs = lean_unbox(arg);
+    } else if (lean_is_mpz(arg)) {
+      mpz_ptr r = (mpz_ptr)(arg + 1);
+      if (r->_mp_size < 0)
+        return 1;
+      rhs = (r->_mp_size == 1 ? r->_mp_d[0] : 17);
+    } else
+      return 1;
+    break;
+  }
+  default:
+    return 1;
+  }
+
+  if (claimed_hash != lean_uint64_mix_hash(lhs, rhs))
+    return 1;
+
+  whitelist.insert(name);
+  return isMalform_name(subname);
+}
+
 extern "C" uint8_t isMalform_level(lean_object *lvl) {
   if (lean_is_scalar(lvl))
-    return 0;
+    return (uint64_t)lvl != 1;
   if (whitelist.contains(lvl))
     return 0;
   uint64_t n = lvl->m_other;
@@ -141,13 +179,9 @@ extern "C" uint8_t isMalform_level(lean_object *lvl) {
       return 1;
 
     whitelist.insert(lvl);
-    return 0;
+    return isMalform_name(child);
   }
   default:
     return 1;
   }
-}
-
-extern "C" uint8_t isMalform_name(lean_object *name) {
-  return 0;
 }

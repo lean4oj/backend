@@ -1,6 +1,6 @@
 import Lean.MonadEnv
 
-namespace CollectLiterals
+namespace CollectUtils
 
 open Lean
 
@@ -9,8 +9,8 @@ structure State where
 
 abbrev M := ReaderT Environment $ StateM State
 
-@[extern "isMalform_literal"]
-opaque _root_.Lean.Literal.isMalform : @& Literal → Bool
+@[extern "isMalform_nat"]
+opaque _root_.Nat.isMalform : @& Nat → Bool
 
 @[extern "isMalform_level"]
 opaque _root_.Lean.Level.isMalform : @& Level → Bool
@@ -18,8 +18,12 @@ opaque _root_.Lean.Level.isMalform : @& Level → Bool
 @[extern "isMalform_name"]
 opaque _root_.Lean.Name.isMalform : @& Name → Bool
 
+def _root_.Lean.Literal.isMalform : Literal → Bool
+  | .natVal n => n.isMalform
+  | .strVal _ => false
+
 def _root_.Lean.Expr.isMalform : Expr → Bool
-  | .bvar _ => false
+  | .bvar i => i.isMalform
   | .fvar (.mk n)
   | .mvar (.mk n) => n.isMalform
   | .sort u => u.isMalform
@@ -30,7 +34,7 @@ def _root_.Lean.Expr.isMalform : Expr → Bool
   | .letE n ty val body _ => n.isMalform || ty.isMalform || val.isMalform || body.isMalform
   | .lit literal => literal.isMalform
   | .mdata _ expr => expr.isMalform
-  | .proj n _ expr => n.isMalform || expr.isMalform
+  | .proj n i expr => n.isMalform || i.isMalform || expr.isMalform
 
 partial def collect (c : Name) : M Bool := do
   let collectExpr (e : Expr) : M Bool := if e.isMalform then pure true else e.getUsedConstants.anyM collect
