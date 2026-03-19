@@ -980,7 +980,7 @@ checksum = "c33a9471896f1c69cecef8d20cbe2f7accd12527ce60845ff44c153bb2a21b49"
 [[package]]
 name = "postgres-protocol"
 version = "0.6.10"
-source = "git+https://github.com/rust-postgres/rust-postgres#28531578947fe2244ae6bdcf174a87a821a07ef9"
+source = "git+https://github.com/rust-postgres/rust-postgres#10a7724754a13b1c473ced7d990c7a89f38dfefd"
 dependencies = [
  "base64",
  "byteorder",
@@ -996,7 +996,7 @@ dependencies = [
 [[package]]
 name = "postgres-types"
 version = "0.2.12"
-source = "git+https://github.com/rust-postgres/rust-postgres#28531578947fe2244ae6bdcf174a87a821a07ef9"
+source = "git+https://github.com/rust-postgres/rust-postgres#10a7724754a13b1c473ced7d990c7a89f38dfefd"
 dependencies = [
  "bytes",
  "fallible-iterator",
@@ -1339,7 +1339,7 @@ dependencies = [
 [[package]]
 name = "tokio-postgres"
 version = "0.7.16"
-source = "git+https://github.com/rust-postgres/rust-postgres#28531578947fe2244ae6bdcf174a87a821a07ef9"
+source = "git+https://github.com/rust-postgres/rust-postgres#10a7724754a13b1c473ced7d990c7a89f38dfefd"
 dependencies = [
  "byteorder",
  "bytes",

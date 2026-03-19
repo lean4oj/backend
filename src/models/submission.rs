@@ -87,16 +87,15 @@ impl Submission {
     pub async fn create(
         pid: i32, submitter: &str, submit_time: SystemTime,
         module_name: &str, const_name: &str, lean_toolchain: &str,
-        answer_size: u64, answer_hash: [u8; 32],
-        db: &mut Client,
+        answer_hash: [u8; 32], db: &mut Client,
     ) -> DBResult<u32> {
-        const SQL: &str = "insert into lean4oj.submissions (pid, submitter, submit_time, module_name, const_name, lean_toolchain, answer_size, answer_hash) values ($1, $2, $3, $4, $5, $6, $7, $8) returning sid";
+        const SQL: &str = "insert into lean4oj.submissions (pid, submitter, submit_time, module_name, const_name, lean_toolchain, answer_size, answer_hash) values ($1, $2, $3, $4, $5, $6, 0, $7) returning sid";
 
         let stmt = db.prepare_static(SQL.into()).await?;
         let row = db.query_one(&stmt, &[
             &pid, &submitter, &submit_time,
             &module_name, &const_name, &lean_toolchain,
-            &answer_size.cast_signed(), &answer_hash.as_slice(),
+            &answer_hash.as_slice(),
         ]).await?;
         row.try_get::<_, i32>(0).map(i32::cast_unsigned)
     }
@@ -152,6 +151,23 @@ impl Submission {
 
         if let Some(tx) = FOOD.get(&sid) {
             let _ = tx.send(UserUpdate::Answer(answer));
+        }
+
+        Ok(())
+    }
+
+    pub async fn report_size(sid: u32, tot_size: usize, db: &mut Client) -> DBResult<()> {
+        const SQL: &str = "update lean4oj.submissions set answer_size = $1 where sid = $2";
+
+        let stmt = db.prepare_static(SQL.into()).await?;
+        #[allow(clippy::cast_possible_wrap)]
+        let n = db.execute(&stmt, &[&(tot_size as i64), &sid.cast_signed()]).await?;
+        if n != 1 {
+            return Err(DBError::new(tokio_postgres::error::Kind::RowCount, Some("size update error".into())));
+        }
+
+        if let Some(tx) = FOOD.get(&sid) {
+            let _ = tx.send(UserUpdate::Size(tot_size));
         }
 
         Ok(())
@@ -328,6 +344,7 @@ impl Serialize for SubmissionMeta<'_> {
 enum UserUpdate {
     Status(SubmissionStatus, SubmissionMessageAction),
     Answer(CompactString),
+    Size(usize),
 }
 
 static FOOD: LazyLock<

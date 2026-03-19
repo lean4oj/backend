@@ -47,12 +47,12 @@ extern "C" lean_object *protect(lean_object *arg1, lean_object *arg2) {
 }
 
 extern "C" uint8_t isMalform_nat(lean_object *nat) {
-  if (!lean_is_scalar(nat) && lean_is_mpz(nat)) {
-    mpz_ptr r = (mpz_ptr)(nat + 1);
-    return r->_mp_size < 0;
-  } else {
+  if (lean_is_scalar(nat))
     return 0;
-  }
+  else if (lean_is_mpz(nat))
+    return ((mpz_ptr)(nat + 1))->_mp_size < 0;
+  else
+    return 1;
 }
 
 std::set<lean_object *> whitelist;

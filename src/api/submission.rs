@@ -147,8 +147,7 @@ async fn submit(
 
     let sid = Submission::create(problem_id, &user.uid, now,
         &module_name, &const_name, meta.version,
-        olean.len() as u64, answer_hash,
-        &mut conn,
+        answer_hash, &mut conn,
     ).await?;
 
     let stmt = conn.prepare_static(SQL_ADD_SUB.into()).await?;
@@ -163,6 +162,7 @@ async fn submit(
         is_module: meta.is_module(),
         imports,
         version: meta.version,
+        tot_size: olean.len(),
         hash: answer_hash,
         checker: problem.jb,
     };
@@ -426,7 +426,7 @@ async fn rejudge_submission(
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.submissions natural join lean4oj.problems where sid = $1 and status::integer >= 7";
     const SQL: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.submissions natural join lean4oj.problems where sid = $1 and status::integer >= 7 and owner = $2";
-    const SQL_REJUDGE: &str = "update lean4oj.submissions set lean_toolchain = $1, status = 0::\"char\", message = '', answer_size = $2, answer_hash = $3, answer_obj = '' where sid = $4";
+    const SQL_REJUDGE: &str = "update lean4oj.submissions set lean_toolchain = $1, status = 0::\"char\", message = '', answer_hash = $2, answer_obj = '' where sid = $3";
     const SQL_REJUDGE_FAIL: &str = "update lean4oj.submissions set status = '\x07', message = $1 where sid = $2";
     const SQL_REDUCE_AC: &str = "update lean4oj.problems set pac = pac - 1 where pid = $1";
     const SQL_USER_AC: &str = "update lean4oj.users set ac = (select count(distinct pid) from lean4oj.submissions where submitter = $1 and status = '\x09') where uid = $1";
@@ -488,6 +488,7 @@ async fn rejudge_submission(
         is_module,
         imports,
         version,
+        tot_size: olean.len(),
         hash: answer_hash,
         checker: problem.jb,
     };
@@ -501,7 +502,7 @@ async fn rejudge_submission(
 
     let stmt = conn.prepare_static(SQL_REJUDGE.into()).await?;
     let n = conn.execute(&stmt, &[
-        &version, &(olean.len() as i64), &answer_hash.as_slice(), &submission_id.cast_signed(),
+        &version, &answer_hash.as_slice(), &submission_id.cast_signed(),
     ]).await?;
     if n != 1 { return private::err(); }
     if is_ac {

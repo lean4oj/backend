@@ -47,7 +47,10 @@ where
 }
 
 #[cfg(target_os = "linux")]
-pub fn mark(path_bank: Vec<String>) {
+pub fn mark<I>(path_bank: I)
+where
+    I: IntoIterator<Item = String>,
+{
     for path in path_bank {
         unsafe {
             libc::setxattr(path.as_ptr().cast(), XATTR_NAME.as_ptr(), core::ptr::null(), 0, 0);

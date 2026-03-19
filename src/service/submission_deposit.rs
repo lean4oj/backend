@@ -53,6 +53,7 @@ pub struct Task {
     pub is_module: bool,
     pub imports: Vec<CompactString>,
     pub version: &'static str,
+    pub tot_size: usize,
     pub hash: [u8; 32],
     pub checker: Bytes,
 }
@@ -205,8 +206,9 @@ fn deposit_one(
     Ok(())
 }
 
-fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, SubmissionMessageAction)> {
+fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, SubmissionMessageAction, usize)> {
     let sroot = submission_path(task.sid)?;
+    let mut tot_size = task.tot_size;
 
     deposit_one(&task.uid, &task.module_name, &task.hash, &sroot, task.is_module)?;
 
@@ -218,11 +220,11 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
             // nothing
         } else if olean::is_std(&module) {
             if *module == *"Mathlib" || *module == *"Mathlib.Tactic" {
-                return Ok((InvalidImport, Replace(Cow::Owned(format!("Don't import {module} directly. Try using #min_imports for a lighter dependency set.")))));
+                return Ok((InvalidImport, Replace(Cow::Owned(format!("Don't import {module} directly. Try using #min_imports for a lighter dependency set."))), task.tot_size));
             }
             continue;
         } else {
-            return Ok((InvalidImport, Replace(Cow::Owned(format!("{module}: invalid import")))));
+            return Ok((InvalidImport, Replace(Cow::Owned(format!("{module}: invalid import"))), task.tot_size));
         }
         let Entry::Vacant(e) = visited.entry(module) else { continue; };
         let module = unsafe { e.get().get_unchecked(task.uid.len() + 1..) };
@@ -230,10 +232,11 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
         let display_path = unsafe { olean_path.get_unchecked(const { env!("OLEAN_ROOT").len() }..) };
         let olean = match fs::read(&*olean_path) {
             Ok(r) => r,
-            Err(e) => return Ok((InvalidImport, Replace(Cow::Owned(e.to_string())))),
+            Err(e) => return Ok((InvalidImport, Replace(Cow::Owned(e.to_string())), task.tot_size)),
         };
-        let Some(meta) = olean::parse_meta(&olean) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: not a valid olean file"))))) };
-        let Some(imports) = olean::parse_imports(meta) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: cannot parse imports"))))) };
+        let Some(meta) = olean::parse_meta(&olean) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: not a valid olean file"))), task.tot_size)); };
+        let Some(imports) = olean::parse_imports(meta) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: cannot parse imports"))), task.tot_size)); };
+        tot_size += olean.len();
 
         let mut sha256 = Sha256::new();
         sha256.update(&olean);
@@ -247,7 +250,7 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
 
     deposit_main_lean(&task.uid, &task.module_name, &task.const_name, &checker, &sroot)?;
 
-    Ok((Deposited, NoAction))
+    Ok((Deposited, NoAction, tot_size))
 }
 
 #[allow(clippy::significant_drop_tightening)]
@@ -260,9 +263,10 @@ async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdE
     Submission::report_status(sid, Depositing, NoAction, &mut conn).await?;
     drop(conn);
 
-    let (status, action) = tokio::task::spawn_blocking(|| deposit_inner(task, checker)).await??;
+    let (status, action, tot_size) = tokio::task::spawn_blocking(|| deposit_inner(task, checker)).await??;
 
     let mut conn = get_connection().await?;
+    Submission::report_size(sid, tot_size, &mut conn).await?;
     let final_status = if status == Deposited {
         let mut guard = FOOD.lock();
         #[allow(clippy::transmute_undefined_repr)]

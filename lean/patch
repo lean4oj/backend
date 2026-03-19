@@ -1,17 +1,17 @@
 diff --git a/l4judger.c b/l4judger.c
-index e592b1c..bc047cc 100644
+index 6ad1f58..127f6d0 100644
 --- a/l4judger.c
 +++ b/l4judger.c
-@@ -243,7 +243,7 @@ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe
- LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
- lean_object* l_Lean_Language_SnapshotTask_get___redArg(lean_object*);
- LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe_fold___at___00Lean_Language_SnapshotTree_foldM___at___00main_spec__3_spec__7___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+@@ -161,7 +161,7 @@ LEAN_EXPORT lean_object* l_Lean_Name_toStringWithSep___at___00Lean_Name_isVerifi
+ static lean_object* l_main___closed__9;
+ static lean_object* l_MessageAction_toBytes___closed__6;
+ static lean_object* l_main___closed__6;
 -LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object*, lean_object*, lean_object*);
 +lean_object *protect(lean_object*, lean_object*);
- lean_object* l_List_reverse___redArg(lean_object*);
- lean_object* l_String_toName(lean_object*);
- LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object*, lean_object*);
-@@ -3252,14 +3252,14 @@ lean_dec_ref(x_1);
+ LEAN_EXPORT lean_object* l_MessageAction_Append_elim___redArg(lean_object*, lean_object*);
+ LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
+ lean_object* l_Lean_addSearchPathFromEnv(lean_object*);
+@@ -3407,14 +3407,14 @@ lean_dec_ref(x_1);
  return x_8;
  }
  }
@@ -34,25 +34,25 @@ index e592b1c..bc047cc 100644
  LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object* x_1, lean_object* x_2) {
  _start:
  {
-@@ -5443,7 +5443,7 @@ if (lean_is_scalar(x_5)) {
+@@ -5987,7 +5987,7 @@ if (lean_is_scalar(x_5)) {
  }
- lean_ctor_set(x_65, 0, x_23);
- lean_ctor_set(x_65, 1, x_64);
--x_66 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_65, x_28);
-+x_66 = protect(x_65, x_28);
- if (lean_obj_tag(x_66) == 0)
+ lean_ctor_set(x_67, 0, x_23);
+ lean_ctor_set(x_67, 1, x_66);
+-x_68 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_67, x_30);
++x_68 = protect(x_67, x_30);
+ if (lean_obj_tag(x_68) == 0)
  {
- lean_object* x_67; uint8_t x_68; 
-@@ -6476,7 +6476,7 @@ return x_5;
+ lean_object* x_69; uint8_t x_70; 
+@@ -7067,7 +7067,7 @@ return x_5;
  }
  }
  lean_object* initialize_Init(uint8_t builtin);
 -lean_object* initialize_batteries_Batteries_Tactic_OpenPrivate(uint8_t builtin);
 +
- lean_object* initialize_CollectLiterals(uint8_t builtin);
+ lean_object* initialize_CollectUtils(uint8_t builtin);
  lean_object* initialize_Lean_Compiler_ImplementedByAttr(uint8_t builtin);
  lean_object* initialize_Lean_Elab_DefView(uint8_t builtin);
-@@ -6491,9 +6491,9 @@ _G_initialized = true;
+@@ -7082,9 +7082,9 @@ _G_initialized = true;
  res = initialize_Init(builtin);
  if (lean_io_result_is_error(res)) return res;
  lean_dec_ref(res);
@@ -62,6 +62,6 @@ index e592b1c..bc047cc 100644
 +
 +
 +
- res = initialize_CollectLiterals(builtin);
+ res = initialize_CollectUtils(builtin);
  if (lean_io_result_is_error(res)) return res;
  lean_dec_ref(res);

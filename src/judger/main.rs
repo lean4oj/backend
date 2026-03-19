@@ -144,7 +144,7 @@ where
         let mut stdout = child.stdout.take().unwrap();
 
         #[cfg(target_os = "linux")]
-        let (mut has_ac, mut path_bank) = (false, Vec::new());
+        let (mut has_ac, mut path_bank) = (false, hashbrown::HashSet::new());
         // main loop
         while let Ok(status_raw) = stdout.read_u8().await {
             if let Ok(status) = status::Status::try_from(status_raw)
@@ -179,7 +179,7 @@ where
                     128 => {
                         let ret = if let Ok((path, ret)) = verified::run(dirname_arg, &mut stdout).await {
                             #[cfg(target_os = "linux")]
-                            path_bank.push(path);
+                            path_bank.insert(path);
                             u8::from(ret)
                         } else {
                             0

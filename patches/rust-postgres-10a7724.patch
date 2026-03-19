@@ -317,10 +317,10 @@ index b7f11517..91524592 100644
      // client key
      let mut hmac = Hmac::<Sha256>::new_from_slice(&salted_password)
 diff --git a/postgres-types/src/lib.rs b/postgres-types/src/lib.rs
-index 9da20c52..dd1953c1 100644
+index 7b3fa18f..df2d782e 100644
 --- a/postgres-types/src/lib.rs
 +++ b/postgres-types/src/lib.rs
-@@ -756,7 +756,7 @@ simple_from!(bool, bool_from_sql, BOOL);
+@@ -758,7 +758,7 @@ simple_from!(bool, bool_from_sql, BOOL);
  simple_from!(i8, char_from_sql, CHAR);
  simple_from!(i16, int2_from_sql, INT2);
  simple_from!(i32, int4_from_sql, INT4);
@@ -352,10 +352,10 @@ index f4676ae4..fb1d39dc 100644
      }
  
 diff --git a/tokio-postgres/Cargo.toml b/tokio-postgres/Cargo.toml
-index 2d77d982..eb5b1eea 100644
+index 47ad9be3..4fbe25fb 100644
 --- a/tokio-postgres/Cargo.toml
 +++ b/tokio-postgres/Cargo.toml
-@@ -47,7 +47,6 @@ with-time-0_3 = ["postgres-types/with-time-0_3"]
+@@ -48,7 +48,6 @@ with-time-0_3 = ["postgres-types/with-time-0_3"]
  js = ["postgres-protocol/js", "postgres-types/js"]
  
  [dependencies]
@@ -1422,10 +1422,10 @@ index 4106a973..cafa839c 100644
      }
  }
 diff --git a/tokio-postgres/src/lib.rs b/tokio-postgres/src/lib.rs
-index 82bdfdfa..c27370f9 100644
+index a41bb35a..469369cf 100644
 --- a/tokio-postgres/src/lib.rs
 +++ b/tokio-postgres/src/lib.rs
-@@ -122,6 +122,7 @@
+@@ -123,6 +123,7 @@
  //! | `with-time-0_2` | Enable support for the 0.2 version of the `time` crate. | [time](https://crates.io/crates/time/0.2.0) 0.2 | no |
  //! | `with-time-0_3` | Enable support for the 0.3 version of the `time` crate. | [time](https://crates.io/crates/time/0.3.0) 0.3 | no |
  #![warn(rust_2018_idioms, clippy::all, missing_docs)]
