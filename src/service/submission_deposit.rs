@@ -171,7 +171,7 @@ fn deposit_one(
     hash: &[u8; 32],
     sroot: &str,
     is_module: bool,
-) -> io::Result<()> {
+) -> io::Result<usize> {
     let mut src = olean::𝑔𝑒𝑡_𝑜𝑙𝑒𝑎𝑛_𝑝𝑎𝑡ℎ(uid, module);
     let dest = cache_path(hash);
 
@@ -190,27 +190,31 @@ fn deposit_one(
 
     std::os::unix::fs::symlink(&*f1, &*f2)?;
 
+    let mut tot_size = 0;
     if is_module {
         let l = src.len();
         src.push_str(".private");
         deposit_module_inner(&src, sroot)?;
+        tot_size += fs::metadata(&src)?.len() as usize;
 
         unsafe { src.as_mut_vec().set_len(l); }
         src.push_str(".server");
         deposit_module_inner(&src, sroot)?;
+        tot_size += fs::metadata(&src)?.len() as usize;
 
         unsafe { src.as_mut_vec().set_len(l - 5); }
         src.push_str("ir");
         deposit_module_inner(&src, sroot)?;
+        tot_size += fs::metadata(&src)?.len() as usize;
     }
-    Ok(())
+    Ok(tot_size)
 }
 
 fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, SubmissionMessageAction, usize)> {
     let sroot = submission_path(task.sid)?;
     let mut tot_size = task.tot_size;
 
-    deposit_one(&task.uid, &task.module_name, &task.hash, &sroot, task.is_module)?;
+    tot_size += deposit_one(&task.uid, &task.module_name, &task.hash, &sroot, task.is_module)?;
 
     let mut queue = VecDeque::<CompactString>::from(task.imports);
     let mut visited = HashSet::<CompactString>::new();
@@ -242,7 +246,7 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
         sha256.update(&olean);
         let hash = sha256.finish();
 
-        deposit_one(&task.uid, module, &hash, &sroot, meta.is_module())?;
+        tot_size += deposit_one(&task.uid, module, &hash, &sroot, meta.is_module())?;
 
         e.insert();
         imports.into_iter().filter(|import| !visited.contains(import)).collect_into(&mut queue);
