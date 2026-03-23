@@ -16,6 +16,7 @@ pub async fn get(sender: &mut SendRequest<String>) -> hyper::Result<serde_json::
         .body(format!(r#"{{"uid":"{USERNAME}","password":"{PASSWORD}"}}"#))
         .unwrap();
 
+    sender.ready().await?;
     let res = sender
         .try_send_request(req)
         .await

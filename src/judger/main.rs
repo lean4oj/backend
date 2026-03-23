@@ -57,6 +57,7 @@ async fn report(
         .body(serde_json::to_string(&s)?)
         .unwrap();
 
+    sender.ready().await.map_err(io::Error::other)?;
     let res = sender.try_send_request(req).await
         .map_err(|e| io::Error::other(e.into_error()))?;
 
@@ -172,7 +173,9 @@ where
                 };
                 #[cfg(target_os = "linux")]
                 (has_ac = has_ac || status == status::Status::Accepted);
-                let _ = report(task.sid, status, message, answer.as_deref(), &mut sender).await;
+                if let Err(e) = report(task.sid, status, message, answer.as_deref(), &mut sender).await {
+                    tracing::warn!("Failed to report status: {e:?}");
+                }
             } else {
                 #[allow(clippy::single_match, unused_variables, reason = "for future extension")]
                 match status_raw {

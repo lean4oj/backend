@@ -27,7 +27,7 @@ where
     }
     cfg_select! {
         target_os = "linux" => {
-            tracing::info!(target: "replay-memorizer", "check file {buf}");
+            tracing::debug!(target: "replay-memorizer", "check file {buf}");
             let res = unsafe { libc::getxattr(buf.as_ptr().cast(), XATTR_NAME.as_ptr(), core::ptr::null_mut(), 0) };
             if res >= 0 {
                 Ok((buf, true))
