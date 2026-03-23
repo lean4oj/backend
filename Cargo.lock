@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.8"
-source = "git+https://github.com/tokio-rs/axum#da26db264f811e73485f1db1c134d374e8f99464"
+source = "git+https://github.com/tokio-rs/axum#907ba35b5bcf587ac30c21906de7d057449aa696"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#da26db264f811e73485f1db1c134d374e8f99464"
+source = "git+https://github.com/tokio-rs/axum#907ba35b5bcf587ac30c21906de7d057449aa696"
 dependencies = [
  "bytes",
  "futures-core",
@@ -663,9 +663,9 @@ checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
 name = "itoa"
-version = "1.0.17"
+version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
+checksum = "8f42a60cbdf9a97f5d2305f08a87dc4e09308d1276d28c869c684d7777685682"
 
 [[package]]
 name = "jobserver"

@@ -98,7 +98,8 @@ impl const Default for Misc {
             disabled_emoji_in_math: &["↔", "↪"],
             lean_versions: SliceMap::from_slice([
                 ("4.28.0", "4.28.0 (latest stable)"),
-                ("4.29.0-rc6", "4.29.0-rc6 (latest)"),
+                ("4.29.0-rc7", "4.29.0-rc7 (latest)"),
+                ("4.29.0-rc6", "4.29.0-rc6"),
                 ("4.29.0-rc5", "4.29.0-rc5 (w/o mathlib)"),
                 ("4.29.0-rc4", "4.29.0-rc4"),
                 ("4.29.0-rc3", "4.29.0-rc3"),
