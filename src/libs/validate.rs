@@ -136,6 +136,5 @@ pub fn check_email<'a>(email: &'a str) -> Option<(Cow<'a, str>, &'a str)> {
         }
     };
 
-    #[allow(clippy::unwrap_used)]
     Some((local_part_1, domain))
 }

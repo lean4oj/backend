@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index b0a63f8..e356b1d 100644
+index 76b92e7..7b86709 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -127,7 +127,7 @@ pre-release-replacements = [

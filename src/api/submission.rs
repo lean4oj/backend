@@ -30,7 +30,7 @@ use crate::{
         auth::Session_,
         constants::{APPLICATION_JSON_UTF_8, BYTES_EMPTY, BYTES_NULL},
         db::{DBError, DBResult, ToSqlIter, get_connection},
-        judger::task::{LeanAxiom, Task},
+        judger::task::{LeanAxiom, Task as JudgeTask},
         olean, privilege,
         request::{JsonReqult, Repult},
         response::JkmxJsonResponse,
@@ -287,11 +287,11 @@ async fn query_submission(
             submitter,
             locale: locale.as_deref(),
         };
-        serde_json::to_writer(unsafe { res.as_mut_vec() }, &meta).unwrap();
+        serde_json::to_writer(unsafe { res.as_mut_vec() }, &meta)?;
         res.push(',');
     }
     if res.len() > 16 { res.pop(); }
-    write!(&mut res, r#"],"hasSmallerId":{has_left},"hasLargerId":{has_right}}}"#).unwrap();
+    write!(&mut res, r#"],"hasSmallerId":{has_left},"hasLargerId":{has_right}}}"#)?;
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
@@ -405,7 +405,7 @@ async fn query_submission_statistics(
             submitter: user,
             locale: locale.as_deref(),
         };
-        serde_json::to_writer(unsafe { res.as_mut_vec() }, &meta).unwrap();
+        serde_json::to_writer(unsafe { res.as_mut_vec() }, &meta)?;
         res.push(',');
         problem = meta.problem;
     }
@@ -416,22 +416,25 @@ async fn query_submission_statistics(
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct SingleSubmissionRequest {
+struct RejudgeSubmissionRequest {
     submission_id: u32,
+    refetch: bool,
 }
 
+#[allow(clippy::too_many_lines)]
 async fn rejudge_submission(
     Session_(session): Session_,
-    req: JsonReqult<SingleSubmissionRequest>,
+    req: JsonReqult<RejudgeSubmissionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.submissions natural join lean4oj.problems where sid = $1 and status::integer >= 7";
     const SQL: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.submissions natural join lean4oj.problems where sid = $1 and status::integer >= 7 and owner = $2";
     const SQL_REJUDGE: &str = "update lean4oj.submissions set lean_toolchain = $1, status = 0::\"char\", message = '', answer_hash = $2, answer_obj = '' where sid = $3";
+    const SQL_REJUDGE_NOREFETCH: &str = "update lean4oj.submissions set status = $1, message = '', answer_obj = '' where sid = $2";
     const SQL_REJUDGE_FAIL: &str = "update lean4oj.submissions set status = '\x07', message = $1 where sid = $2";
     const SQL_REDUCE_AC: &str = "update lean4oj.problems set pac = pac - 1 where pid = $1";
     const SQL_USER_AC: &str = "update lean4oj.users set ac = (select count(distinct pid) from lean4oj.submissions where submitter = $1 and status = '\x09') where uid = $1";
 
-    let Json(SingleSubmissionRequest { submission_id }) = req?;
+    let Json(RejudgeSubmissionRequest { submission_id, refetch }) = req?;
 
     let mut conn = get_connection().await?;
     exs!(user, &session, &mut conn);
@@ -449,6 +452,35 @@ async fn rejudge_submission(
     };
 
     let is_ac = submission.status == SubmissionStatus::Accepted;
+
+    if !refetch {
+        let mut version4 = CompactString::with_capacity(submission.lean_toolchain.len() + 1);
+        version4.push('4');
+        version4.push_str(&submission.lean_toolchain);
+
+        let submission_deposit::Jb { axioms, .. } = serde_json::from_slice(&problem.jb)?;
+        #[allow(clippy::transmute_undefined_repr)]
+        let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
+
+        let stmt = conn.prepare_static(SQL_REJUDGE_NOREFETCH.into()).await?;
+
+        let status = submission_deposit::notice(JudgeTask {
+            sid: submission.sid,
+            version: version4,
+            axioms,
+        });
+
+        let n = conn.execute(&stmt, &[&(status as u8).cast_signed(), &submission_id.cast_signed()]).await?;
+        if n != 1 { return private::err(); }
+        if is_ac {
+            let stmt_reduce_ac = conn.prepare_static(SQL_REDUCE_AC.into()).await?;
+            conn.execute(&stmt_reduce_ac, &[&submission.pid]).await?;
+            let stmt_user_ac = conn.prepare_static(SQL_USER_AC.into()).await?;
+            conn.execute(&stmt_user_ac, &[&&*submission.submitter]).await?;
+        }
+
+        return JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY);
+    }
 
     /******** re-fetch files ********/
     let olean_path = olean::𝑔𝑒𝑡_𝑜𝑙𝑒𝑎𝑛_𝑝𝑎𝑡ℎ(&submission.submitter, &submission.module_name);
@@ -515,6 +547,12 @@ async fn rejudge_submission(
     submission_deposit::transmit(task)?;
 
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SingleSubmissionRequest {
+    submission_id: u32,
 }
 
 async fn cancel_submission(
@@ -678,7 +716,7 @@ async fn judger_get_task_inner(req: JsonReqult<JudgerGetTaskRequest>) -> JkmxJso
 
     Submission::report_status(sid, SubmissionStatus::JudgerReceived, SubmissionMessageAction::NoAction, &mut conn).await?;
 
-    let res = Task { sid, version, axioms };
+    let res = JudgeTask { sid, version, axioms };
     JkmxJsonResponse::Response(StatusCode::OK, serde_json::to_vec(&res)?.into())
 }
 

@@ -41,8 +41,8 @@ use crate::{
 
 #[derive(Deserialize)]
 pub struct Jb {
-    axioms: SmallVec<[LeanAxiom; 4]>,
-    checker: String,
+    pub axioms: SmallVec<[LeanAxiom; 4]>,
+    pub checker: String,
 }
 
 pub struct Task {
@@ -258,6 +258,22 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
 }
 
 #[allow(clippy::significant_drop_tightening)]
+pub fn notice(mut task: JudgeTask) -> SubmissionStatus {
+    let mut guard = FOOD.lock();
+    loop {
+        let n = guard.len();
+        if n == 0 { return Deposited; }
+        let idx = rand::random_range(..n);
+        let sender = guard.swap_remove(idx);
+        match sender.send(task) {
+            Ok(()) => return JudgerReceived,
+            Err(r) => task = r,
+        }
+        tracing::info!("can't send to channel #{idx}");
+        // next loop
+    }
+}
+
 async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdError> {
     let Jb { axioms, checker } = match serde_json::from_slice(&task.checker) {
         Ok(r) => r,
@@ -272,26 +288,12 @@ async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdE
     let mut conn = get_connection().await?;
     Submission::report_size(sid, tot_size, &mut conn).await?;
     let final_status = if status == Deposited {
-        let mut guard = FOOD.lock();
         #[allow(clippy::transmute_undefined_repr)]
         let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
         let mut version4 = CompactString::with_capacity(version.len() + 1);
         version4.push('4');
         version4.push_str(version);
-        loop {
-            let n = guard.len();
-            if n == 0 { break Deposited; }
-            let idx = rand::random_range(..n);
-            let sender = guard.swap_remove(idx);
-            let task = JudgeTask {
-                sid,
-                version: version4.clone(),
-                axioms: axioms.clone(),
-            };
-            if sender.send(task).is_ok() { break JudgerReceived; }
-            tracing::info!("can't send to channel #{idx}");
-            // next loop
-        }
+        notice(JudgeTask { sid, version: version4, axioms })
     } else {
         status
     };

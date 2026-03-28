@@ -12,7 +12,7 @@ bb8-postgres = { version = "0.9.0", features = ["with-serde_json-1"] }
 bytes = { version = "1.11.1", features = ["serde"] }
 compact_str = { version = "0.9.0", features = ["serde"] }
 dashmap = { version = "7.0.0-rc2", features = ["inline-more", "raw-api"] }
-env_logger = { version = "0.11.9", default-features = false, features = ["auto-color", "humantime"] }
+env_logger = { version = "0.11.10", default-features = false, features = ["auto-color", "humantime"] }
 form_urlencoded = "1.2.2"
 futures-util = { version = "0.3.32", features = ["unstable"] }
 hashbrown = { version = "0.16.1", features = ["nightly", "serde"] }

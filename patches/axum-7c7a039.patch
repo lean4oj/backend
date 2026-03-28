@@ -851,10 +851,10 @@ index cee6b46f..77b70d4b 100644
          serde_path_to_error::deserialize(&mut deserializer)
              .map_err(make_rejection)
 diff --git a/axum/src/lib.rs b/axum/src/lib.rs
-index 03cd9979..6d6c56b2 100644
+index 3e3b4bd5..a117993f 100644
 --- a/axum/src/lib.rs
 +++ b/axum/src/lib.rs
-@@ -430,6 +430,7 @@
+@@ -477,6 +477,7 @@
  #![cfg_attr(docsrs, feature(doc_cfg))]
  #![cfg_attr(test, allow(clippy::float_cmp))]
  #![cfg_attr(not(test), warn(clippy::print_stdout, clippy::dbg_macro))]
@@ -862,7 +862,7 @@ index 03cd9979..6d6c56b2 100644
  
  #[macro_use]
  pub(crate) mod macros;
-@@ -479,9 +480,9 @@ pub use axum_core::{BoxError, Error, RequestExt, RequestPartsExt};
+@@ -526,9 +527,9 @@ pub use axum_core::{BoxError, Error, RequestExt, RequestPartsExt};
  #[cfg(feature = "macros")]
  pub use axum_macros::{debug_handler, debug_middleware};
  
