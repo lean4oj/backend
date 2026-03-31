@@ -7,8 +7,10 @@ use tokio_postgres::types::{FromSql, Type, accepts};
 pub enum Status {
     Pending,
 
-    Depositing,
-    Deposited,
+    #[serde(alias = "Depositing")]
+    Delivering,
+    #[serde(alias = "Deposited")]
+    Delivered,
     JudgerReceived,
     TypeChecking,
     AxiomChecking,

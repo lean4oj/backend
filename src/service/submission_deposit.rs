@@ -254,7 +254,7 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
 
     deposit_main_lean(&task.uid, &task.module_name, &task.const_name, &checker, &sroot)?;
 
-    Ok((Deposited, NoAction, tot_size))
+    Ok((Delivered, NoAction, tot_size))
 }
 
 #[allow(clippy::significant_drop_tightening)]
@@ -262,7 +262,7 @@ pub fn notice(mut task: JudgeTask) -> SubmissionStatus {
     let mut guard = FOOD.lock();
     loop {
         let n = guard.len();
-        if n == 0 { return Deposited; }
+        if n == 0 { return Delivered; }
         let idx = rand::random_range(..n);
         let sender = guard.swap_remove(idx);
         match sender.send(task) {
@@ -280,14 +280,14 @@ async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdE
         Err(e) => return Err(e.into()),
     };
     let mut conn = get_connection().await?;
-    Submission::report_status(sid, Depositing, NoAction, &mut conn).await?;
+    Submission::report_status(sid, Delivering, NoAction, &mut conn).await?;
     drop(conn);
 
     let (status, action, tot_size) = tokio::task::spawn_blocking(|| deposit_inner(task, checker)).await??;
 
     let mut conn = get_connection().await?;
     Submission::report_size(sid, tot_size, &mut conn).await?;
-    let final_status = if status == Deposited {
+    let final_status = if status == Delivered {
         #[allow(clippy::transmute_undefined_repr)]
         let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
         let mut version4 = CompactString::with_capacity(version.len() + 1);
