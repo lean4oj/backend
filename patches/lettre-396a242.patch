@@ -1,0 +1,349 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 9956900..ef4a7fe 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -56,7 +56,6 @@ boring = { version = "5", optional = true }
+ # async
+ futures-io = { version = "0.3.7", optional = true }
+ futures-util = { version = "0.3.7", default-features = false, features = ["io"], optional = true }
+-async-trait = { version = "0.1", optional = true }
+ 
+ ## async-std
+ async-std = { version = "1.8", optional = true }
+@@ -122,11 +121,11 @@ rustls-tls = ["webpki-roots", "rustls", "ring"]
+ boring-tls = ["dep:boring"]
+ 
+ # async
+-async-std1 = ["dep:async-std", "dep:async-trait", "dep:futures-io", "dep:futures-util"]
++async-std1 = ["dep:async-std", "dep:futures-io", "dep:futures-util"]
+ async-std1-rustls = ["async-std1", "rustls", "dep:futures-rustls"]
+ # deprecated
+ async-std1-rustls-tls = ["async-std1-rustls", "rustls-tls"]
+-tokio1 = ["dep:tokio1_crate", "dep:async-trait", "dep:futures-io", "dep:futures-util"]
++tokio1 = ["dep:tokio1_crate", "dep:futures-io", "dep:futures-util"]
+ tokio1-native-tls = ["tokio1", "native-tls", "dep:tokio1_native_tls_crate"]
+ tokio1-rustls = ["tokio1", "rustls", "dep:tokio1_rustls"]
+ # deprecated
+diff --git a/src/address/types.rs b/src/address/types.rs
+index b43ed81..cf64242 100644
+--- a/src/address/types.rs
++++ b/src/address/types.rs
+@@ -113,6 +113,21 @@ impl Address {
+         }
+     }
+ 
++    /// Creates a new email address from a serialized string, without validation.
++    ///
++    /// # Danger
++    ///
++    /// Use this method only if you are completely sure your input is _known_ and valid, but rejected by the parser.
++    /// Do not use this method if the contents of `serialized` are unknown and/or obtained from user input.
++    ///
++    /// Prefer using [`Address::try_from()`] instead if possible.
++    pub unsafe fn new_unchecked(serialized: String, at_start: usize) -> Self {
++        Address {
++            serialized,
++            at_start,
++        }
++    }
++
+     /// Gets the user portion of the `Address`.
+     ///
+     /// # Examples
+@@ -255,6 +270,13 @@ impl AsRef<OsStr> for Address {
+     }
+ }
+ 
++impl From<Address> for String {
++    #[inline]
++    fn from(value: Address) -> Self {
++        value.serialized
++    }
++}
++
+ fn check_address(val: &str) -> Result<usize, AddressError> {
+     let mut parts = val.rsplitn(2, '@');
+     let domain = parts.next().ok_or(AddressError::MissingParts)?;
+diff --git a/src/executor.rs b/src/executor.rs
+index 98f92b1..d61f321 100644
+--- a/src/executor.rs
++++ b/src/executor.rs
+@@ -6,7 +6,6 @@ use std::path::Path;
+ #[cfg(feature = "smtp-transport")]
+ use std::time::Duration;
+ 
+-use async_trait::async_trait;
+ #[cfg(all(feature = "smtp-transport", feature = "async-std1"))]
+ use futures_util::future::BoxFuture;
+ 
+@@ -40,7 +39,6 @@ use crate::transport::smtp::extension::ClientId;
+ /// [`AsyncSendmailTransport`]: crate::AsyncSendmailTransport
+ /// [`AsyncFileTransport`]: crate::AsyncFileTransport
+ #[cfg_attr(docsrs, doc(cfg(any(feature = "tokio1", feature = "async-std1"))))]
+-#[async_trait]
+ pub trait Executor: Debug + Send + Sync + 'static + private::Sealed {
+     #[cfg(feature = "smtp-transport")]
+     #[allow(private_bounds)]
+@@ -61,28 +59,27 @@ pub trait Executor: Debug + Send + Sync + 'static + private::Sealed {
+ 
+     #[doc(hidden)]
+     #[cfg(feature = "smtp-transport")]
+-    async fn connect(
++    fn connect(
+         hostname: &str,
+         port: u16,
+         timeout: Option<Duration>,
+         hello_name: &ClientId,
+         tls: &Tls,
+-    ) -> Result<AsyncSmtpConnection, Error>;
++    ) -> impl Future<Output = Result<AsyncSmtpConnection, Error>> + Send;
+ 
+     #[doc(hidden)]
+     #[cfg(feature = "file-transport-envelope")]
+-    async fn fs_read(path: &Path) -> IoResult<Vec<u8>>;
++    fn fs_read(path: &Path) -> impl Future<Output = IoResult<Vec<u8>>> + Send;
+ 
+     #[doc(hidden)]
+     #[cfg(feature = "file-transport")]
+-    async fn fs_write(path: &Path, contents: &[u8]) -> IoResult<()>;
++    fn fs_write(path: &Path, contents: &[u8]) -> impl Future<Output = IoResult<()>> + Send;
+ }
+ 
+ #[doc(hidden)]
+ #[cfg(feature = "smtp-transport")]
+-#[async_trait]
+ pub(crate) trait SpawnHandle: Debug + Send + Sync + 'static + private::Sealed {
+-    async fn shutdown(&self);
++    fn shutdown(&self) -> impl Future<Output = ()> + Send;
+ }
+ 
+ /// Async [`Executor`] using `tokio` `1.x`
+@@ -100,7 +97,6 @@ pub(crate) trait SpawnHandle: Debug + Send + Sync + 'static + private::Sealed {
+ #[derive(Debug)]
+ pub struct Tokio1Executor;
+ 
+-#[async_trait]
+ #[cfg(feature = "tokio1")]
+ impl Executor for Tokio1Executor {
+     #[cfg(feature = "smtp-transport")]
+@@ -161,21 +157,20 @@ impl Executor for Tokio1Executor {
+     }
+ 
+     #[cfg(feature = "file-transport-envelope")]
+-    async fn fs_read(path: &Path) -> IoResult<Vec<u8>> {
+-        tokio1_crate::fs::read(path).await
++    fn fs_read(path: &Path) -> impl Future<Output = IoResult<Vec<u8>>> {
++        tokio1_crate::fs::read(path)
+     }
+ 
+     #[cfg(feature = "file-transport")]
+-    async fn fs_write(path: &Path, contents: &[u8]) -> IoResult<()> {
+-        tokio1_crate::fs::write(path, contents).await
++    fn fs_write(path: &Path, contents: &[u8]) -> impl Future<Output = IoResult<()>> {
++        tokio1_crate::fs::write(path, contents)
+     }
+ }
+ 
+ #[cfg(all(feature = "smtp-transport", feature = "tokio1"))]
+-#[async_trait]
+ impl SpawnHandle for tokio1_crate::task::JoinHandle<()> {
+-    async fn shutdown(&self) {
+-        self.abort();
++    fn shutdown(&self) -> core::future::Ready<()> {
++        core::future::ready(self.abort())
+     }
+ }
+ 
+@@ -194,7 +189,6 @@ impl SpawnHandle for tokio1_crate::task::JoinHandle<()> {
+ #[derive(Debug)]
+ pub struct AsyncStd1Executor;
+ 
+-#[async_trait]
+ #[cfg(feature = "async-std1")]
+ impl Executor for AsyncStd1Executor {
+     #[cfg(feature = "smtp-transport")]
+@@ -257,21 +251,20 @@ impl Executor for AsyncStd1Executor {
+     }
+ 
+     #[cfg(feature = "file-transport-envelope")]
+-    async fn fs_read(path: &Path) -> IoResult<Vec<u8>> {
+-        async_std::fs::read(path).await
++    fn fs_read(path: &Path) -> impl Future<Output = IoResult<Vec<u8>>> {
++        async_std::fs::read(path)
+     }
+ 
+     #[cfg(feature = "file-transport")]
+-    async fn fs_write(path: &Path, contents: &[u8]) -> IoResult<()> {
+-        async_std::fs::write(path, contents).await
++    fn fs_write(path: &Path, contents: &[u8]) -> impl Future<Output = IoResult<()>> {
++        async_std::fs::write(path, contents)
+     }
+ }
+ 
+ #[cfg(all(feature = "smtp-transport", feature = "async-std1"))]
+-#[async_trait]
+ impl SpawnHandle for futures_util::future::AbortHandle {
+-    async fn shutdown(&self) {
+-        self.abort();
++    fn shutdown(&self) -> core::future::Ready<()> {
++        core::future::ready(self.abort())
+     }
+ }
+ 
+diff --git a/src/lib.rs b/src/lib.rs
+index 6493c64..d883747 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -237,6 +237,7 @@
+     // Rust 1.86: clippy::unnecessary_semicolon,
+ )]
+ #![cfg_attr(docsrs, feature(doc_cfg))]
++#![feature(io_const_error)]
+ 
+ #[cfg(not(lettre_ignore_tls_mismatch))]
+ mod compiletime_checks {
+diff --git a/src/transport/file/mod.rs b/src/transport/file/mod.rs
+index 152502f..0862046 100644
+--- a/src/transport/file/mod.rs
++++ b/src/transport/file/mod.rs
+@@ -149,8 +149,6 @@ use std::{
+     str,
+ };
+ 
+-#[cfg(any(feature = "async-std1", feature = "tokio1"))]
+-use async_trait::async_trait;
+ use uuid::Uuid;
+ 
+ pub use self::error::Error;
+@@ -316,7 +314,6 @@ impl Transport for FileTransport {
+ }
+ 
+ #[cfg(any(feature = "async-std1", feature = "tokio1"))]
+-#[async_trait]
+ impl<E> AsyncTransport for AsyncFileTransport<E>
+ where
+     E: Executor,
+diff --git a/src/transport/mod.rs b/src/transport/mod.rs
+index 7d19590..7e63af0 100644
+--- a/src/transport/mod.rs
++++ b/src/transport/mod.rs
+@@ -103,9 +103,6 @@
+ //! [`StubTransport`]: crate::transport::stub::StubTransport
+ //! [`AsyncStubTransport`]: crate::transport::stub::AsyncStubTransport
+ 
+-#[cfg(any(feature = "async-std1", feature = "tokio1"))]
+-use async_trait::async_trait;
+-
+ use crate::Envelope;
+ #[cfg(feature = "builder")]
+ use crate::Message;
+@@ -149,7 +146,6 @@ pub trait Transport {
+ /// Async Transport method for emails
+ #[cfg(any(feature = "tokio1", feature = "async-std1"))]
+ #[cfg_attr(docsrs, doc(cfg(any(feature = "tokio1", feature = "async-std1"))))]
+-#[async_trait]
+ pub trait AsyncTransport {
+     /// Response produced by the Transport
+     type Ok;
+diff --git a/src/transport/sendmail/mod.rs b/src/transport/sendmail/mod.rs
+index e9c0c5e..78dcbe4 100644
+--- a/src/transport/sendmail/mod.rs
++++ b/src/transport/sendmail/mod.rs
+@@ -82,9 +82,6 @@ use std::{
+     process::{Command, Stdio},
+ };
+ 
+-#[cfg(any(feature = "async-std1", feature = "tokio1"))]
+-use async_trait::async_trait;
+-
+ pub use self::error::Error;
+ #[cfg(feature = "async-std1")]
+ use crate::AsyncStd1Executor;
+@@ -256,7 +253,6 @@ impl Transport for SendmailTransport {
+ }
+ 
+ #[cfg(feature = "async-std1")]
+-#[async_trait]
+ impl AsyncTransport for AsyncSendmailTransport<AsyncStd1Executor> {
+     type Ok = ();
+     type Error = Error;
+@@ -291,7 +287,6 @@ impl AsyncTransport for AsyncSendmailTransport<AsyncStd1Executor> {
+ }
+ 
+ #[cfg(feature = "tokio1")]
+-#[async_trait]
+ impl AsyncTransport for AsyncSendmailTransport<Tokio1Executor> {
+     type Ok = ();
+     type Error = Error;
+diff --git a/src/transport/smtp/async_transport.rs b/src/transport/smtp/async_transport.rs
+index 12a5d60..099d188 100644
+--- a/src/transport/smtp/async_transport.rs
++++ b/src/transport/smtp/async_transport.rs
+@@ -6,7 +6,6 @@ use std::{
+     time::Duration,
+ };
+ 
+-use async_trait::async_trait;
+ 
+ #[cfg(feature = "pool")]
+ use super::PoolConfig;
+@@ -63,7 +62,6 @@ pub struct AsyncSmtpTransport<E: Executor> {
+ }
+ 
+ #[cfg(feature = "tokio1")]
+-#[async_trait]
+ impl AsyncTransport for AsyncSmtpTransport<Tokio1Executor> {
+     type Ok = Response;
+     type Error = Error;
+@@ -87,7 +85,6 @@ impl AsyncTransport for AsyncSmtpTransport<Tokio1Executor> {
+ }
+ 
+ #[cfg(feature = "async-std1")]
+-#[async_trait]
+ impl AsyncTransport for AsyncSmtpTransport<AsyncStd1Executor> {
+     type Ok = Response;
+     type Error = Error;
+diff --git a/src/transport/smtp/client/async_net.rs b/src/transport/smtp/client/async_net.rs
+index d3612e0..1616743 100644
+--- a/src/transport/smtp/client/async_net.rs
++++ b/src/transport/smtp/client/async_net.rs
+@@ -173,7 +173,7 @@ impl AsyncNetworkStream {
+                         Ok(Ok(stream)) => return Ok(stream),
+                         Ok(Err(err)) => last_err = Some(err),
+                         Err(_) => {
+-                            last_err = Some(io::Error::new(
++                            last_err = Some(io::const_error!(
+                                 io::ErrorKind::TimedOut,
+                                 "connection timed out",
+                             ));
+@@ -226,7 +226,7 @@ impl AsyncNetworkStream {
+                     Ok(Ok(stream)) => return Ok(stream),
+                     Ok(Err(err)) => last_err = Some(err),
+                     Err(_) => {
+-                        last_err = Some(io::Error::new(
++                        last_err = Some(io::const_error!(
+                             io::ErrorKind::TimedOut,
+                             "connection timed out",
+                         ));
+diff --git a/src/transport/stub/mod.rs b/src/transport/stub/mod.rs
+index 45a533e..9a5b51a 100644
+--- a/src/transport/stub/mod.rs
++++ b/src/transport/stub/mod.rs
+@@ -46,9 +46,6 @@ use std::{
+     sync::{Arc, Mutex},
+ };
+ 
+-#[cfg(any(feature = "tokio1", feature = "async-std1"))]
+-use async_trait::async_trait;
+-
+ #[cfg(any(feature = "tokio1", feature = "async-std1"))]
+ use crate::AsyncTransport;
+ use crate::{Transport, address::Envelope};
+@@ -163,7 +160,6 @@ impl Transport for StubTransport {
+ }
+ 
+ #[cfg(any(feature = "tokio1", feature = "async-std1"))]
+-#[async_trait]
+ impl AsyncTransport for AsyncStubTransport {
+     type Ok = ();
+     type Error = Error;

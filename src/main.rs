@@ -16,12 +16,13 @@
     const_index,
     const_option_ops,
     // const_result_trait_fn,
+    // const_slice_make_iter,
     const_trait_impl,
     // core_intrinsics,
     // coroutine_clone,
     // coroutine_trait,
     // coroutines,
-    // cow_is_borrowed,
+    cow_is_borrowed,
     // debug_closure_helpers,
     default_field_values,
     deref_patterns,
@@ -133,6 +134,7 @@ async fn main() -> std::io::Result<!> {
 
     libs::auth::init();
     libs::db::init_db().await;
+    libs::email::init_email();
     libs::emoji::init();
     libs::logger::init();
     libs::olean::init();

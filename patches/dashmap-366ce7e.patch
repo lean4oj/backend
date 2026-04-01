@@ -11,6 +11,28 @@ index 946e9e2..e500ff2 100644
  serde = { version = "1.0.217", optional = true, features = ["derive"] }
  cfg-if = "1.0.0"
  rayon = { version = "1.10.0", optional = true }
+diff --git a/src/lib.rs b/src/lib.rs
+index 2a9c620..f9bd6df 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -899,7 +899,7 @@ impl<'a, K: 'a + Eq + Hash, V: 'a, S: BuildHasher + Clone> DashMap<K, V, S> {
+     /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+     pub fn entry_ref<'q, Q>(&'a self, key: &'q Q) -> EntryRef<'a, 'q, K, Q, V>
+     where
+-        Q: Hash + Equivalent<K>,
++        Q: Hash + Equivalent<K> + ?Sized,
+     {
+         self._entry_ref(key)
+     }
+@@ -1199,7 +1199,7 @@ impl<'a, K: 'a + Eq + Hash, V: 'a, S: 'a + BuildHasher + Clone> DashMap<K, V, S>
+ 
+     fn _entry_ref<'q, Q>(&'a self, key: &'q Q) -> EntryRef<'a, 'q, K, Q, V>
+     where
+-        Q: Hash + Equivalent<K>,
++        Q: Hash + Equivalent<K> + ?Sized,
+     {
+         let hash = self.hash_u64(&key);
+ 
 diff --git a/src/mapref/entry.rs b/src/mapref/entry.rs
 index 6edf542..03dfc3a 100644
 --- a/src/mapref/entry.rs
@@ -29,3 +51,48 @@ index 6edf542..03dfc3a 100644
      pub fn key(&self) -> &K {
          &self.entry.get().0
      }
+diff --git a/src/mapref/entry_ref.rs b/src/mapref/entry_ref.rs
+index da8e7c2..e00a643 100644
+--- a/src/mapref/entry_ref.rs
++++ b/src/mapref/entry_ref.rs
+@@ -6,7 +6,7 @@ use core::hash::Hash;
+ use std::mem;
+ 
+ /// Entry with a borrowed key.
+-pub enum EntryRef<'a, 'q, K, Q, V> {
++pub enum EntryRef<'a, 'q, K, Q: ?Sized, V> {
+     Occupied(OccupiedEntryRef<'a, 'q, K, Q, V>),
+     Vacant(VacantEntryRef<'a, 'q, K, Q, V>),
+ }
+@@ -114,13 +114,13 @@ impl<'a, 'q, K: Eq + Hash + From<&'q Q>, Q, V> EntryRef<'a, 'q, K, Q, V> {
+     }
+ }
+ 
+-pub struct VacantEntryRef<'a, 'q, K, Q, V> {
++pub struct VacantEntryRef<'a, 'q, K, Q: ?Sized, V> {
+     shard: RwLockWriteGuardDetached<'a>,
+     entry: hash_table::VacantEntry<'a, (K, V)>,
+     key: &'q Q,
+ }
+ 
+-impl<'a, 'q, K: Eq + Hash, Q, V> VacantEntryRef<'a, 'q, K, Q, V> {
++impl<'a, 'q, K: Eq + Hash, Q: ?Sized, V> VacantEntryRef<'a, 'q, K, Q, V> {
+     pub(crate) fn new(
+         shard: RwLockWriteGuardDetached<'a>,
+         key: &'q Q,
+@@ -162,13 +162,13 @@ impl<'a, 'q, K: Eq + Hash, Q, V> VacantEntryRef<'a, 'q, K, Q, V> {
+     }
+ }
+ 
+-pub struct OccupiedEntryRef<'a, 'q, K, Q, V> {
++pub struct OccupiedEntryRef<'a, 'q, K, Q: ?Sized, V> {
+     shard: RwLockWriteGuardDetached<'a>,
+     entry: hash_table::OccupiedEntry<'a, (K, V)>,
+     key: &'q Q,
+ }
+ 
+-impl<'a, 'q, K: Eq + Hash, Q, V> OccupiedEntryRef<'a, 'q, K, Q, V> {
++impl<'a, 'q, K: Eq + Hash, Q: ?Sized, V> OccupiedEntryRef<'a, 'q, K, Q, V> {
+     pub(crate) fn new(
+         shard: RwLockWriteGuardDetached<'a>,
+         key: &'q Q,

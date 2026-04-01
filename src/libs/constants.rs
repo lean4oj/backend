@@ -32,5 +32,7 @@ pub const GLOBAL_INTERVAL: Duration = Duration::from_mins(
 );
 
 pub const SESSION_EXPIRE: Duration = Duration::from_hours(1);
+pub const VERIFY_EXPIRE: Duration = Duration::from_mins(15);
+pub const VERIFY_RESEND: Duration = Duration::from_mins(3);
 
 pub const PASSWORD_LENGTH: usize = 43;

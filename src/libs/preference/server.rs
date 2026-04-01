@@ -119,7 +119,6 @@ impl const Default for Misc {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreferenceConfig {
-    site_name: &'static str,
     security: Security,
     pagination: Pagination,
     misc: Misc,
@@ -128,7 +127,6 @@ pub struct PreferenceConfig {
 impl const Default for PreferenceConfig {
     fn default() -> Self {
         Self {
-            site_name: "Lean4OJ",
             security: Security::default(),
             pagination: Pagination::default(),
             misc: Misc::default(),

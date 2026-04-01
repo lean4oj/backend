@@ -12,6 +12,10 @@ use base64::{display::Base64Display, prelude::BASE64_STANDARD};
 use bytes::Bytes;
 use compact_str::CompactString;
 use http::{StatusCode, Uri, header, response::Parts};
+use lettre::{
+    Message,
+    message::{Mailbox, SinglePart},
+};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 use tower_sessions_core::session::Id;
@@ -19,15 +23,21 @@ use tower_sessions_core::session::Id;
 use crate::{
     bad,
     libs::{
-        auth::{Encoded, Session_, availability},
+        auth::{
+            EmailVerificationCodeType, Encoded, Session_, availability, email_check, get_code,
+            get_email_content,
+        },
         constants::{
-            APPLICATION_JAVASCRIPT_UTF_8, APPLICATION_JSON_UTF_8, BYTES_NULL, PASSWORD_LENGTH,
+            APPLICATION_JAVASCRIPT_UTF_8, APPLICATION_JSON_UTF_8, BYTES_EMPTY, BYTES_NULL,
+            PASSWORD_LENGTH,
         },
         db::{DBError, JsonChecked, get_connection},
+        email::{get_source, send_mail},
         preference::server::PreferenceConfig,
         privilege,
         request::{JsonReqult, RawPayload, Repult},
         response::JkmxJsonResponse,
+        serde::WithJson,
         session,
         validate::{check_email, check_uid, check_username},
     },
@@ -36,6 +46,11 @@ use crate::{
         user::{User, UserA},
     },
 };
+
+const NO_SUCH_USER: JkmxJsonResponse = JkmxJsonResponse::Response(
+    StatusCode::OK,
+    Bytes::from_static(br#"{"error":"NO_SUCH_USER"}"#),
+);
 
 mod private {
     use serde_json::{Serializer as JSerializer, ser::CompactFormatter};
@@ -226,6 +241,49 @@ async fn check_availability(req: Uri) -> JkmxJsonResponse {
 }
 
 #[derive(Deserialize)]
+struct SendEmailRequest {
+    email: CompactString,
+    r#type: EmailVerificationCodeType,
+    locale: Option<CompactString>,
+}
+
+async fn send_email(
+    Extension(now): Extension<SystemTime>,
+    req: JsonReqult<SendEmailRequest>,
+) -> JkmxJsonResponse {
+    const SQL_EMAIL: &str = "select username from lean4oj.users where email = $1";
+
+    let Json(SendEmailRequest { email, r#type, locale }) = req?;
+
+    let Some((_, _, address)) = check_email(&email) else { bad!(BYTES_NULL) };
+
+    let mut conn = get_connection().await?;
+    let stmt = conn.prepare_static(SQL_EMAIL.into()).await?;
+    let Ok(row) = conn.query_one(&stmt, &[&&*email]).await else { return NO_SUCH_USER };
+    let username = row.try_get::<_, &str>(0)?;
+
+    let record = match get_code(email, now) {
+        Ok(r) => r,
+        Err(e) => {
+            let res = format!(r#"{{"error":"RATE_LIMITED","cd":{}}}"#, WithJson(e));
+            return JkmxJsonResponse::Response(StatusCode::OK, res.into());
+        }
+    };
+
+    let (subject, body) = get_email_content(r#type, locale.as_deref(), record.code);
+
+    let message = Message::builder()
+        .from(get_source())
+        .to(Mailbox::new(Some(username.to_owned()), address))
+        .subject(subject.to_owned())
+        .singlepart(SinglePart::html(body))?;
+
+    send_mail(message).await?;
+
+    JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
+}
+
+#[derive(Deserialize)]
 struct RegisterRequest {
     username: CompactString,
     identifier: CompactString,
@@ -272,6 +330,52 @@ async fn register(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ResetPasswordRequest {
+    email: CompactString,
+    email_verification_code: u32,
+    new_password: String,
+}
+
+async fn reset_password(
+    Extension(now): Extension<SystemTime>,
+    req: JsonReqult<ResetPasswordRequest>,
+) -> JkmxJsonResponse {
+    const SQL: &str = "update lean4oj.users set password = $1 where email = $2 returning uid";
+
+    let Json(ResetPasswordRequest {
+        email,
+        email_verification_code,
+        new_password,
+    }) = req?;
+
+    if check_email(&email).is_none()
+        || new_password.len() != PASSWORD_LENGTH
+        || !new_password.is_ascii()
+    {
+        bad!(BYTES_NULL)
+    }
+
+    if !email_check(&email, now, email_verification_code) {
+        return JkmxJsonResponse::Response(
+            StatusCode::OK,
+            Bytes::from_static(br#"{"error":"INVALID_EMAIL_VERIFICATION_CODE"}"#),
+        );
+    }
+
+    let mut conn = get_connection().await?;
+    let stmt = conn.prepare_static(SQL.into()).await?;
+    let row = conn.query_one(&stmt, &[&new_password, &&*email]).await?;
+    let uid = row.try_get(0)?;
+
+    let session = session::reset(uid).await?;
+    let encoded = Encoded::try_from(session.id().unwrap_or(Id(0)))?;
+    let bytes: &[u8] = unsafe { slice::from_raw_parts((&raw const encoded).cast(), mem::size_of::<Encoded>()) };
+    let res = format!(r#"{{"token":"{}"}}"#, Base64Display::new(bytes, &BASE64_STANDARD));
+    JkmxJsonResponse::Response(StatusCode::OK, res.into())
+}
+
 const fn list_user_sessions(header: &'static Parts) -> RawPayload {
     RawPayload { header, body: br#"{"sessions":[]}"# }
 }
@@ -282,6 +386,8 @@ pub fn router(header: &'static Parts) -> Router {
         .route("/login", post(login))
         .route("/logout", post(logout))
         .route("/checkAvailability", get(check_availability))
+        .route("/sendEmailVerificationCode", post(send_email))
         .route("/register", post(register))
+        .route("/resetPassword", post(reset_password))
         .route("/listUserSessions", post_service(list_user_sessions(header)))
 }

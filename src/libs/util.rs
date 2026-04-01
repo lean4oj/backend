@@ -60,3 +60,11 @@ pub fn gen_random_ascii<const N: usize>() -> [Char; N] {
     let mut rng = rand::rng();
     core::array::from_fn(|_| g(&mut rng))
 }
+
+pub fn get_cooldown(start: SystemTime, now: SystemTime, cd: Duration) -> Result<(), Duration> {
+    let Some(p) = start.checked_add(cd) else { return Err(Duration::MAX) };
+    match now.duration_since(p) {
+        Err(e) => Err(e.duration()),
+        Ok(_) => Ok(())
+    }
+}

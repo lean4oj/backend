@@ -2,6 +2,7 @@ pub mod auth;
 #[rustfmt::skip]
 pub mod constants;
 pub mod db;
+pub mod email;
 pub mod emoji;
 pub mod error;
 pub mod fs;

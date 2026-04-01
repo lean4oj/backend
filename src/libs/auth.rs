@@ -11,6 +11,10 @@ use tower_sessions_core::{Session, session::Id};
 use super::session::{self, GlobalStore};
 
 pub mod availability;
+mod email_verification;
+pub use email_verification::{
+    CodeType as EmailVerificationCodeType, delete_expired, email_check, get_code, get_email_content,
+};
 
 #[repr(transparent)]
 pub struct Session_(pub Option<Session<GlobalStore>>);

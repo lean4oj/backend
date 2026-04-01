@@ -61,6 +61,8 @@ impl ExpiredDeletion for GlobalStore {
         let cc2 = MAP.len();
         tracing::debug!(target: "expired-session-cleaner", "cleaned \x1b[32m{cc1}\x1b[0m -> \x1b[32m{cc2}\x1b[0m");
 
+        super::auth::delete_expired(now);
+
         ready(Ok(()))
     }
 }
@@ -78,6 +80,13 @@ pub async fn create(uid: String) -> SResult<Session<GlobalStore>> {
     session.insert_value("uid", serde_json::Value::String(uid)).await?;
     session.save().await?;
     Ok(session)
+}
+
+pub async fn reset(uid: String) -> SResult<Session<GlobalStore>> {
+    MAP.retain(|_id, record|
+        record.data.get("uid").is_none_or(|x| x.as_str() != Some(&uid))
+    );
+    create(uid).await
 }
 
 pub async fn load(id: Id) -> SResult<Session<GlobalStore>> {
