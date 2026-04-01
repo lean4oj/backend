@@ -8,7 +8,7 @@ use std::sync::OnceLock;
 use compact_str::CompactString;
 use hashbrown::HashMap;
 
-const DATA: [(&[u8], &[u8; 40]); 14] = [
+const DATA: [(&[u8], &[u8; 40]); 15] = [
     (b".26.0", b"d8204c9fd894f91bbb2cdfec5912ec8196fd8562"),
     (b".27.0-rc1", b"2fcce7258eeb6e324366bc25f9058293b04b7547"),
     (b".27.0", b"db93fe1608548721853390a10cd40580fe7d22ae"),
@@ -23,6 +23,7 @@ const DATA: [(&[u8], &[u8; 40]); 14] = [
     (b".29.0-rc7", b"f5d7f18743eac341c4fa6e86abc5056d6ece40f4"),
     (b".29.0-rc8", b"513160ea59dfd60defec325636bbc5215a8a6e7e"),
     (b".29.0", b"98dc76e3c0a9b856c9b98726b713fb04fab16740"),
+    (b".30.0-rc1", b"714601baf118066cbf3f282361339c6d06665b2a"),
 ];
 
 const STD: [&str; 17] = [
