@@ -317,10 +317,10 @@ index 80076843..eb355240 100644
      // client key
      let mut hmac = Hmac::<Sha256>::new_from_slice(&salted_password)
 diff --git a/postgres-types/src/lib.rs b/postgres-types/src/lib.rs
-index 7b3fa18f..df2d782e 100644
+index 760acd23..46dcee2f 100644
 --- a/postgres-types/src/lib.rs
 +++ b/postgres-types/src/lib.rs
-@@ -758,7 +758,7 @@ simple_from!(bool, bool_from_sql, BOOL);
+@@ -768,7 +768,7 @@ simple_from!(bool, bool_from_sql, BOOL);
  simple_from!(i8, char_from_sql, CHAR);
  simple_from!(i16, int2_from_sql, INT2);
  simple_from!(i32, int4_from_sql, INT4);

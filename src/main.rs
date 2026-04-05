@@ -29,6 +29,7 @@
     // derive_from,
     dir_entry_ext2,
     drop_guard,
+    duration_constructors,
     error_type_id,
     // exact_div,
     // exact_size_is_empty,

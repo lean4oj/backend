@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index 9956900..ef4a7fe 100644
+index 12bede2..9d5c984 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -56,7 +56,6 @@ boring = { version = "5", optional = true }
@@ -191,7 +191,7 @@ index 98f92b1..d61f321 100644
  }
  
 diff --git a/src/lib.rs b/src/lib.rs
-index 6493c64..d883747 100644
+index 5ad63c5..8cd8ca1 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -237,6 +237,7 @@

@@ -31,7 +31,7 @@ pub const GLOBAL_INTERVAL: Duration = Duration::from_mins(
     10,
 );
 
-pub const SESSION_EXPIRE: Duration = Duration::from_hours(1);
+pub const SESSION_EXPIRE: Duration = Duration::from_days(1);
 pub const VERIFY_EXPIRE: Duration = Duration::from_mins(15);
 pub const VERIFY_RESEND: Duration = Duration::from_mins(3);
 
