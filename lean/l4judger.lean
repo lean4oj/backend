@@ -5,6 +5,7 @@ import Lean.Elab.DefView
 import Lean.Elab.Import
 import Lean.Language.Lean
 import Lean.Replay
+import Lean.Util.CollectAxioms
 
 open Lean Elab Language
 
@@ -117,6 +118,12 @@ def extractAnswer : Option ConstantInfo → Option String
     | _ => none
   | none => none
 
+open private Lean.CollectAxioms.collectAndGet Lean.CollectAxioms.M Lean.ExportedAxiomsState.find? Lean.exportedAxiomsExt from Lean.Util.CollectAxioms in
+def Lean.CollectAxioms.collect (c : Name) (env : Environment) : Lean.CollectAxioms.M (Array Name) :=
+  let s := Lean.exportedAxiomsExt.getState env (asyncMode := .mainOnly)
+  Lean.CollectAxioms.collectAndGet s.find? c
+
+open private Lean.CollectAxioms.State.mk from Lean.Util.CollectAxioms in
 def main (args : List String) : IO Unit := do
   let fileName::allowedAxiomsList := args | return
   searchPathRef.set (← addSearchPathFromEnv [])
@@ -166,8 +173,8 @@ def main (args : List String) : IO Unit := do
 
   report .AxiomChecking .NoAction (some answer)
 
-  let (_, state) := CollectAxioms.collect `Lean4OJ.answer cmdState.env {}
-  for Axiom in state.axioms do
+  let (axioms, _) := CollectAxioms.collect `Lean4OJ.answer cmdState.env cmdState.env (Lean.CollectAxioms.State.mk {} {})
+  for Axiom in axioms do
     if !(allowedAxioms.contains Axiom) then
       report .WrongAnswer (.Append s!"Disallowed axiom: {Axiom}.") none
       return

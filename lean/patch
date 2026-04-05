@@ -1,26 +1,26 @@
 diff --git a/l4judger.c b/l4judger.c
-index 6ad1f58..127f6d0 100644
+index 65ce8e5..99a5d44 100644
 --- a/l4judger.c
 +++ b/l4judger.c
-@@ -161,7 +161,7 @@ LEAN_EXPORT lean_object* l_Lean_Name_toStringWithSep___at___00Lean_Name_isVerifi
- static lean_object* l_main___closed__9;
- static lean_object* l_MessageAction_toBytes___closed__6;
- static lean_object* l_main___closed__6;
+@@ -261,7 +261,7 @@ LEAN_EXPORT lean_object* l_Lean_PersistentArray_foldlM___at___00main_spec__0___b
+ LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
+ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe_fold___at___00Lean_Language_SnapshotTree_foldM___at___00main_spec__3_spec__7(lean_object*, size_t, size_t, lean_object*);
+ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe_fold___at___00Lean_Language_SnapshotTree_foldM___at___00main_spec__3_spec__7___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 -LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object*, lean_object*, lean_object*);
 +lean_object *protect(lean_object*, lean_object*);
- LEAN_EXPORT lean_object* l_MessageAction_Append_elim___redArg(lean_object*, lean_object*);
- LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
- lean_object* l_Lean_addSearchPathFromEnv(lean_object*);
-@@ -3407,14 +3407,14 @@ lean_dec_ref(x_1);
- return x_8;
+ LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object*, lean_object*);
+ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6(lean_object*, size_t, size_t, lean_object*);
+ LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
+@@ -3278,14 +3278,14 @@ lean_dec_ref(v_as_959_);
+ return v_res_966_;
  }
  }
--LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object* x_1, lean_object* x_2, lean_object* x_3) {
+-LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object* v_s_967_, lean_object* v_init_968_, lean_object* v___y_969_){
 -_start:
 -{
--lean_object* x_4; 
--x_4 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_1, x_2);
--return x_4;
+-lean_object* v_res_970_; 
+-v_res_970_ = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(v_s_967_, v_init_968_);
+-return v_res_970_;
 -}
 -}
 +
@@ -31,19 +31,19 @@ index 6ad1f58..127f6d0 100644
 +
 +
 +
- LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object* x_1, lean_object* x_2) {
+ LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object* v_a_971_, lean_object* v_a_972_){
  _start:
  {
-@@ -5987,7 +5987,7 @@ if (lean_is_scalar(x_5)) {
- }
- lean_ctor_set(x_67, 0, x_23);
- lean_ctor_set(x_67, 1, x_66);
--x_68 = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(x_67, x_30);
-+x_68 = protect(x_67, x_30);
- if (lean_obj_tag(x_68) == 0)
+@@ -5399,7 +5399,7 @@ goto v_reusejp_1594_;
+ v_reusejp_1594_:
  {
- lean_object* x_69; uint8_t x_70; 
-@@ -7067,7 +7067,7 @@ return x_5;
+ lean_object* v___x_1596_; 
+-v___x_1596_ = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(v___x_1595_, v___x_1552_);
++v___x_1596_ = protect(v___x_1595_, v___x_1552_);
+ if (lean_obj_tag(v___x_1596_) == 0)
+ {
+ lean_object* v_a_1597_; uint8_t v___x_1598_; 
+@@ -6291,7 +6291,7 @@ return v_res_1811_;
  }
  }
  lean_object* initialize_Init(uint8_t builtin);
@@ -52,7 +52,7 @@ index 6ad1f58..127f6d0 100644
  lean_object* initialize_CollectUtils(uint8_t builtin);
  lean_object* initialize_Lean_Compiler_ImplementedByAttr(uint8_t builtin);
  lean_object* initialize_Lean_Elab_DefView(uint8_t builtin);
-@@ -7082,9 +7082,9 @@ _G_initialized = true;
+@@ -6307,9 +6307,9 @@ _G_initialized = true;
  res = initialize_Init(builtin);
  if (lean_io_result_is_error(res)) return res;
  lean_dec_ref(res);
