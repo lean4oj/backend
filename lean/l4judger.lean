@@ -1,11 +1,8 @@
 import Batteries.Tactic.OpenPrivate
 import CollectUtils
 import Lean.Compiler.ImplementedByAttr
-import Lean.Elab.DefView
-import Lean.Elab.Import
 import Lean.Language.Lean
 import Lean.Replay
-import Lean.Util.CollectAxioms
 
 open Lean Elab Language
 
@@ -90,7 +87,7 @@ def Lean.Name.isVerified (name : Name) : IO Bool := do
     .mk #[128] ++ kitsune s.utf8ByteSize ++ s.toByteArray
   let stdin ← IO.getStdin
   (
-    λ x ↦ match x with
+    fun x ↦ match x with
       | .mk #[1] => true
       | _ => false
   ) <$> stdin.read 1

@@ -355,7 +355,12 @@ pub async fn main(
         unsafe { buf.get_unchecked(const { env!("OLEAN_ROOT").len() + 5 }..) },
         limit,
     ).await?;
-    fl.sort();
+    fl.sort_unstable();
+    for [a, b] in fl.array_windows() {
+        if *a == *b {
+            return Err(format!("duplicate file path: {}", a.path().display()).into());
+        }
+    }
     unsafe { *buf.as_mut_vec().get_unchecked_mut(Last) = 0; }
     if unsafe { libc::mkdir(buf.as_ptr().cast(), 0o770) } != 0 {
         let err = io::Error::last_os_error();
