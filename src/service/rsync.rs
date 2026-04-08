@@ -85,7 +85,8 @@ async fn main_inner(
         return Err(format!("invalid second line (module): {s}").into());
     }
 
-    let uid = mem::take(&mut s);
+    let mut uid = mem::take(&mut s);
+    unsafe { uid.as_mut_vec() }.pop_if(|&mut b| b == b'\r');
     (&mut c2s).take(1024).read_line(&mut s).await?;
 
     let mut mode = Mode::Write;
@@ -99,9 +100,8 @@ async fn main_inner(
         && (s.len() == 8 || unsafe { *s.get_unchecked(8) } == b'-') {
             delete = true;
         }
-        if s.is_empty() {
-            break;
-        }
+        if s.is_empty() { break; }
+        if let &[b'\r'] = s { break; }
     }
 
     match mode {

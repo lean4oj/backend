@@ -315,7 +315,7 @@ index a142b50b..d0da718c 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index 0da92c39..ee7969fc 100644
+index 059fe302..aeba6f69 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
 @@ -111,13 +111,12 @@ http = "1.0.0"
