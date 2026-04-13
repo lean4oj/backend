@@ -18,16 +18,15 @@ async fn list_judge_clients() -> JkmxJsonResponse {
     let mut conn = get_connection().await?;
     let l = AUV::list("Lean4OJ.Judger", &mut conn).await?;
 
-    let mut buf = r#"{"judgeClients":"#.to_owned();
-    let mut ser = JSerializer::new(unsafe { buf.as_mut_vec() });
+    let mut res = r#"{"judgeClients":"#.to_owned();
+    let mut ser = JSerializer::new(unsafe { res.as_mut_vec() });
     let mut seq = ser.serialize_seq(Some(l.len()))?;
     for AUV { user_meta, .. } in &l {
         seq.serialize_element(&IdAndName { id: &user_meta.uid, name: &user_meta.username })?;
     }
     seq.end()?;
-    buf.push_str(r#","hasManagePermission":true}"#);
-
-    JkmxJsonResponse::Response(StatusCode::OK, buf.into())
+    res.push_str(r#","hasManagePermission":true}"#);
+    JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
 pub fn router(_header: &'static Parts) -> Router {

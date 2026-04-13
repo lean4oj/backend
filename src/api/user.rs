@@ -1,21 +1,25 @@
-use core::future::ready;
+use core::{future::ready, time::Duration};
+use std::time::SystemTime;
 
 use axum::{
-    Json, Router,
+    Extension, Json, Router,
     extract::Query,
     routing::{get, post, post_service},
 };
+use base64::{display::Base64Display, prelude::BASE64_STANDARD_NO_PAD};
 use bytes::Bytes;
 use compact_str::CompactString;
 use futures_util::TryStreamExt;
 use http::{StatusCode, response::Parts};
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use rand::TryRng;
+use serde::{Deserialize, Serialize, Serializer, ser::SerializeSeq};
+use serde_json::{Serializer as JSerializer, Value};
 use smallvec::SmallVec;
 use tokio_postgres::{
-    Client,
+    Client, IsolationLevel,
     types::{Json as QJson, ToSql},
 };
+use uuid::{Timestamp, Uuid};
 
 use crate::{
     bad, exs,
@@ -24,10 +28,11 @@ use crate::{
         constants::{BYTES_EMPTY, BYTES_NULL, PASSWORD_LENGTH},
         db::{DBError, DBResult, JsonChecked, get_connection},
         lquery, privilege,
+        preference::server::Security,
         request::{JsonReqult, RawPayload, Repult},
         response::JkmxJsonResponse,
         serde::WithJson,
-        util::from_millis,
+        util::{from_millis, get_millis},
         validate::{check_email, check_username},
     },
     models::user::{User, UserA, UserInformation},
@@ -126,7 +131,7 @@ struct UpdateUserProfileRequest {
 }
 
 async fn update_user_profile(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateUserProfileRequest>,
 ) -> JkmxJsonResponse {
     const SQL_UPDATE_USER: &str = "update lean4oj.users set username = $1, email = $2, avatar_info = $3, nickname = $4, bio = $5 where uid = $6";
@@ -137,7 +142,7 @@ async fn update_user_profile(
     if !check_username(&username) { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     let Some(t_user) = User::by_uid(&user_id, &mut conn).await? else { return NO_SUCH_USER };
     if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
@@ -234,7 +239,7 @@ async fn get_user_detail(req: JsonReqult<GetUserDetailRequest>) -> JkmxJsonRespo
 }
 
 #[derive(Deserialize)]
-struct GetSingleUserRequest {
+pub struct GetSingleUserRequest {
     uid: CompactString,
 }
 
@@ -266,7 +271,7 @@ async fn get_user_profile(req: JsonReqult<GetSingleUserRequest>) -> JkmxJsonResp
 }
 
 async fn get_user_preference(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<GetSingleUserRequest>,
 ) -> JkmxJsonResponse {
     const SQL_GET_PREF: &str = "select preference from lean4oj.user_preference where uid = $1";
@@ -274,7 +279,7 @@ async fn get_user_preference(
     let Json(GetSingleUserRequest { uid }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     let Some(t_user) = User::by_uid(&uid, &mut conn).await? else { return NO_SUCH_USER };
     if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
@@ -296,7 +301,7 @@ struct UpdateUserPreferenceRequest {
 }
 
 async fn update_user_preference(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateUserPreferenceRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "update lean4oj.user_preference set preference = $1 where uid = $2";
@@ -304,7 +309,7 @@ async fn update_user_preference(
     let Json(UpdateUserPreferenceRequest { user_id, preference }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     let Some(t_user) = User::by_uid(&user_id, &mut conn).await? else { return NO_SUCH_USER };
     if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
@@ -340,7 +345,7 @@ struct UpdatePasswordRequest {
 }
 
 async fn update_password(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdatePasswordRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "update lean4oj.users set password = $1 where uid = $2";
@@ -350,7 +355,7 @@ async fn update_password(
     if password.len() != PASSWORD_LENGTH || !password.is_ascii() { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     let Some(t_user) = User::by_uid(&user_id, &mut conn).await? else { return NO_SUCH_USER };
     if !private::λ(
         &s_user.uid,
@@ -373,7 +378,7 @@ struct UpdateEmailRequest {
 }
 
 async fn update_email(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateEmailRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "update lean4oj.users set email = $1 where uid = $2";
@@ -383,11 +388,144 @@ async fn update_email(
     if check_email(&email).is_none() { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let stmt = conn.prepare_static(SQL.into()).await?;
     let n = conn.execute(&stmt, &[&&*email, &&*user.uid]).await?;
     if n != 1 { return private::err() }
+
+    JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
+}
+
+#[derive(Deserialize)]
+pub struct CreateApiTokenRequest {
+    name: CompactString,
+    uid: CompactString,
+}
+
+pub async fn create_api_token(
+    Extension(now): Extension<SystemTime>,
+    session: Session_,
+    req: JsonReqult<CreateApiTokenRequest>,
+) -> JkmxJsonResponse {
+    const SQL_PRE: &str = "select count(*) from lean4oj.user_api_tokens where uid = $1";
+    const SQL: &str = "insert into lean4oj.user_api_tokens (id, uid, token, name, created_at) values ($1, $2, $3, $4, $5)";
+
+    let Json(CreateApiTokenRequest { name, uid }) = req?;
+
+    let mut conn = get_connection().await?;
+    exs!(s_user, session, &mut conn);
+    let Some(t_user) = User::by_uid(&uid, &mut conn).await? else { return NO_SUCH_USER };
+    if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
+        return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
+    }
+
+    let time = unsafe { core::mem::transmute::<SystemTime, Duration>(now) };
+    let timestamp = Timestamp::from_unix(uuid::timestamp::context::shared_context_v7(), time.as_secs(), time.subsec_nanos());
+    let uuid = Uuid::new_v7(timestamp);
+    let mut token: [u8; 64] = [0; 64];
+    rand::rngs::SysRng.try_fill_bytes(&mut token)?;
+
+    let stmt_pre = conn.prepare_static(SQL_PRE.into()).await?;
+    let stmt = conn.prepare_static(SQL.into()).await?;
+
+    let txn = conn
+        .build_transaction()
+        .isolation_level(IsolationLevel::Serializable)
+        .start()
+        .await?;
+    let row = txn.query_one(&stmt_pre, &[&&*t_user.uid]).await?;
+    let n = row.try_get::<_, i64>(0)?.cast_unsigned() as usize;
+    if n >= const { Security::default().max_api_tokens } {
+        return JkmxJsonResponse::Response(
+            StatusCode::OK,
+            Bytes::from_static(br#"{"error":"TOO_MANY_TOKENS"}"#),
+        );
+    }
+    let n = txn.execute(&stmt, &[&uuid, &&*t_user.uid, &token.as_slice(), &&*name, &now]).await?;
+    if n != 1 { return private::err() }
+    txn.commit().await?;
+
+    let res = format!(
+        r#"{{"token":"l4oj-{}","tokenUUID":"{uuid}","name":{},"createdAt":{}}}"#,
+        Base64Display::new(&token, &BASE64_STANDARD_NO_PAD), WithJson(&*name), time.as_millis(),
+    );
+    JkmxJsonResponse::Response(StatusCode::OK, res.into())
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TokenInfo {
+    id: Uuid,
+    name: CompactString,
+    created_at: u128,
+    last_used_at: Option<u128>,
+}
+
+pub async fn list_api_tokens(
+    session: Session_,
+    req: JsonReqult<GetSingleUserRequest>,
+) -> JkmxJsonResponse {
+    const SQL: &str = "select id, name, created_at, last_used_at from lean4oj.user_api_tokens where uid = $1 order by coalesce(last_used_at, created_at) desc";
+
+    let Json(GetSingleUserRequest { uid }) = req?;
+
+    let mut conn = get_connection().await?;
+    exs!(s_user, session, &mut conn);
+    let Some(t_user) = User::by_uid(&uid, &mut conn).await? else { return NO_SUCH_USER };
+    if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
+        return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
+    }
+
+    let stmt = conn.prepare_static(SQL.into()).await?;
+    let stream = conn.query_raw(&stmt, &[&&*t_user.uid]).await?;
+
+    let mut res = r#"{"tokens":"#.to_owned();
+    let mut ser = JSerializer::new(unsafe { res.as_mut_vec() });
+    let mut seq = ser.serialize_seq(None)?;
+    stream.try_for_each(|row| ready(try {
+        let id = row.try_get(0)?;
+        let name = row.try_get::<_, &str>(1)?.into();
+        let created_at = get_millis(row.try_get(2)?);
+        let last_used_at = row.try_get::<_, Option<SystemTime>>(3)?.map(get_millis);
+
+        let _ = seq.serialize_element(&TokenInfo { id, name, created_at, last_used_at });
+    })).await?;
+    seq.end()?;
+    res.push('}');
+    JkmxJsonResponse::Response(StatusCode::OK, res.into())
+}
+
+#[derive(Deserialize)]
+pub struct DeleteApiTokenRequest {
+    #[serde(rename = "tokenUUID")]
+    token_uuid: Uuid,
+    uid: CompactString,
+}
+
+pub async fn delete_api_token(
+    session: Session_,
+    req: JsonReqult<DeleteApiTokenRequest>,
+) -> JkmxJsonResponse {
+    const SQL: &str = "delete from lean4oj.user_api_tokens where id = $1 and uid = $2";
+
+    let Json(DeleteApiTokenRequest { token_uuid, uid }) = req?;
+
+    let mut conn = get_connection().await?;
+    exs!(s_user, session, &mut conn);
+    let Some(t_user) = User::by_uid(&uid, &mut conn).await? else { return NO_SUCH_USER };
+    if !private::γ(&s_user.uid, &t_user.uid, &mut conn).await? {
+        return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
+    }
+
+    let stmt = conn.prepare_static(SQL.into()).await?;
+    let n = conn.execute(&stmt, &[&&token_uuid, &&*t_user.uid]).await?;
+    if n != 1 {
+        return JkmxJsonResponse::Response(
+            StatusCode::OK,
+            Bytes::from_static(br#"{"error":"NO_SUCH_TOKEN"}"#),
+        );
+    }
 
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }

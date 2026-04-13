@@ -78,13 +78,13 @@ struct CreateDiscussionRequest {
 
 async fn create_discussion(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<CreateDiscussionRequest>,
 ) -> JkmxJsonResponse {
     let Json(CreateDiscussionRequest { problem_id, title, content }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let id = Discussion::create(problem_id, &title, &content, now, &user.uid, &mut conn).await?;
     let res = format!(r#"{{"discussionId":{id}}}"#);
@@ -100,7 +100,7 @@ struct CreateReplyRequest {
 
 async fn create_reply(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<CreateReplyRequest>,
 ) -> JkmxJsonResponse {
     const SQL_CREATE_REPLY: &str = "insert into lean4oj.discussion_replies (content, publish, edit, did, publisher) values ($1, $2, $2, $3, $4) returning id";
@@ -109,7 +109,7 @@ async fn create_reply(
     let Json(CreateReplyRequest { discussion_id, content }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let stmt_create_reply = conn.prepare_static(SQL_CREATE_REPLY.into()).await?;
     let stmt_update_parent = conn.prepare_static(SQL_UPDATE_PARENT.into()).await?;
@@ -155,7 +155,7 @@ struct ReactionRequest {
 }
 
 async fn reaction(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<ReactionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_EXIST_D: &str = "select from lean4oj.discussions where id = $1";
@@ -169,7 +169,7 @@ async fn reaction(
     let Some(emoji) = emoji::normalize(&emoji) else { return INVALID_EMOJI };
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let eid = match ty {
         DiscussionReactionType::Discussion => {
@@ -242,7 +242,7 @@ struct Inner3<'a> {
 
 #[allow(clippy::too_many_lines)]
 async fn query_discussions(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<QueryDiscussionRequest>,
 ) -> JkmxJsonResponse {
     let Json(QueryDiscussionRequest {
@@ -265,7 +265,7 @@ async fn query_discussions(
     } else { None };
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let s_uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = s_uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -477,7 +477,7 @@ struct GetDiscussionResponse<'a> {
 }
 
 async fn get_discussion(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<GetDiscussionRequest>,
 ) -> JkmxJsonResponse {
     let Json(GetDiscussionRequest { locale, discussion_id, query_replies_type, get_discussion }) = req?;
@@ -495,7 +495,7 @@ async fn get_discussion(
     };
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
 
     match query_replies_type {
@@ -588,7 +588,7 @@ struct UpdateDiscussionRequest {
 
 async fn update_discussion(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateDiscussionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "update lean4oj.discussions set title = $1, content = $2, edit = $3, update = $3 where id = $4";
@@ -597,7 +597,7 @@ async fn update_discussion(
     let Json(UpdateDiscussionRequest { discussion_id, title, content }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let n = if privilege::check(&user.uid, "Lean4OJ.ManageDiscussion", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;
@@ -620,7 +620,7 @@ struct UpdateReplyRequest {
 
 async fn update_reply(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateReplyRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "update lean4oj.discussion_replies set content = $1, edit = $2 where id = $3 returning did";
@@ -630,7 +630,7 @@ async fn update_reply(
     let Json(UpdateReplyRequest { discussion_reply_id, content }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let row = if privilege::check(&user.uid, "Lean4OJ.ManageDiscussion", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;
@@ -655,7 +655,7 @@ struct DeleteDiscussionRequest {
 }
 
 async fn delete_discussion(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<DeleteDiscussionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "delete from lean4oj.discussions where id = $1";
@@ -664,7 +664,7 @@ async fn delete_discussion(
     let Json(DeleteDiscussionRequest { discussion_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let n = if privilege::check(&user.uid, "Lean4OJ.ManageDiscussion", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;
@@ -685,7 +685,7 @@ struct DeleteReplyRequest {
 }
 
 async fn delete_reply(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<DeleteReplyRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "delete from lean4oj.discussion_replies where id = $1 returning did";
@@ -695,7 +695,7 @@ async fn delete_reply(
     let Json(DeleteReplyRequest { discussion_reply_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let txn;
     let stmt_p = conn.prepare_static(SQL_UPDATE_PARENT.into()).await?;

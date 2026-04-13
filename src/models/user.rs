@@ -6,13 +6,12 @@ use futures_util::TryStreamExt;
 use serde::Serialize;
 use serde_json::Value;
 use tokio_postgres::{Client, Row};
-use tower_sessions_core::Session;
 
 use crate::libs::{
+    auth::Session_,
     constants::PASSWORD_LENGTH,
     db::{DBError, DBResult},
     serde::JsTime,
-    session::GlobalStore,
     validate::check_uid,
 };
 
@@ -73,18 +72,17 @@ impl User {
         Ok(result)
     }
 
-    pub async fn from_session(session: &Session<GlobalStore>, db: &mut Client) -> DBResult<Option<Self>> {
-        let Ok(Some(Value::String(uid))) = session.get_value("uid").await else { return Ok(None) };
-        Self::by_uid(&uid, db).await
-    }
-
     #[allow(clippy::ref_option)]
-    pub async fn from_maybe_session(session: &Option<Session<GlobalStore>>, db: &mut Client) -> DBResult<Option<Self>> {
-        if let Some(session) = session
-        && let Ok(Some(Value::String(uid))) = session.get_value("uid").await {
-            Self::by_uid(&uid, db).await
-        } else {
-            Ok(None)
+    pub async fn from_session(session: Session_, db: &mut Client) -> DBResult<Option<Self>> {
+        match session {
+            Session_::None => Ok(None),
+            Session_::Session(session) =>
+                if let Ok(Some(Value::String(uid))) = session.get_value("uid").await {
+                    Self::by_uid(&uid, db).await
+                } else {
+                    Ok(None)
+                }
+            Session_::Token(user) => return Ok(Some(user)),
         }
     }
 

@@ -120,7 +120,7 @@ struct QueryProblemSetRequest {
 
 #[allow(clippy::too_many_lines)]
 async fn query_problem_set(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<QueryProblemSetRequest>
 ) -> JkmxJsonResponse {
     let Json(QueryProblemSetRequest {
@@ -145,7 +145,7 @@ async fn query_problem_set(
     let tag_ids__inner___ = unsafe { mem::transmute::<Option<&[u32]>, Option<&'static [i32]>>(tag_ids.as_deref()) };
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -275,13 +275,13 @@ struct CreateProblemRequest {
 }
 
 async fn create_problem(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<CreateProblemRequest>,
 ) -> JkmxJsonResponse {
     let Json(CreateProblemRequest { statement: Inner1 { localized_contents, problem_tag_ids } }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let content = localized_contents.into_iter().collect::<LocaleDict<_>>();
     let pid = Problem::create(&user.uid, &content, &mut conn).await?;
@@ -299,7 +299,7 @@ struct UpdateProblemRequest {
 }
 
 async fn update_problem(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateProblemRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "update lean4oj.problems set pcontent = $1 where pid = $2";
@@ -308,7 +308,7 @@ async fn update_problem(
     let Json(UpdateProblemRequest { problem_id, localized_contents, problem_tag_ids }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let content = localized_contents.into_iter().collect::<LocaleDict<_>>();
     let content: &QJson<BTreeMap<CompactString, ProblemInner>> = unsafe { &*(&raw const content.0).cast() };
@@ -344,7 +344,7 @@ struct GetProblemRequest {
 
 #[allow(clippy::too_many_lines)]
 async fn get_problem(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<GetProblemRequest>,
 ) -> JkmxJsonResponse {
     const SQL_LAST_SUBMISSION: &str = "select sid, status, module_name, const_name from lean4oj.submissions where pid = $1 and submitter = $2 order by sid desc limit 1";
@@ -366,7 +366,7 @@ async fn get_problem(
     let Some(id) = id.or(display_id) else { bad!(BYTES_NULL) };
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -469,7 +469,7 @@ struct SetProblemIdRequest {
 }
 
 async fn set_problem_id(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SetProblemIdRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "update lean4oj.problems set pid = $1 where pid = $2";
@@ -482,7 +482,7 @@ async fn set_problem_id(
     }
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_EMPTY);
     }
@@ -503,7 +503,7 @@ struct SetProblemPublicnessRequest {
 
 async fn set_problem_publicness(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SetProblemPublicnessRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PUBLIC: &str = "update lean4oj.problems set is_public = true, public_at = $1 where pid = $2 and not is_public";
@@ -512,7 +512,7 @@ async fn set_problem_publicness(
     let Json(SetProblemPublicnessRequest { problem_id, is_public }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_EMPTY);
     }
@@ -538,7 +538,7 @@ struct UpdateJudgeInfoRequest {
 }
 
 async fn update_judge_info(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateJudgeInfoRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "update lean4oj.problems set jb = $1, submittable = $2 where pid = $3";
@@ -547,7 +547,7 @@ async fn update_judge_info(
     let Json(UpdateJudgeInfoRequest { problem_id, judge_info, submittable }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let n = if privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;
@@ -568,7 +568,7 @@ struct DeleteProblemRequest {
 }
 
 async fn delete_problem(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<DeleteProblemRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "delete from lean4oj.problems where pid = $1";
@@ -577,7 +577,7 @@ async fn delete_problem(
     let Json(DeleteProblemRequest { problem_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let n = if privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;

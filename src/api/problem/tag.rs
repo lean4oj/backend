@@ -44,13 +44,13 @@ struct CreateTagRequest {
 }
 
 async fn create_tag(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<CreateTagRequest>,
 ) -> JkmxJsonResponse {
     let Json(CreateTagRequest { localized_names, color }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let dict = localized_names.into_iter().collect::<LocaleDict>();
@@ -68,13 +68,13 @@ struct UpdateTagRequest {
 }
 
 async fn update_tag(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UpdateTagRequest>,
 ) -> JkmxJsonResponse {
     let Json(UpdateTagRequest { id, localized_names, color }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let dict = localized_names.into_iter().collect::<LocaleDict>();
@@ -88,13 +88,13 @@ struct DeleteTagRequest {
 }
 
 async fn delete_tag(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<DeleteTagRequest>,
 ) -> JkmxJsonResponse {
     let Json(DeleteTagRequest { id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     Tag::delete(id, &mut conn).await?;

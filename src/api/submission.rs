@@ -6,7 +6,7 @@ use core::{
     mem::{MaybeUninit, take},
     str,
 };
-use std::{str::FromStr, time::SystemTime};
+use std::time::SystemTime;
 
 use axum::{
     Extension, Json, Router,
@@ -19,8 +19,8 @@ use bytes::Bytes;
 use compact_str::CompactString;
 use futures_util::TryStreamExt;
 use http::{StatusCode, header, response::Parts};
+use nodejs_semver::{Range, Version};
 use openssl::sha::Sha256;
-use semver::{Version, VersionReq};
 use serde::Deserialize;
 use smallvec::SmallVec;
 use tokio_postgres::types::{Json as QJson, ToSql};
@@ -70,11 +70,11 @@ mod private {
 #[serde(rename_all = "camelCase")]
 struct GetOleanMetaRequest {
     module_name: CompactString,
-    version_req: Option<VersionReq>,
+    version_req: Option<Range>,
 }
 
 async fn get_olean_meta(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<GetOleanMetaRequest>,
 ) -> JkmxJsonResponse {
     const EMPTY: JkmxJsonResponse = JkmxJsonResponse::Response(StatusCode::OK, Bytes::from_static(br#"{"consts":[],"dependencies":[],"leanVersion":""}"#));
@@ -84,7 +84,7 @@ async fn get_olean_meta(
     if !module_name.split('.').all(is_lean_id) { bad!(BYTES_NULL); }
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let olean_path = olean::𝑔𝑒𝑡_𝑜𝑙𝑒𝑎𝑛_𝑝𝑎𝑡ℎ(&user.uid, &module_name);
 
@@ -95,8 +95,8 @@ async fn get_olean_meta(
 
     let mut res = format!(r#"{{"consts":{},"dependencies":{},"leanVersion":"{}""#, WithJson(&*consts), WithJson(&*dependencies), meta.version);
     if let Some(req) = version_req {
-        let version = Version::from_str(meta.version)?;
-        write!(&mut res, r#","compatible":{}"#, req.matches(&version))?;
+        let version = Version::parse(meta.version)?;
+        write!(&mut res, r#","compatible":{}"#, req.satisfies_with_prerelease(&version, true))?;
     }
     res.push('}');
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
@@ -112,7 +112,7 @@ struct Inner1 {
 #[derive(Deserialize)]
 pub struct JbAxiomsVersion {
     axioms: SmallVec<[LeanAxiom; 4]>,
-    version: Option<VersionReq>,
+    version: Option<Range>,
 }
 
 #[derive(Deserialize)]
@@ -124,7 +124,7 @@ struct SubmitRequest {
 
 async fn submit(
     Extension(now): Extension<SystemTime>,
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SubmitRequest>,
 ) -> JkmxJsonResponse {
     const SQL_SEL_PRIV: &str = "select * from lean4oj.problems where pid = $1 and submittable";
@@ -136,7 +136,7 @@ async fn submit(
     if !module_name.split('.').all(is_lean_id) || !const_name.split('.').all(is_lean_id) { bad!(BYTES_NULL); }
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let problem: Problem = if privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_SEL_PRIV.into()).await?;
@@ -155,8 +155,8 @@ async fn submit(
     if !consts.contains(&const_name) { bad!(BYTES_NULL); }
     let JbAxiomsVersion { version, .. } = serde_json::from_slice(&problem.jb)?;
     if let Some(req) = version {
-        let version = Version::from_str(meta.version)?;
-        if !req.matches(&version) { bad!(BYTES_NULL); }
+        let version = Version::parse(meta.version)?;
+        if !req.satisfies_with_prerelease(&version, true) { bad!(BYTES_NULL); }
     }
 
     let mut sha256 = Sha256::new();
@@ -205,7 +205,7 @@ struct QuerySubmissionRequest {
 }
 
 async fn query_submission(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<QuerySubmissionRequest>,
 ) -> JkmxJsonResponse {
     let Json(QuerySubmissionRequest {
@@ -232,7 +232,7 @@ async fn query_submission(
     let lean_version__inner___ = lean_version.as_deref();
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -317,7 +317,7 @@ struct GetSubmissionRequest {
 }
 
 async fn get_submission(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<GetSubmissionRequest>,
 ) -> JkmxJsonResponse {
     const MESSAGE_LENGTH_LIMIT: usize = 0x4000;
@@ -325,7 +325,7 @@ async fn get_submission(
     let Json(GetSubmissionRequest { locale, submission_id }) = req?;
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -384,7 +384,7 @@ struct QuerySubmissionStatisticsRequest {
 }
 
 async fn query_submission_statistics(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<QuerySubmissionStatisticsRequest>,
 ) -> JkmxJsonResponse {
     let Json(QuerySubmissionStatisticsRequest { locale, problem_id, problem_display_id, statistics_type, skip_count, take_count }) = req?;
@@ -394,7 +394,7 @@ async fn query_submission_statistics(
     let take = take_count.min(100).cast_signed();
 
     let mut conn = get_connection().await?;
-    let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+    let maybe_user = User::from_session(session, &mut conn).await?;
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
     let privi = if let Some(uid) = uid {
         privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?
@@ -437,7 +437,7 @@ struct RejudgeSubmissionRequest {
 
 #[allow(clippy::too_many_lines)]
 async fn rejudge_submission(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<RejudgeSubmissionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_PRIV: &str = "select sid, pid, submitter, submit_time, module_name, const_name, lean_toolchain, status, message, answer_size, answer_hash, answer_obj, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.submissions natural join lean4oj.problems where sid = $1 and status::integer >= 7";
@@ -451,7 +451,7 @@ async fn rejudge_submission(
     let Json(RejudgeSubmissionRequest { submission_id, refetch }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     let row = if privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         let stmt = conn.prepare_static(SQL_PRIV.into()).await?;
@@ -470,8 +470,8 @@ async fn rejudge_submission(
 
     if !refetch {
         if let Some(req) = version {
-            let version = Version::from_str(&submission.lean_toolchain)?;
-            if !req.matches(&version) { bad!(BYTES_NULL); }
+            let version = Version::parse(&submission.lean_toolchain)?;
+            if !req.satisfies_with_prerelease(&version, true) { bad!(BYTES_NULL); }
         }
 
         #[allow(clippy::transmute_undefined_repr)]
@@ -507,7 +507,8 @@ async fn rejudge_submission(
         let imports = olean::parse_imports(meta)?;
         if !consts.contains(&submission.const_name) { do yeet; }
         if let Some(req) = version {
-            if let Ok(version) = Version::from_str(meta.version) && req.matches(&version) {}
+            if let Ok(version) = Version::parse(meta.version)
+            && req.satisfies_with_prerelease(&version, true) {}
             else { do yeet; }
         }
         let version = meta.version;
@@ -575,7 +576,7 @@ struct SingleSubmissionRequest {
 }
 
 async fn cancel_submission(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SingleSubmissionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_CANCEL: &str = "update lean4oj.submissions set status = '\x0b' where sid = $1 and status::integer >= 7 returning old.status, pid, submitter";
@@ -585,7 +586,7 @@ async fn cancel_submission(
     let Json(SingleSubmissionRequest { submission_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_EMPTY);
@@ -606,7 +607,7 @@ async fn cancel_submission(
 }
 
 async fn delete_submission(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SingleSubmissionRequest>,
 ) -> JkmxJsonResponse {
     const SQL_DELETE: &str = "delete from lean4oj.submissions where sid = $1 returning status, pid, submitter";
@@ -617,7 +618,7 @@ async fn delete_submission(
     let Json(SingleSubmissionRequest { submission_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
 
     if !privilege::check(&user.uid, "Lean4OJ.ManageProblem", &mut conn).await? {
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_EMPTY);
@@ -651,7 +652,7 @@ struct SubscibeSubmissionsRequest {
 }
 
 async fn subscribe_submissions(
-    Session_(session): Session_,
+    session: Session_,
     req: Repult<Query<SubscibeSubmissionsRequest>>,
 ) -> Response {
     const SQL_FILTER: &str = "select sid from lean4oj.submissions natural join lean4oj.problems where sid = any ($1) and (owner = $2 or is_public)";
@@ -666,7 +667,7 @@ async fn subscribe_submissions(
 
     let Ok(mut conn) = get_connection().await else { return StatusCode::INTERNAL_SERVER_ERROR.into_response() };
     let e: DBResult<()> = try {
-        let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
+        let maybe_user = User::from_session(session, &mut conn).await?;
         let uid = maybe_user.as_ref().map(|u| &*u.uid);
         let privi = if let Some(uid) = uid {
             privilege::check(uid, "Lean4OJ.ManageProblem", &mut conn).await?

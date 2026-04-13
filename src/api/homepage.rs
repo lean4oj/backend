@@ -144,7 +144,7 @@ async fn get_latest_updated_problems(locale: Option<&str>, db: &mut Client) -> D
 }
 
 async fn get_homepage(
-    Session_(session): Session_,
+    session: Session_,
     req: Repult<Query<HomepageRequest>>,
 ) -> JkmxJsonResponse {
     let Query(HomepageRequest { locale }) = req?;
@@ -162,7 +162,7 @@ async fn get_homepage(
     let links = links::friend_links(locale.as_deref());
     let mut latest_updated_problems = get_latest_updated_problems(locale.as_deref(), &mut conn).await?;
 
-    if let Some(user) = User::from_maybe_session(&session, &mut conn).await? {
+    if let Some(user) = User::from_session(session, &mut conn).await? {
         let lookup = Submission::by_uid_pids(&user.uid, latest_updated_problems.iter().map(|p| p.meta.pid), &mut conn).await?;
         for problem in &mut latest_updated_problems {
             if let Some(&(id, status)) = lookup.get(&problem.meta.pid) {

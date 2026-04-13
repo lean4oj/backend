@@ -24,14 +24,14 @@ use crate::{
     bad,
     libs::{
         auth::{
-            EmailVerificationCodeType, Encoded, Session_, availability, email_check, get_code,
-            get_email_content,
+            EmailVerificationCodeType, Encoded, Session_, availability, decode2, email_check,
+            get_code, get_email_content,
         },
         constants::{
             APPLICATION_JAVASCRIPT_UTF_8, APPLICATION_JSON_UTF_8, BYTES_EMPTY, BYTES_NULL,
             PASSWORD_LENGTH,
         },
-        db::{DBError, JsonChecked, get_connection},
+        db::{DBError, JsonChecked, get_connection, insert_connection},
         email::{get_source, send_mail},
         preference::server::PreferenceConfig,
         privilege,
@@ -116,11 +116,16 @@ struct SessionInfoResponse {
     user_privileges: privilege::Privileges,
     #[serde(serialize_with = "private::Δ::δ")]
     user_preference: *const [u8],
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extra_error: Option<&'static str>,
 }
 
 unsafe impl Send for SessionInfoResponse {}
 
-async fn get_session_info(req: Repult<Query<SessionInfoRequest>>) -> Response {
+async fn get_session_info(
+    Extension(now): Extension<SystemTime>,
+    req: Repult<Query<SessionInfoRequest>>,
+) -> Response {
     const JSONP_HEAD: &str = "(globalThis.getSessionInfoCallback??(e=>globalThis.sessionInfo=e))(";
     const JSONP_TRAIL: &str = ");";
     const SQL_GET_PREF: &str = "select preference from lean4oj.user_preference where uid = $1";
@@ -145,22 +150,28 @@ async fn get_session_info(req: Repult<Query<SessionInfoRequest>>) -> Response {
         joined_groups_count: None,
         user_privileges: SmallVec::new(),
         user_preference: core::ptr::from_ref(EMPTY),
+        extra_error: None,
     };
 
-    if let Some(token) = token
-    && let Ok(encoded) = Encoded::try_from(token.as_bytes())
-    && encoded.verify()
-    && let Ok(session) = session::load(encoded.id).await
-    && let Ok(mut conn) = get_connection().await
-    && let Ok(Some(user)) = User::from_session(&session, &mut conn).await {
-        res.joined_groups_count = GroupA::count(&user.uid, &mut conn).await.ok();
-        res.user_privileges = privilege::all(&user.uid, &mut conn).await.unwrap_or_default();
-        if let Ok(stmt) = conn.prepare_static(SQL_GET_PREF.into()).await
-        && let Ok(row) = conn.query_one(&stmt, &[&&*user.uid]).await
-        && let Ok(pref) = row.try_get::<_, JsonChecked>(0) {
-            res.user_preference = pref.0;
+    if let Some(token) = token {
+        let mut conn0 = None;
+        let session = decode2(token.as_bytes(), now, &mut conn0).await;
+        match session {
+            Session_::Session(_) =>
+                if let Ok(conn) = insert_connection(&mut conn0).await
+                && let Ok(Some(user)) = User::from_session(session, conn).await {
+                    res.joined_groups_count = GroupA::count(&user.uid, conn).await.ok();
+                    res.user_privileges = privilege::all(&user.uid, conn).await.unwrap_or_default();
+                    if let Ok(stmt) = conn.prepare_static(SQL_GET_PREF.into()).await
+                    && let Ok(row) = conn.query_one(&stmt, &[&&*user.uid]).await
+                    && let Ok(pref) = row.try_get::<_, JsonChecked>(0) {
+                        res.user_preference = pref.0;
+                    }
+                    res.user_meta = Some(UserA { user, is_admin: privilege::is_admin(&res.user_privileges) });
+                }
+            Session_::Token(_) => res.extra_error = Some("TOKEN_DISALLOWED"),
+            Session_::None => (),
         }
-        res.user_meta = Some(UserA { user, is_admin: privilege::is_admin(&res.user_privileges) });
     }
 
     let mut body = if jsonp { JSONP_HEAD.to_owned() } else { String::new() };
@@ -212,8 +223,8 @@ async fn login(req: JsonReqult<LoginRequest>) -> JkmxJsonResponse {
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-async fn logout(Session_(session): Session_) -> JkmxJsonResponse {
-    if let Some(session) = session {
+async fn logout(session: Session_) -> JkmxJsonResponse {
+    if let Session_::Session(session) = session {
         session.delete().await?;
     }
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_NULL)
@@ -381,6 +392,7 @@ const fn list_user_sessions(header: &'static Parts) -> RawPayload {
 }
 
 pub fn router(header: &'static Parts) -> Router {
+    use super::user::{create_api_token, delete_api_token, list_api_tokens};
     Router::new()
         .route("/getSessionInfo", get(get_session_info))
         .route("/login", post(login))
@@ -390,4 +402,7 @@ pub fn router(header: &'static Parts) -> Router {
         .route("/register", post(register))
         .route("/resetPassword", post(reset_password))
         .route("/listUserSessions", post_service(list_user_sessions(header)))
+        .route("/createApiToken", post(create_api_token))
+        .route("/listApiTokens", post(list_api_tokens))
+        .route("/deleteApiToken", post(delete_api_token))
 }

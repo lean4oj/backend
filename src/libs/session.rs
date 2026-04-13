@@ -104,7 +104,7 @@ pub async fn load(id: Id) -> SResult<Session<GlobalStore>> {
 #[allow(unused_variables)]
 macro_rules! exs {
     ($user:ident, $sess:expr, $db:expr) => {
-        let Some($user) = $crate::models::user::User::from_maybe_session($sess, $db).await? else {
+        let Some($user) = $crate::models::user::User::from_session($sess, $db).await? else {
             return $crate::libs::response::JkmxJsonResponse::Response(
                 http::StatusCode::UNAUTHORIZED,
                 $crate::libs::constants::BYTES_NULL,

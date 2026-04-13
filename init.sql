@@ -22,6 +22,7 @@ ALTER TABLE ONLY lean4oj.user_preference DROP CONSTRAINT user_preference_uid_fke
 ALTER TABLE ONLY lean4oj.user_information DROP CONSTRAINT user_information_uid_fkey;
 ALTER TABLE ONLY lean4oj.user_groups DROP CONSTRAINT user_groups_uid_fkey;
 ALTER TABLE ONLY lean4oj.user_groups DROP CONSTRAINT user_groups_gid_fkey;
+ALTER TABLE ONLY lean4oj.user_api_tokens DROP CONSTRAINT user_api_tokens_uid_fkey;
 ALTER TABLE ONLY lean4oj.submissions DROP CONSTRAINT submissions_submitter_fkey;
 ALTER TABLE ONLY lean4oj.submissions DROP CONSTRAINT submissions_pid_fkey;
 ALTER TABLE ONLY lean4oj.problems DROP CONSTRAINT problems_owner_fkey;
@@ -34,6 +35,8 @@ ALTER TABLE ONLY lean4oj.discussion_replies DROP CONSTRAINT discussion_replies_d
 ALTER TABLE ONLY lean4oj.discussion_reactions DROP CONSTRAINT discussion_reactions_uid_fkey;
 DROP INDEX lean4oj.users_ac_idx;
 DROP INDEX lean4oj.user_groups_gid_uid_idx;
+DROP INDEX lean4oj.user_api_tokens_uid_idx;
+DROP INDEX lean4oj.user_api_tokens_token_idx;
 DROP INDEX lean4oj.submissions_submitter_submit_time_idx;
 DROP INDEX lean4oj.submissions_submitter_status_idx;
 DROP INDEX lean4oj.submissions_submitter_sid_idx;
@@ -48,6 +51,8 @@ ALTER TABLE ONLY lean4oj.users DROP CONSTRAINT users_email_key;
 ALTER TABLE ONLY lean4oj.user_preference DROP CONSTRAINT user_preference_pkey;
 ALTER TABLE ONLY lean4oj.user_information DROP CONSTRAINT user_information_pkey;
 ALTER TABLE ONLY lean4oj.user_groups DROP CONSTRAINT user_groups_pkey;
+ALTER TABLE ONLY lean4oj.user_api_tokens DROP CONSTRAINT user_api_tokens_token_key;
+ALTER TABLE ONLY lean4oj.user_api_tokens DROP CONSTRAINT user_api_tokens_pkey;
 ALTER TABLE ONLY lean4oj.tags DROP CONSTRAINT tags_pkey;
 ALTER TABLE ONLY lean4oj.submissions DROP CONSTRAINT submissions_pkey;
 ALTER TABLE ONLY lean4oj.problems DROP CONSTRAINT problems_pkey;
@@ -65,6 +70,7 @@ DROP TABLE lean4oj.users;
 DROP TABLE lean4oj.user_preference;
 DROP TABLE lean4oj.user_information;
 DROP TABLE lean4oj.user_groups;
+DROP TABLE lean4oj.user_api_tokens;
 DROP SEQUENCE lean4oj.tags_id_seq;
 DROP TABLE lean4oj.tags;
 DROP SEQUENCE lean4oj.submissions_sid_seq;
@@ -301,6 +307,20 @@ ALTER SEQUENCE lean4oj.tags_id_seq OWNED BY lean4oj.tags.id;
 
 
 --
+-- Name: user_api_tokens; Type: TABLE; Schema: lean4oj; Owner: -
+--
+
+CREATE TABLE lean4oj.user_api_tokens (
+    id uuid NOT NULL,
+    uid character varying(24) NOT NULL COLLATE public.case_insensitive,
+    token bytea NOT NULL,
+    name character varying(255) NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    last_used_at timestamp without time zone
+);
+
+
+--
 -- Name: user_groups; Type: TABLE; Schema: lean4oj; Owner: -
 --
 
@@ -498,6 +518,22 @@ ALTER TABLE ONLY lean4oj.tags
 
 
 --
+-- Name: user_api_tokens user_api_tokens_pkey; Type: CONSTRAINT; Schema: lean4oj; Owner: -
+--
+
+ALTER TABLE ONLY lean4oj.user_api_tokens
+    ADD CONSTRAINT user_api_tokens_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_api_tokens user_api_tokens_token_key; Type: CONSTRAINT; Schema: lean4oj; Owner: -
+--
+
+ALTER TABLE ONLY lean4oj.user_api_tokens
+    ADD CONSTRAINT user_api_tokens_token_key UNIQUE (token);
+
+
+--
 -- Name: user_groups user_groups_pkey; Type: CONSTRAINT; Schema: lean4oj; Owner: -
 --
 
@@ -601,6 +637,20 @@ CREATE INDEX submissions_submitter_submit_time_idx ON lean4oj.submissions USING 
 
 
 --
+-- Name: user_api_tokens_token_idx; Type: INDEX; Schema: lean4oj; Owner: -
+--
+
+CREATE INDEX user_api_tokens_token_idx ON lean4oj.user_api_tokens USING btree (token);
+
+
+--
+-- Name: user_api_tokens_uid_idx; Type: INDEX; Schema: lean4oj; Owner: -
+--
+
+CREATE INDEX user_api_tokens_uid_idx ON lean4oj.user_api_tokens USING btree (uid);
+
+
+--
 -- Name: user_groups_gid_uid_idx; Type: INDEX; Schema: lean4oj; Owner: -
 --
 
@@ -692,6 +742,14 @@ ALTER TABLE ONLY lean4oj.submissions
 
 ALTER TABLE ONLY lean4oj.submissions
     ADD CONSTRAINT submissions_submitter_fkey FOREIGN KEY (submitter) REFERENCES lean4oj.users(uid) MATCH FULL;
+
+
+--
+-- Name: user_api_tokens user_api_tokens_uid_fkey; Type: FK CONSTRAINT; Schema: lean4oj; Owner: -
+--
+
+ALTER TABLE ONLY lean4oj.user_api_tokens
+    ADD CONSTRAINT user_api_tokens_uid_fkey FOREIGN KEY (uid) REFERENCES lean4oj.users(uid) MATCH FULL;
 
 
 --

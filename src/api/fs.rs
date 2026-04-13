@@ -17,7 +17,7 @@ use crate::{
 };
 
 pub async fn submission(
-    Session_(session): Session_,
+    session: Session_,
     params: RawPathParams,
 ) -> Response {
     const PRIVIS: [&str; 3] = ["Lean4OJ.Admin", "Lean4OJ.Judger", "Lean4OJ.ManageProblem"];
@@ -34,7 +34,7 @@ pub async fn submission(
         const SQL_USER: &str = "select from lean4oj.submissions natural join lean4oj.problems where sid = $1 and (owner = $2 or is_public)";
         const SQL_GUEST: &str = "select from lean4oj.submissions natural join lean4oj.problems where sid = $1 and is_public";
 
-        if let Some(user) = User::from_maybe_session(&session, &mut conn).await? {
+        if let Some(user) = User::from_session(session, &mut conn).await? {
             if !privilege::check_any(&user.uid, PRIVIS.into_iter(), &mut conn).await? {
                 let stmt = conn.prepare_static(SQL_USER.into()).await?;
                 if conn.query_opt(&stmt, &[&sid.cast_signed(), &&*user.uid]).await?.is_none() {

@@ -88,7 +88,7 @@ struct CreateGroupRequest {
 }
 
 async fn create_group(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<CreateGroupRequest>,
 ) -> JkmxJsonResponse {
     const SQL_CREATE_GROUP: &str = "insert into lean4oj.groups (gid, member_count) values ($1, 1)";
@@ -99,7 +99,7 @@ async fn create_group(
     if !check_groupname(&group_name) { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(user, &session, &mut conn);
+    exs!(user, session, &mut conn);
     // if !privilege::check(&user.uid, "Lean4OJ.ManageUserGroup", &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let stmt_create = conn.prepare_static(SQL_CREATE_GROUP.into()).await?;
@@ -122,7 +122,7 @@ struct DeleteGroupRequest {
 }
 
 async fn delete_group(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<DeleteGroupRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "delete from lean4oj.groups where gid = $1";
@@ -132,7 +132,7 @@ async fn delete_group(
     if !check_groupname(&group_id) { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     if !private::μ(&s_user.uid, &group_id, false, &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let stmt = conn.prepare_static(SQL.into()).await?;
@@ -150,7 +150,7 @@ struct RenameGroupRequest {
 }
 
 async fn rename_group(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<RenameGroupRequest>,
 ) -> JkmxJsonResponse {
     const SQL: &str = "update lean4oj.groups set gid = $1 where gid = $2";
@@ -160,7 +160,7 @@ async fn rename_group(
     if !(check_groupname(&group_id) && check_groupname(&name)) { bad!(BYTES_NULL) }
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     if !private::μ(&s_user.uid, &group_id, false, &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let stmt = conn.prepare_static(SQL.into()).await?;
@@ -178,7 +178,7 @@ struct UidGidRequest {
 }
 
 async fn add_member(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UidGidRequest>,
 ) -> JkmxJsonResponse {
     const SQL_ADD: &str = "insert into lean4oj.user_groups (uid, gid) values ($1, $2)";
@@ -187,7 +187,7 @@ async fn add_member(
     let Json(UidGidRequest { user_id, group_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     if !private::μ(&s_user.uid, &group_id, false, &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let stmt_add = conn.prepare_static(SQL_ADD.into()).await?;
@@ -203,7 +203,7 @@ async fn add_member(
 }
 
 async fn remove_member(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<UidGidRequest>,
 ) -> JkmxJsonResponse {
     const SQL_REMOVE: &str = "delete from lean4oj.user_groups where uid = $1 and gid = $2 and is_admin = false";
@@ -212,7 +212,7 @@ async fn remove_member(
     let Json(UidGidRequest { user_id, group_id }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     if !private::μ(&s_user.uid, &group_id, false, &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
     let stmt_remove = conn.prepare_static(SQL_REMOVE.into()).await?;
@@ -236,7 +236,7 @@ struct SetGroupAdminRequest {
 }
 
 async fn set_group_admin(
-    Session_(session): Session_,
+    session: Session_,
     req: JsonReqult<SetGroupAdminRequest>,
 ) -> JkmxJsonResponse {
     const SQL_SET_ADMIN: &str = "update lean4oj.user_groups set is_admin = $1 where uid = $2 and gid = $3";
@@ -244,7 +244,7 @@ async fn set_group_admin(
     let Json(SetGroupAdminRequest { user_id, group_id, is_group_admin }) = req?;
 
     let mut conn = get_connection().await?;
-    exs!(s_user, &session, &mut conn);
+    exs!(s_user, session, &mut conn);
     let Some(t_user) = User::by_uid(&user_id, &mut conn).await? else { return JkmxJsonResponse::Response(StatusCode::NOT_FOUND, BYTES_NULL) };
     if !private::μ(&s_user.uid, &group_id, *s_user.uid == *t_user.uid, &mut conn).await? { return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL); }
 
@@ -255,9 +255,9 @@ async fn set_group_admin(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-async fn get_group_list(Session_(session): Session_) -> JkmxJsonResponse {
+async fn get_group_list(session: Session_) -> JkmxJsonResponse {
     let mut conn = get_connection().await?;
-    let res = if let Some(user) = User::from_maybe_session(&session, &mut conn).await? {
+    let res = if let Some(user) = User::from_session(session, &mut conn).await? {
         let groups = GroupA::list(&user.uid, &mut conn).await?;
         let mut buf = format!(r#"{{"groups":{},"groupsWithAdminPermission":"#, WithJson(&*groups));
         let mut ser = JSerializer::new(unsafe { buf.as_mut_vec() });

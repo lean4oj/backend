@@ -14,6 +14,7 @@ pub struct Security {
     discussion_default_public: bool,
     discussion_reply_default_public: bool,
     allow_everyone_create_discussion: bool,
+    pub max_api_tokens: usize,
 }
 
 impl const Default for Security {
@@ -27,6 +28,7 @@ impl const Default for Security {
             discussion_default_public: true,
             discussion_reply_default_public: true,
             allow_everyone_create_discussion: true,
+            max_api_tokens: 20,
         }
     }
 }
