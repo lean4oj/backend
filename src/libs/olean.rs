@@ -9,21 +9,21 @@ use compact_str::CompactString;
 use hashbrown::HashMap;
 
 const DATA: [(&[u8], &[u8; 40]); 15] = [
-    (b".26.0", b"d8204c9fd894f91bbb2cdfec5912ec8196fd8562"),
-    (b".27.0-rc1", b"2fcce7258eeb6e324366bc25f9058293b04b7547"),
-    (b".27.0", b"db93fe1608548721853390a10cd40580fe7d22ae"),
-    (b".28.0-rc1", b"3b0f2862196c6a8af9eb0025ee650252694013dd"),
-    (b".28.0", b"7e01a1bf5c70fc6167d49c345d3bf80596e9a79b"),
-    (b".29.0-rc1", b"985f350dcd18fc7814dfa677cac09933f44f3215"),
-    (b".29.0-rc2", b"83e54b65b65d1d3ce31d99d820a7bd5f3e219295"),
-    (b".29.0-rc3", b"5d86aa4032284a5242470e95fbe25f1ff506763d"),
-    (b".29.0-rc4", b"95583d74bd14ff8cc2b789347d15dfdad1259f97"),
-    (b".29.0-rc5", b"b83c0eefc3e898c1c2b9d311312488d65d527c9a"),
-    (b".29.0-rc6", b"00659f8e6071d7e46131ed643bf8003b99b044e9"),
-    (b".29.0-rc7", b"f5d7f18743eac341c4fa6e86abc5056d6ece40f4"),
-    (b".29.0-rc8", b"513160ea59dfd60defec325636bbc5215a8a6e7e"),
-    (b".29.0", b"98dc76e3c0a9b856c9b98726b713fb04fab16740"),
-    (b".30.0-rc1", b"714601baf118066cbf3f282361339c6d06665b2a"),
+    (b"4.26.0", b"d8204c9fd894f91bbb2cdfec5912ec8196fd8562"),
+    (b"4.27.0-rc1", b"2fcce7258eeb6e324366bc25f9058293b04b7547"),
+    (b"4.27.0", b"db93fe1608548721853390a10cd40580fe7d22ae"),
+    (b"4.28.0-rc1", b"3b0f2862196c6a8af9eb0025ee650252694013dd"),
+    (b"4.28.0", b"7e01a1bf5c70fc6167d49c345d3bf80596e9a79b"),
+    (b"4.29.0-rc1", b"985f350dcd18fc7814dfa677cac09933f44f3215"),
+    (b"4.29.0-rc2", b"83e54b65b65d1d3ce31d99d820a7bd5f3e219295"),
+    (b"4.29.0-rc3", b"5d86aa4032284a5242470e95fbe25f1ff506763d"),
+    (b"4.29.0-rc4", b"95583d74bd14ff8cc2b789347d15dfdad1259f97"),
+    (b"4.29.0-rc5", b"b83c0eefc3e898c1c2b9d311312488d65d527c9a"),
+    (b"4.29.0-rc6", b"00659f8e6071d7e46131ed643bf8003b99b044e9"),
+    (b"4.29.0-rc7", b"f5d7f18743eac341c4fa6e86abc5056d6ece40f4"),
+    (b"4.29.0-rc8", b"513160ea59dfd60defec325636bbc5215a8a6e7e"),
+    (b"4.29.0", b"98dc76e3c0a9b856c9b98726b713fb04fab16740"),
+    (b"4.30.0-rc1", b"714601baf118066cbf3f282361339c6d06665b2a"),
 ];
 
 const STD: [&str; 17] = [
@@ -49,7 +49,11 @@ const STD: [&str; 17] = [
 static ACCEPTABLE_VERSIONS: OnceLock<HashMap<&[u8], &[u8; 40]>> = OnceLock::new();
 
 pub fn init() {
-    ACCEPTABLE_VERSIONS.get_or_init(|| HashMap::from(DATA));
+    ACCEPTABLE_VERSIONS.get_or_init(||
+        DATA.into_iter()
+            .map(|(k, v)| (k.strip_prefix(b"4").unwrap(), v))
+            .collect()
+    );
 }
 
 #[inline]
@@ -71,7 +75,12 @@ pub fn lean_version_80(header: &[u8; 80]) -> Option<&'static str> {
         unsafe { ACCEPTABLE_VERSIONS.get().unwrap_unchecked() }
     };
     let (&ver_longlived, &hash) = map.get_key_value(ver_shortlived)?;
-    (*tail == *hash).then_some(unsafe { core::str::from_utf8_unchecked(ver_longlived) })
+    (*tail == *hash).then_some(unsafe {
+        core::str::from_utf8_unchecked(core::slice::from_raw_parts(
+            ver_longlived.as_ptr().sub(1),
+            ver_longlived.len() + 1,
+        ))
+    })
 }
 
 #[allow(clippy::missing_const_for_fn)] // false positive.

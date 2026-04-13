@@ -39,12 +39,6 @@ use crate::{
     },
 };
 
-#[derive(Deserialize)]
-pub struct Jb {
-    pub axioms: SmallVec<[LeanAxiom; 4]>,
-    pub checker: String,
-}
-
 pub struct Task {
     pub sid: u32,
     pub uid: CompactString,
@@ -275,6 +269,12 @@ pub fn notice(mut task: JudgeTask) -> SubmissionStatus {
 }
 
 async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdError> {
+    #[derive(Deserialize)]
+    struct Jb {
+        axioms: SmallVec<[LeanAxiom; 4]>,
+        checker: String,
+    }
+
     let Jb { axioms, checker } = match serde_json::from_slice(&task.checker) {
         Ok(r) => r,
         Err(e) => return Err(e.into()),
@@ -290,10 +290,7 @@ async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdE
     let final_status = if status == Delivered {
         #[allow(clippy::transmute_undefined_repr)]
         let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
-        let mut version4 = CompactString::with_capacity(version.len() + 1);
-        version4.push('4');
-        version4.push_str(version);
-        notice(JudgeTask { sid, version: version4, axioms })
+        notice(JudgeTask { sid, version: version.into(), axioms })
     } else {
         status
     };

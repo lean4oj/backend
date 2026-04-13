@@ -315,17 +315,10 @@ index a142b50b..d0da718c 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index 059fe302..aeba6f69 100644
+index ed430d2e..0632d29c 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
-@@ -111,13 +111,12 @@ http = "1.0.0"
- http-body = "1.0.0"
- http-body-util = "0.1.0"
- itoa = "1.0.5"
--matchit = "=0.8.4"
-+matchit = "0.9"
- memchr = "2.4.1"
- mime = "0.3.16"
+@@ -117,7 +117,6 @@ mime = "0.3.16"
  percent-encoding = "2.1"
  pin-project-lite = "0.2.7"
  serde_core = "1.0.221"
@@ -379,7 +372,7 @@ index 90da3e97..1d34f886 100644
                          Ok(res) => Ok(res.into_response()),
                          Err(err) => Ok(f($($ty),*, err).await.into_response()),
 diff --git a/axum/src/extract/path/mod.rs b/axum/src/extract/path/mod.rs
-index f6779a3f..3c7398a3 100644
+index ffc345be..4a12e641 100644
 --- a/axum/src/extract/path/mod.rs
 +++ b/axum/src/extract/path/mod.rs
 @@ -161,10 +161,19 @@ where
@@ -999,14 +992,14 @@ index c97b261e..24ce2084 100644
                          Ok(res) => {
                              f($($ty,)* res).await.into_response()
 diff --git a/axum/src/response/sse.rs b/axum/src/response/sse.rs
-index cb289219..9965cce0 100644
+index cb289219..99f8e4e4 100644
 --- a/axum/src/response/sse.rs
 +++ b/axum/src/response/sse.rs
 @@ -43,10 +43,10 @@ use std::{
      io::Write as _,
      mem,
      pin::Pin,
-+    sync::Exclusive,
++    sync::SyncView,
      task::{ready, Context, Poll},
      time::Duration,
  };
@@ -1019,7 +1012,7 @@ index cb289219..9965cce0 100644
              ],
              Body::new(SseBody {
 -                event_stream: SyncWrapper::new(self.stream),
-+                event_stream: Exclusive::new(self.stream),
++                event_stream: SyncView::new(self.stream),
              }),
          )
              .into_response()
@@ -1028,10 +1021,19 @@ index cb289219..9965cce0 100644
      struct SseBody<S> {
          #[pin]
 -        event_stream: SyncWrapper<S>,
-+        event_stream: Exclusive<S>,
++        event_stream: SyncView<S>,
      }
  }
  
+@@ -126,7 +126,7 @@ where
+     ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
+         let this = self.project();
+ 
+-        match ready!(this.event_stream.get_pin_mut().poll_next(cx)) {
++        match ready!(this.event_stream.as_pin_mut().poll_next(cx)) {
+             Some(Ok(event)) => Poll::Ready(Some(Ok(Frame::data(event.finalize())))),
+             Some(Err(error)) => Poll::Ready(Some(Err(error))),
+             None => Poll::Ready(None),
 @@ -395,7 +395,7 @@ impl Event {
          self
      }
@@ -1145,93 +1147,6 @@ index deedb3a5..06b2452d 100644
          self.oneshot_inner_owned(req).not_top_level()
      }
  
-diff --git a/axum/src/routing/strip_prefix.rs b/axum/src/routing/strip_prefix.rs
-index 3209da3b..52438e92 100644
---- a/axum/src/routing/strip_prefix.rs
-+++ b/axum/src/routing/strip_prefix.rs
-@@ -66,7 +66,7 @@ fn strip_prefix(uri: &Uri, prefix: &str) -> Option<Uri> {
- 
-         match item {
-             Item::Both(path_segment, prefix_segment) => {
--                if is_capture(prefix_segment) || path_segment == prefix_segment {
-+                if prefix_matches(prefix_segment, path_segment) {
-                     // the prefix segment is either a param, which matches anything, or
-                     // it actually matches the path segment
-                     *matching_prefix_length.as_mut().unwrap() += path_segment.len();
-@@ -148,12 +148,67 @@ where
-     })
- }
- 
--fn is_capture(segment: &str) -> bool {
--    segment.starts_with('{')
--        && segment.ends_with('}')
--        && !segment.starts_with("{{")
--        && !segment.ends_with("}}")
--        && !segment.starts_with("{*")
-+fn prefix_matches(prefix_segment: &str, path_segment: &str) -> bool {
-+    if let Some((prefix, suffix)) = capture_prefix_suffix(prefix_segment) {
-+        path_segment.starts_with(prefix) && path_segment.ends_with(suffix)
-+    } else {
-+        prefix_segment == path_segment
-+    }
-+}
-+
-+/// Takes a segment and returns prefix and suffix of the path, omitting the capture. Currently,
-+/// matchit supports only one capture so this can be a pair. If there is no capture, `None` is
-+/// returned.
-+fn capture_prefix_suffix(segment: &str) -> Option<(&str, &str)> {
-+    fn find_first_not_double(needle: u8, haystack: &[u8]) -> Option<usize> {
-+        let mut possible_capture = 0;
-+        while let Some(index) = haystack
-+            .get(possible_capture..)
-+            .and_then(|haystack| haystack.iter().position(|byte| byte == &needle))
-+        {
-+            let index = index + possible_capture;
-+
-+            if haystack.get(index + 1) == Some(&needle) {
-+                possible_capture = index + 2;
-+                continue;
-+            }
-+
-+            return Some(index);
-+        }
-+
-+        None
-+    }
-+
-+    let capture_start = find_first_not_double(b'{', segment.as_bytes())?;
-+
-+    let Some(capture_end) = find_first_not_double(b'}', segment.as_bytes()) else {
-+        if cfg!(debug_assertions) {
-+            panic!(
-+                "Segment `{segment}` is malformed. It seems to contain a capture start but no \
-+                capture end. This should have been rejected at application start, please file a \
-+                bug in axum repository."
-+            );
-+        } else {
-+            // This is very bad but let's not panic in production. This will most likely not match.
-+            return None;
-+        }
-+    };
-+
-+    if capture_start > capture_end {
-+        if cfg!(debug_assertions) {
-+            panic!(
-+                "Segment `{segment}` is malformed. It seems to contain a capture start after \
-+                capture end. This should have been rejected at application start, please file a \
-+                bug in axum repository."
-+            );
-+        } else {
-+            // This is very bad but let's not panic in production. This will most likely not match.
-+            return None;
-+        }
-+    }
-+
-+    // Slicing may panic but we found the indexes inside the string so this should be fine.
-+    Some((&segment[..capture_start], &segment[capture_end + 1..]))
- }
- 
- #[derive(Debug)]
 diff --git a/axum/src/serve/mod.rs b/axum/src/serve/mod.rs
 index 05751d2f..23ddc77b 100644
 --- a/axum/src/serve/mod.rs

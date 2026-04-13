@@ -1,9 +1,9 @@
 diff --git a/src/lib.rs b/src/lib.rs
-index c5faec4..79d477a 100644
+index effc178..26c580d 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -69,7 +69,7 @@ mod macros;
- 
+@@ -52,7 +52,7 @@ mod macros;
+ mod alloc;
  mod control;
  mod hasher;
 -mod raw;
@@ -12,18 +12,18 @@ index c5faec4..79d477a 100644
  
  mod external_trait_impls;
 diff --git a/src/raw_entry.rs b/src/raw_entry.rs
-index 480ebdb..baec2f3 100644
+index 13b71bc..050c904 100644
 --- a/src/raw_entry.rs
 +++ b/src/raw_entry.rs
-@@ -1,6 +1,6 @@
- use crate::hash_map::{equivalent, make_hash, make_hasher};
- use crate::raw::{Allocator, Bucket, Global, RawTable};
--use crate::{Equivalent, HashMap};
-+use crate::{Equivalent, HashSet, HashMap};
+@@ -2,6 +2,7 @@ use crate::Equivalent;
+ use crate::alloc::{Allocator, Global};
+ use crate::map::{HashMap, equivalent, make_hash, make_hasher};
+ use crate::raw::{Bucket, RawTable};
++use crate::set::HashSet;
  use core::fmt::{self, Debug};
  use core::hash::{BuildHasher, Hash};
  use core::mem;
-@@ -158,6 +158,18 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
+@@ -159,6 +160,18 @@ impl<K, V, S, A: Allocator> HashMap<K, V, S, A> {
      }
  }
  
@@ -43,7 +43,7 @@ index 480ebdb..baec2f3 100644
  ///
  /// See the [`HashMap::raw_entry_mut`] docs for usage examples.
 diff --git a/src/table.rs b/src/table.rs
-index b083c2b..34e429a 100644
+index f50f575..5c486d9 100644
 --- a/src/table.rs
 +++ b/src/table.rs
 @@ -49,7 +49,7 @@ pub struct HashTable<T, A = Global>

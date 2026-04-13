@@ -6,7 +6,7 @@ use core::{
     mem::{MaybeUninit, take},
     str,
 };
-use std::time::SystemTime;
+use std::{str::FromStr, time::SystemTime};
 
 use axum::{
     Extension, Json, Router,
@@ -20,6 +20,7 @@ use compact_str::CompactString;
 use futures_util::TryStreamExt;
 use http::{StatusCode, header, response::Parts};
 use openssl::sha::Sha256;
+use semver::{Version, VersionReq};
 use serde::Deserialize;
 use smallvec::SmallVec;
 use tokio_postgres::types::{Json as QJson, ToSql};
@@ -69,6 +70,7 @@ mod private {
 #[serde(rename_all = "camelCase")]
 struct GetOleanMetaRequest {
     module_name: CompactString,
+    version_req: Option<VersionReq>,
 }
 
 async fn get_olean_meta(
@@ -77,7 +79,7 @@ async fn get_olean_meta(
 ) -> JkmxJsonResponse {
     const EMPTY: JkmxJsonResponse = JkmxJsonResponse::Response(StatusCode::OK, Bytes::from_static(br#"{"consts":[],"dependencies":[],"leanVersion":""}"#));
 
-    let Json(GetOleanMetaRequest { module_name }) = req?;
+    let Json(GetOleanMetaRequest { module_name, version_req }) = req?;
 
     if !module_name.split('.').all(is_lean_id) { bad!(BYTES_NULL); }
 
@@ -91,7 +93,12 @@ async fn get_olean_meta(
     let Some(consts) = olean::parse_consts(meta) else { return EMPTY };
     let Some(dependencies) = olean::parse_imports(meta) else { return EMPTY };
 
-    let res = format!(r#"{{"consts":{},"dependencies":{},"leanVersion":"4{}"}}"#, WithJson(&*consts), WithJson(&*dependencies), meta.version);
+    let mut res = format!(r#"{{"consts":{},"dependencies":{},"leanVersion":"{}""#, WithJson(&*consts), WithJson(&*dependencies), meta.version);
+    if let Some(req) = version_req {
+        let version = Version::from_str(meta.version)?;
+        write!(&mut res, r#","compatible":{}"#, req.matches(&version))?;
+    }
+    res.push('}');
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
@@ -100,6 +107,12 @@ async fn get_olean_meta(
 struct Inner1 {
     module_name: CompactString,
     const_name: CompactString,
+}
+
+#[derive(Deserialize)]
+pub struct JbAxiomsVersion {
+    axioms: SmallVec<[LeanAxiom; 4]>,
+    version: Option<VersionReq>,
 }
 
 #[derive(Deserialize)]
@@ -140,6 +153,11 @@ async fn submit(
     let Some(consts) = olean::parse_consts(meta) else { bad!(BYTES_NULL) };
     let Some(imports) = olean::parse_imports(meta) else { bad!(BYTES_NULL) };
     if !consts.contains(&const_name) { bad!(BYTES_NULL); }
+    let JbAxiomsVersion { version, .. } = serde_json::from_slice(&problem.jb)?;
+    if let Some(req) = version {
+        let version = Version::from_str(meta.version)?;
+        if !req.matches(&version) { bad!(BYTES_NULL); }
+    }
 
     let mut sha256 = Sha256::new();
     sha256.update(&olean);
@@ -211,11 +229,7 @@ async fn query_submission(
     };
 
     let submitter__inner___ = submitter.as_deref();
-    let lean_version__inner___ = if let Some(ref v) = lean_version {
-        if let Some(stripped) = v.strip_prefix('4') { Some(stripped) } else { bad!(BYTES_NULL) }
-    } else {
-        None
-    };
+    let lean_version__inner___ = lean_version.as_deref();
 
     let mut conn = get_connection().await?;
     let maybe_user = User::from_maybe_session(&session, &mut conn).await?;
@@ -342,7 +356,7 @@ async fn get_submission(
     };
 
     let mut res = format!(
-        r#"{{"meta":{},"content":{{"hash":"{}","leanVersion":"4{lean_version}","message":"#,
+        r#"{{"meta":{},"content":{{"hash":"{}","leanVersion":"{lean_version}","message":"#,
         WithJson(meta),
         unsafe { str::from_utf8_unchecked(hash.assume_init_ref()) },
     );
@@ -452,13 +466,14 @@ async fn rejudge_submission(
     };
 
     let is_ac = submission.status == SubmissionStatus::Accepted;
+    let JbAxiomsVersion { axioms, version } = serde_json::from_slice(&problem.jb)?;
 
     if !refetch {
-        let mut version4 = CompactString::with_capacity(submission.lean_toolchain.len() + 1);
-        version4.push('4');
-        version4.push_str(&submission.lean_toolchain);
+        if let Some(req) = version {
+            let version = Version::from_str(&submission.lean_toolchain)?;
+            if !req.matches(&version) { bad!(BYTES_NULL); }
+        }
 
-        let submission_deposit::Jb { axioms, .. } = serde_json::from_slice(&problem.jb)?;
         #[allow(clippy::transmute_undefined_repr)]
         let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
 
@@ -466,7 +481,7 @@ async fn rejudge_submission(
 
         let status = submission_deposit::notice(JudgeTask {
             sid: submission.sid,
-            version: version4,
+            version: submission.lean_toolchain,
             axioms,
         });
 
@@ -491,6 +506,10 @@ async fn rejudge_submission(
         let consts = olean::parse_consts(meta)?;
         let imports = olean::parse_imports(meta)?;
         if !consts.contains(&submission.const_name) { do yeet; }
+        if let Some(req) = version {
+            if let Ok(version) = Version::from_str(meta.version) && req.matches(&version) {}
+            else { do yeet; }
+        }
         let version = meta.version;
         let is_module = meta.is_module();
         (olean, version, is_module, imports)
@@ -682,11 +701,6 @@ struct JudgerGetTaskRequest {
     password: CompactString,
 }
 
-#[derive(Deserialize)]
-pub struct JbAxioms {
-    axioms: SmallVec<[LeanAxiom; 4]>,
-}
-
 async fn judger_get_task_inner(req: JsonReqult<JudgerGetTaskRequest>) -> JkmxJsonResponse {
     const SQL_AUTH: &str = "select from lean4oj.users natural join lean4oj.user_groups where uid = $1 and password = $2 and (gid = 'Lean4OJ.Admin' or gid = 'Lean4OJ.Judger') limit 1";
     const SQL_TASK: &str = "select sid, lean_toolchain, jb from lean4oj.submissions natural join lean4oj.problems where status = '\x02' order by sid limit 1";
@@ -706,11 +720,8 @@ async fn judger_get_task_inner(req: JsonReqult<JudgerGetTaskRequest>) -> JkmxJso
         );
     };
     let sid = row.try_get::<_, i32>(0)?.cast_unsigned();
-    let version_without_four = row.try_get::<_, &str>(1)?;
-    let QJson(JbAxioms { axioms }) = row.try_get(2)?;
-    let mut version = CompactString::with_capacity(version_without_four.len() + 1);
-    version.push('4');
-    version.push_str(version_without_four);
+    let version = row.try_get::<_, &str>(1)?.into();
+    let QJson(JbAxiomsVersion { axioms, .. }) = row.try_get(2)?;
     #[allow(clippy::transmute_undefined_repr)]
     let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
 

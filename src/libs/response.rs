@@ -66,6 +66,7 @@ impl_lsz!(hyper::Error);
 impl_lsz!(lettre::error::Error, StatusCode::INTERNAL_SERVER_ERROR);
 impl_lsz!(lettre::transport::smtp::Error, StatusCode::INTERNAL_SERVER_ERROR);
 impl_lsz!(openssl::error::ErrorStack);
+impl_lsz!(semver::Error);
 impl_lsz!(tokio::task::JoinError, StatusCode::INTERNAL_SERVER_ERROR);
 impl_lsz!(tower_sessions_core::session::Error, StatusCode::INTERNAL_SERVER_ERROR);
 

@@ -93,7 +93,7 @@ index 2391d54..60ea2db 100644
  
  impl TryFrom<net::UnixStream> for UnixStream {
 diff --git a/src/sync/batch_semaphore.rs b/src/sync/batch_semaphore.rs
-index 8662af3..471a6b5 100644
+index 6447cef..d9a1ebd 100644
 --- a/src/sync/batch_semaphore.rs
 +++ b/src/sync/batch_semaphore.rs
 @@ -68,7 +68,7 @@ pub enum TryAcquireError {
