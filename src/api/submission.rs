@@ -127,8 +127,8 @@ async fn submit(
     session: Session_,
     req: JsonReqult<SubmitRequest>,
 ) -> JkmxJsonResponse {
-    const SQL_SEL_PRIV: &str = "select * from lean4oj.problems where pid = $1 and submittable";
-    const SQL_SEL: &str = "select * from lean4oj.problems where pid = $1 and (owner = $2 or is_public) and submittable";
+    const SQL_SEL_PRIV: &str = "select pid, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.problems where pid = $1 and submittable";
+    const SQL_SEL: &str = "select pid, is_public, public_at, owner, pcontent, sub, pac, submittable, jb from lean4oj.problems where pid = $1 and (owner = $2 or is_public) and submittable";
     const SQL_ADD_SUB: &str = "update lean4oj.problems set sub = sub + 1 where pid = $1";
 
     let Json(SubmitRequest { problem_id, content: Inner1 { module_name, const_name } }) = req?;

@@ -1517,7 +1517,7 @@ index 50842ba4..6e715c80 100644
          }
      }
 diff --git a/tokio-postgres/src/transaction.rs b/tokio-postgres/src/transaction.rs
-index 81e8036b..e321d91b 100644
+index 81e8036b..73a44e44 100644
 --- a/tokio-postgres/src/transaction.rs
 +++ b/tokio-postgres/src/transaction.rs
 @@ -11,7 +11,7 @@ use crate::{
@@ -1854,7 +1854,7 @@ index 81e8036b..e321d91b 100644
          self.client
      }
 +
-+    /// Returns a reference to the underlying `Client`.
++    /// Returns a mutable reference to the underlying `Client`.
 +    pub fn client_mut(&mut self) -> &mut Client {
 +        self.client
 +    }

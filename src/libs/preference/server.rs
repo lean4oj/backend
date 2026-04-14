@@ -99,8 +99,9 @@ impl const Default for Misc {
             discussion_reaction_allow_custom_emojis: true,
             disabled_emoji_in_math: &["↔", "↪"],
             lean_versions: SliceMap::from_slice([
-                ("4.29.0", "4.29.0 (latest stable)"),
+                ("4.29.1", "4.29.1 (latest stable)"),
                 ("4.30.0-rc1", "4.30.0-rc1 (latest)"),
+                ("4.29.0", "4.29.0"),
                 ("4.29.0-rc8", "4.29.0-rc8"),
                 ("4.29.0-rc7", "4.29.0-rc7"),
                 ("4.29.0-rc6", "4.29.0-rc6"),
@@ -109,6 +110,7 @@ impl const Default for Misc {
                 ("4.29.0-rc3", "4.29.0-rc3"),
                 ("4.29.0-rc2", "4.29.0-rc2"),
                 ("4.29.0-rc1", "4.29.0-rc1"),
+                ("4.28.1", "4.28.1"),
                 ("4.28.0", "4.28.0"),
                 ("4.28.0-rc1", "4.28.0-rc1"),
                 ("4.27.0", "4.27.0"),

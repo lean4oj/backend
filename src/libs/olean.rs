@@ -8,12 +8,13 @@ use std::sync::OnceLock;
 use compact_str::CompactString;
 use hashbrown::HashMap;
 
-const DATA: [(&[u8], &[u8; 40]); 15] = [
+const DATA: [(&[u8], &[u8; 40]); 17] = [
     (b"4.26.0", b"d8204c9fd894f91bbb2cdfec5912ec8196fd8562"),
     (b"4.27.0-rc1", b"2fcce7258eeb6e324366bc25f9058293b04b7547"),
     (b"4.27.0", b"db93fe1608548721853390a10cd40580fe7d22ae"),
     (b"4.28.0-rc1", b"3b0f2862196c6a8af9eb0025ee650252694013dd"),
     (b"4.28.0", b"7e01a1bf5c70fc6167d49c345d3bf80596e9a79b"),
+    (b"4.28.1", b"978f81d363eabdc49c5720726faa53a6007fcee8"),
     (b"4.29.0-rc1", b"985f350dcd18fc7814dfa677cac09933f44f3215"),
     (b"4.29.0-rc2", b"83e54b65b65d1d3ce31d99d820a7bd5f3e219295"),
     (b"4.29.0-rc3", b"5d86aa4032284a5242470e95fbe25f1ff506763d"),
@@ -23,6 +24,7 @@ const DATA: [(&[u8], &[u8; 40]); 15] = [
     (b"4.29.0-rc7", b"f5d7f18743eac341c4fa6e86abc5056d6ece40f4"),
     (b"4.29.0-rc8", b"513160ea59dfd60defec325636bbc5215a8a6e7e"),
     (b"4.29.0", b"98dc76e3c0a9b856c9b98726b713fb04fab16740"),
+    (b"4.29.1", b"f72c35b3f637c8c6571d353742168ab66cc22c00"),
     (b"4.30.0-rc1", b"714601baf118066cbf3f282361339c6d06665b2a"),
 ];
 

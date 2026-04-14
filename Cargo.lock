@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#6fcf0a25b61d55c64243cd5707d1de940139f9e6"
+source = "git+https://github.com/tokio-rs/axum#7dcc0db31e512c86242a2d46a4a90ceae1802ed0"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#6fcf0a25b61d55c64243cd5707d1de940139f9e6"
+source = "git+https://github.com/tokio-rs/axum#7dcc0db31e512c86242a2d46a4a90ceae1802ed0"
 dependencies = [
  "bytes",
  "futures-core",
@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "bitflags"
-version = "2.11.0"
+version = "2.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
+checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
 
 [[package]]
 name = "block-buffer"
@@ -1654,9 +1654,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.51.1"
+version = "1.52.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f66bf9585cda4b724d3e78ab34b73fb2bbaba9011b9bfdf69dc836382ea13b8c"
+checksum = "a91135f59b1cbf38c91e73cf3386fca9bb77915c45ce2771460c9d92f0f3d776"
 dependencies = [
  "bytes",
  "libc",
