@@ -1,8 +1,11 @@
-use core::{convert::Infallible, mem, ptr};
+use core::{convert::Infallible, mem, ptr, slice};
 use std::{fs, sync::OnceLock, time::SystemTime};
 
 use axum::extract::FromRequestParts;
-use base64::{Engine, prelude::{BASE64_STANDARD, BASE64_STANDARD_NO_PAD}};
+use base64::{
+    Engine,
+    prelude::{BASE64_STANDARD, BASE64_STANDARD_NO_PAD},
+};
 use futures_util::{FutureExt, future::Map};
 use http::{header::AUTHORIZATION, request::Parts};
 use openssl::{bn::BigNum, ec::EcKey, ecdsa::EcdsaSig, pkey::Private};
@@ -137,6 +140,12 @@ impl TryFrom<&[u8]> for Encoded {
         } else {
             Err(())
         }
+    }
+}
+
+impl const AsRef<[u8]> for Encoded {
+    fn as_ref(&self) -> &[u8] {
+        unsafe { slice::from_raw_parts(ptr::from_ref(self).cast(), mem::size_of::<Self>()) }
     }
 }
 

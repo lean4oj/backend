@@ -24,6 +24,7 @@ hyper-util = "0.1.20"
 lettre = { version = "0.11.21", features = ["tokio1-native-tls", "tracing"] }
 libc = "0.2.185"
 log = { version = "0.4.29", features = ["release_max_level_info"] }
+maxminddb = { version = "0.27.3", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
 nodejs-semver = { version = "4.2.0", features = ["serde"] }
 openssl = "0.10.77"

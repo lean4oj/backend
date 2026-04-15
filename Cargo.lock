@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#7dcc0db31e512c86242a2d46a4a90ceae1802ed0"
+source = "git+https://github.com/tokio-rs/axum#309d1bd9530eec2217134cb262760af1df42ee3b"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#7dcc0db31e512c86242a2d46a4a90ceae1802ed0"
+source = "git+https://github.com/tokio-rs/axum#309d1bd9530eec2217134cb262760af1df42ee3b"
 dependencies = [
  "bytes",
  "futures-core",
@@ -837,6 +837,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "ipnetwork"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf370abdafd54d13e54a620e8c3e1145f28e46cc9d704bc6d94414559df41763"
+
+[[package]]
 name = "is_terminal_polyfill"
 version = "1.70.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -890,6 +896,7 @@ dependencies = [
  "lettre",
  "libc",
  "log",
+ "maxminddb",
  "memchr",
  "nodejs-semver",
  "openssl",
@@ -991,6 +998,19 @@ name = "matchit"
 version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8863b587001c1b9a8a4e36008cebc6b3612cb1226fe2de94858e06092687b608"
+
+[[package]]
+name = "maxminddb"
+version = "0.27.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "76371bd37ce742f8954daabd0fde7f1594ee43ac2200e20c003ba5c3d65e2192"
+dependencies = [
+ "ipnetwork",
+ "log",
+ "memchr",
+ "serde",
+ "thiserror",
+]
 
 [[package]]
 name = "md-5"

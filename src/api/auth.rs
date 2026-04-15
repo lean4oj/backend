@@ -1,4 +1,3 @@
-use core::{mem, panic, slice};
 use std::time::SystemTime;
 
 use axum::{
@@ -33,6 +32,7 @@ use crate::{
         },
         db::{DBError, JsonChecked, get_connection, insert_connection},
         email::{get_source, send_mail},
+        geoip::{Ip, in_china},
         preference::server::PreferenceConfig,
         privilege,
         request::{JsonReqult, RawPayload, Repult},
@@ -53,23 +53,24 @@ const NO_SUCH_USER: JkmxJsonResponse = JkmxJsonResponse::Response(
 );
 
 mod private {
+    use bytes::Bytes;
     use serde_json::{Serializer as JSerializer, ser::CompactFormatter};
     use std::io::Write;
 
     pub(super) trait Δ: serde::Serializer {
-        fn δ(_: &*const [u8], _: Self) -> Result<Self::Ok, Self::Error>;
+        fn δ(_: &Bytes, _: Self) -> Result<Self::Ok, Self::Error>;
     }
 
     impl<S: serde::Serializer> Δ for S {
-        default fn δ(_: &*const [u8], _: Self) -> Result<Self::Ok, Self::Error> {
+        default fn δ(_: &Bytes, _: Self) -> Result<Self::Ok, Self::Error> {
             // Won't be instantiated.
             unimplemented!("Not implemented intentionally.");
         }
     }
 
     impl Δ for &mut JSerializer<&mut Vec<u8>, CompactFormatter> {
-        fn δ(data: &*const [u8], serializer: Self) -> Result<Self::Ok, Self::Error> {
-            serializer.as_inner().0.write_all(unsafe { &**data }).map_err(serde_json::Error::io)
+        fn δ(data: &Bytes, serializer: Self) -> Result<Self::Ok, Self::Error> {
+            serializer.as_inner().0.write_all(data).map_err(serde_json::Error::io)
         }
     }
 
@@ -115,7 +116,7 @@ struct SessionInfoResponse {
     joined_groups_count: Option<u64>,
     user_privileges: privilege::Privileges,
     #[serde(serialize_with = "private::Δ::δ")]
-    user_preference: *const [u8],
+    user_preference: Bytes,
     #[serde(skip_serializing_if = "Option::is_none")]
     extra_error: Option<&'static str>,
 }
@@ -123,13 +124,13 @@ struct SessionInfoResponse {
 unsafe impl Send for SessionInfoResponse {}
 
 async fn get_session_info(
+    ip: Ip,
     Extension(now): Extension<SystemTime>,
     req: Repult<Query<SessionInfoRequest>>,
 ) -> Response {
     const JSONP_HEAD: &str = "(globalThis.getSessionInfoCallback??(e=>globalThis.sessionInfo=e))(";
     const JSONP_TRAIL: &str = ");";
     const SQL_GET_PREF: &str = "select preference from lean4oj.user_preference where uid = $1";
-    const EMPTY: &[u8] = b"{}";
 
     fn not_falsy(inner: CompactString) -> bool {
         !["false", "f", "no", "n", "off", "0"]
@@ -149,7 +150,7 @@ async fn get_session_info(
         user_meta: None,
         joined_groups_count: None,
         user_privileges: SmallVec::new(),
-        user_preference: core::ptr::from_ref(EMPTY),
+        user_preference: BYTES_EMPTY,
         extra_error: None,
     };
 
@@ -165,13 +166,17 @@ async fn get_session_info(
                     if let Ok(stmt) = conn.prepare_static(SQL_GET_PREF.into()).await
                     && let Ok(row) = conn.query_one(&stmt, &[&&*user.uid]).await
                     && let Ok(pref) = row.try_get::<_, JsonChecked>(0) {
-                        res.user_preference = pref.0;
+                        res.user_preference = row.buffer_bytes().slice_ref(pref.0);
                     }
                     res.user_meta = Some(UserA { user, is_admin: privilege::is_admin(&res.user_privileges) });
                 }
             Session_::Token(_) => res.extra_error = Some("TOKEN_DISALLOWED"),
             Session_::None => (),
         }
+    }
+
+    if let Some(ip) = ip.0 && in_china(ip) {
+        res.server_preference.make_gravatar_cdn();
     }
 
     let mut body = if jsonp { JSONP_HEAD.to_owned() } else { String::new() };
@@ -218,8 +223,7 @@ async fn login(req: JsonReqult<LoginRequest>) -> JkmxJsonResponse {
     let username = row.try_get::<_, &str>(1)?;
     let session = session::create(uid).await?;
     let encoded = Encoded::try_from(session.id().unwrap_or(Id(0)))?;
-    let bytes: &[u8] = unsafe { slice::from_raw_parts((&raw const encoded).cast(), mem::size_of::<Encoded>()) };
-    let res = format!(r#"{{"token":"{}","username":"{username}"}}"#, Base64Display::new(bytes, &BASE64_STANDARD));
+    let res = format!(r#"{{"token":"{}","username":"{username}"}}"#, Base64Display::new(encoded.as_ref(), &BASE64_STANDARD));
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
@@ -336,8 +340,7 @@ async fn register(
 
     let session = session::create(identifier.into_string()).await?;
     let encoded = Encoded::try_from(session.id().unwrap_or(Id(0)))?;
-    let bytes: &[u8] = unsafe { slice::from_raw_parts((&raw const encoded).cast(), mem::size_of::<Encoded>()) };
-    let res = format!(r#"{{"token":"{}"}}"#, Base64Display::new(bytes, &BASE64_STANDARD));
+    let res = format!(r#"{{"token":"{}"}}"#, Base64Display::new(encoded.as_ref(), &BASE64_STANDARD));
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
@@ -382,8 +385,7 @@ async fn reset_password(
 
     let session = session::reset(uid).await?;
     let encoded = Encoded::try_from(session.id().unwrap_or(Id(0)))?;
-    let bytes: &[u8] = unsafe { slice::from_raw_parts((&raw const encoded).cast(), mem::size_of::<Encoded>()) };
-    let res = format!(r#"{{"token":"{}"}}"#, Base64Display::new(bytes, &BASE64_STANDARD));
+    let res = format!(r#"{{"token":"{}"}}"#, Base64Display::new(encoded.as_ref(), &BASE64_STANDARD));
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 

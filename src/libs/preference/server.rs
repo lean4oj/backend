@@ -93,7 +93,7 @@ impl const Default for Misc {
             redirect_legacy_urls: true,
             google_analytics_id: option_env!("GOOGLE_ANALYTICS_ID"),
             plausible_api_endpoint: option_env!("PLAUSIBLE_API_ENDPOINT"),
-            gravatar_cdn: "https://cravatar.cn",
+            gravatar_cdn: "https://gravatar.com",
             render_markdown_in_user_bio: true,
             discussion_reaction_emojis: &["👍", "👎", "😄", "😕", "❤", "🤔", "🤣", "🌿", "🍋", "🕊"],
             discussion_reaction_allow_custom_emojis: true,
@@ -136,5 +136,11 @@ impl const Default for PreferenceConfig {
             pagination: Pagination::default(),
             misc: Misc::default(),
         }
+    }
+}
+
+impl PreferenceConfig {
+    pub const fn make_gravatar_cdn(&mut self) {
+        self.misc.gravatar_cdn = "https://cravatar.cn";
     }
 }

@@ -6,6 +6,7 @@ pub mod email;
 pub mod emoji;
 pub mod error;
 pub mod fs;
+pub mod geoip;
 pub mod judger {
     pub mod task;
 }

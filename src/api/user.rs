@@ -27,8 +27,9 @@ use crate::{
         auth::Session_,
         constants::{BYTES_EMPTY, BYTES_NULL, PASSWORD_LENGTH},
         db::{DBError, DBResult, JsonChecked, get_connection},
-        lquery, privilege,
+        lquery,
         preference::server::Security,
+        privilege,
         request::{JsonReqult, RawPayload, Repult},
         response::JkmxJsonResponse,
         serde::WithJson,
@@ -420,6 +421,7 @@ pub async fn create_api_token(
         return JkmxJsonResponse::Response(StatusCode::FORBIDDEN, BYTES_NULL);
     }
 
+    #[allow(clippy::transmute_undefined_repr)]
     let time = unsafe { core::mem::transmute::<SystemTime, Duration>(now) };
     let timestamp = Timestamp::from_unix(uuid::timestamp::context::shared_context_v7(), time.as_secs(), time.subsec_nanos());
     let uuid = Uuid::new_v7(timestamp);

@@ -254,10 +254,10 @@ index abbe181a..90ca82e1 100644
  
                      Ok(($($ty,)* $last,))
 diff --git a/axum-core/src/response/into_response.rs b/axum-core/src/response/into_response.rs
-index a311851c..80af7742 100644
+index 5cb9187c..50e3d7ae 100644
 --- a/axum-core/src/response/into_response.rs
 +++ b/axum-core/src/response/into_response.rs
-@@ -370,7 +370,7 @@ where
+@@ -373,7 +373,7 @@ where
  {
      fn into_response(self) -> Response {
          let (parts, res) = self;
@@ -267,7 +267,7 @@ index a311851c..80af7742 100644
  }
  
 diff --git a/axum-core/src/response/into_response_parts.rs b/axum-core/src/response/into_response_parts.rs
-index a142b50b..d0da718c 100644
+index 6106b46d..05a10fd5 100644
 --- a/axum-core/src/response/into_response_parts.rs
 +++ b/axum-core/src/response/into_response_parts.rs
 @@ -1,7 +1,7 @@
@@ -279,7 +279,7 @@ index a142b50b..d0da718c 100644
  };
  use std::{convert::Infallible, fmt};
  
-@@ -104,6 +104,18 @@ pub struct ResponseParts {
+@@ -107,6 +107,18 @@ pub struct ResponseParts {
  }
  
  impl ResponseParts {
@@ -298,7 +298,7 @@ index a142b50b..d0da718c 100644
      /// Gets a reference to the response headers.
      #[must_use]
      pub fn headers(&self) -> &HeaderMap {
-@@ -265,6 +277,15 @@ impl IntoResponseParts for Extensions {
+@@ -268,6 +280,15 @@ impl IntoResponseParts for Extensions {
      }
  }
  

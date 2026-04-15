@@ -1,4 +1,5 @@
 #![feature(
+    addr_parse_ascii,
     // allocator_api,
     // allocator_internals,
     ascii_char,
@@ -138,6 +139,7 @@ async fn main() -> std::io::Result<!> {
     libs::email::init_email();
     libs::emoji::init();
     libs::logger::init();
+    libs::geoip::init();
     libs::olean::init();
     libs::session::init();
 
