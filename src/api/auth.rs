@@ -112,7 +112,9 @@ impl const Default for ServerVersion {
 struct SessionInfoResponse {
     server_preference: PreferenceConfig,
     server_version: ServerVersion,
+    #[serde(skip_serializing_if = "Option::is_none")]
     user_meta: Option<UserA>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     joined_groups_count: Option<u64>,
     user_privileges: privilege::Privileges,
     #[serde(serialize_with = "private::Δ::δ")]

@@ -7,6 +7,7 @@ use hyper::{
     client::conn::{self, http1::SendRequest},
     rt::{Read, Write},
 };
+use nodejs_semver::{Identifier, Version};
 use serde::Serialize;
 use tokio::{
     io::{AsyncRead, AsyncReadExt, AsyncWriteExt},
@@ -91,6 +92,16 @@ pub async fn main_loop<S>(sock: S) -> hyper::Result<()>
 where
     S: Read + Write + Send + Unpin + 'static,
 {
+    #[inline]
+    fn is_legacy(version: &str) -> bool {
+        let Ok(version) = Version::parse(version) else { return false };
+        match core::intrinsics::three_way_compare(version.minor, 30) {
+            std::cmp::Ordering::Less => true,
+            std::cmp::Ordering::Equal => version.patch == 0 && matches!(*version.pre_release, [Identifier::AlphaNumeric(deref!("rc1"))]),
+            std::cmp::Ordering::Greater => false,
+        }
+    }
+
     let (mut sender, conn) = conn::http1::handshake::<_, String>(sock).await?;
     let conn_backend = tokio::spawn(conn.with_upgrades());
 
@@ -107,11 +118,17 @@ where
         tracing::debug!("Received task: {task:?}");
 
         let bytes = task.sid.to_le_bytes();
+        let version_placeholder = if is_legacy(&task.version) {
+            ""
+        } else {
+            "/.lake/build/lib/lean"
+        };
         let lean_path = format!(
-            "{0}/leanprover--lean4---v{2}/lib/lean:{1}/std/{2}:{1}/lean/Lean4OJ/{2}:{1}/submissions/{6:02x}/{5:02x}/{4:02x}/{3:02x}/main.lean",
+            "{0}/leanprover--lean4---v{2}/lib/lean:{1}/std/{2}{3}:{1}/lean/Lean4OJ/{2}:{1}/submissions/{7:02x}/{6:02x}/{5:02x}/{4:02x}/main.lean",
             env!("LEAN4_TOOLCHAIN_DIR"),
             env!("OLEAN_ROOT"),
             task.version,
+            version_placeholder,
             bytes[0], bytes[1], bytes[2], bytes[3],
         );
         let arg = unsafe { lean_path.get_unchecked(lean_path.len() - const { env!("OLEAN_ROOT").len() + 34 }..) };

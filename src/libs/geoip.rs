@@ -31,6 +31,7 @@ impl<S> FromRequestParts<S> for Ip {
     }
 }
 
+#[inline]
 fn query(ip: IpAddr) -> Result<LookupResult<'static, Vec<u8>>, MaxMindDbError> {
     {
         #[cfg(feature = "build-std")]
