@@ -124,7 +124,7 @@ where
             "/.lake/build/lib/lean"
         };
         let lean_path = format!(
-            "{0}/leanprover--lean4---v{2}/lib/lean:{1}/std/{2}{3}:{1}/lean/Lean4OJ/{2}:{1}/submissions/{7:02x}/{6:02x}/{5:02x}/{4:02x}/main.lean",
+            "{0}/leanprover--lean4---v{2}/lib/lean:{1}/std/{2}:{1}/lean/Lean4OJ/{2}{3}:{1}/submissions/{7:02x}/{6:02x}/{5:02x}/{4:02x}/main.lean",
             env!("LEAN4_TOOLCHAIN_DIR"),
             env!("OLEAN_ROOT"),
             task.version,

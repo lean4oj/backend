@@ -27,8 +27,8 @@ log = { version = "0.4.29", features = ["release_max_level_info"] }
 maxminddb = { version = "0.27.3", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
 nodejs-semver = { version = "4.2.0", features = ["serde"] }
-openssl = "0.10.77"
-openssl-sys = "0.9.113"
+openssl = "0.10.78"
+openssl-sys = "0.9.114"
 parking_lot = "0.12.5"
 pcre2 = "0.2.11"
 postgres-protocol = "0.6.11"
