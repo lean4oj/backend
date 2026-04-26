@@ -153,7 +153,7 @@ def main():
             url = args.std_patch_server + ('' if args.std_patch_server.endswith('/') else '/') + std + '.patch'
             delete = None
             try:
-                res = get(url, verify=False)
+                res = get(url)
                 target_file = patches / f'{std}.patch'
                 with NamedTemporaryFile(delete=False) as f:
                     delete = f.name
