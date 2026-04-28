@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#de9f13d809e86f8bf24292aac0af16d97ef91195"
+source = "git+https://github.com/tokio-rs/axum#9f4d52e310a6053e49f3db09ce02f723a7a3f5bb"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#de9f13d809e86f8bf24292aac0af16d97ef91195"
+source = "git+https://github.com/tokio-rs/axum#9f4d52e310a6053e49f3db09ce02f723a7a3f5bb"
 dependencies = [
  "bytes",
  "futures-core",
@@ -816,9 +816,9 @@ dependencies = [
 
 [[package]]
 name = "idna_adapter"
-version = "1.2.1"
+version = "1.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3acae9609540aa318d1bc588455225fb2085b9ed0c4f6bd0d9d5bcd86f1a0344"
+checksum = "cb68373c0d6620ef8105e855e7745e18b0d00d3bdb07fb532e434244cdb9a714"
 dependencies = [
  "icu_normalizer",
  "icu_properties",
@@ -1001,9 +1001,9 @@ checksum = "8863b587001c1b9a8a4e36008cebc6b3612cb1226fe2de94858e06092687b608"
 
 [[package]]
 name = "maxminddb"
-version = "0.27.3"
+version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "76371bd37ce742f8954daabd0fde7f1594ee43ac2200e20c003ba5c3d65e2192"
+checksum = "faf6467428ad055b71e588bcedcbaf2ff605b3251deb0c52be4a04b674c546dd"
 dependencies = [
  "ipnetwork",
  "log",
@@ -2054,9 +2054,9 @@ dependencies = [
 
 [[package]]
 name = "whoami"
-version = "2.1.1"
+version = "2.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6a5b12f9df4f978d2cfdb1bd3bac52433f44393342d7ee9c25f5a1c14c0f45d"
+checksum = "998767ef88740d1f5b0682a9c53c24431453923962269c2db68ee43788c5a40d"
 dependencies = [
  "libc",
  "libredox",
