@@ -130,3 +130,7 @@ path = "src/main.rs"
 [[bin]]
 name = "judger"
 path = "src/judger.rs"
+
+[profile.release]
+lto = true
+codegen-units = 1

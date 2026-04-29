@@ -1,5 +1,5 @@
 use std::{
-    fs,
+    env, fs,
     path::{Path, PathBuf},
     process::{Command, Output},
 };
@@ -26,9 +26,9 @@ fn main() {
 
     println!("cargo::rustc-env=SERVER_VERSION_HASH={}", &hash[..10]);
     println!("cargo::rustc-env=SERVER_VERSION_DATE={date}");
-    let home = std::env::home_dir().unwrap();
-    let tmp = std::env::temp_dir();
-    let dir = if let Some(d) = std::env::var_os("LEAN4OJ_RSYNC_TMPDIR") {
+    let home = env::home_dir().unwrap();
+    let tmp = env::temp_dir();
+    let dir = if let Some(d) = env::var_os("LEAN4OJ_RSYNC_TMPDIR") {
         PathBuf::from(d)
     } else if compatible(&home, &tmp) {
         tmp
@@ -36,4 +36,9 @@ fn main() {
         ProjectDirs::from("com", "kitsune", "lean4oj").unwrap().cache_dir().to_path_buf()
     };
     println!("cargo::rustc-env=LEAN4OJ_RSYNC_TMPDIR={}", dir.display());
+
+    let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
+    let target = env::var("TARGET").unwrap();
+    // let path = format!("src/libs/util/hash_add.{target}.o");
+    println!("cargo::rustc-link-arg=src/libs/util/hash_add.o");
 }

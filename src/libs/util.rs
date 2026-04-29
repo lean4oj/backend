@@ -68,3 +68,7 @@ pub fn get_cooldown(start: SystemTime, now: SystemTime, cd: Duration) -> Result<
         Ok(_) => Ok(())
     }
 }
+
+unsafe extern "C" {
+    pub safe fn hash_add(dst: &mut [u64; 4], src: &[u64; 4]);
+}

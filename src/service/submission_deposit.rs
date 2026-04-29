@@ -1,6 +1,7 @@
 use core::{
     ffi::CStr,
     fmt::Write,
+    mem::transmute,
     pin::Pin,
     task::{Context, Poll, ready},
 };
@@ -30,7 +31,7 @@ use crate::{
         db::get_connection,
         error::BoxedStdError,
         judger::task::{LeanAxiom, Task as JudgeTask},
-        olean,
+        olean, util,
     },
     models::submission::{
         Submission,
@@ -136,7 +137,7 @@ fn deposit_main_lean(
 fn deposit_module_inner(
     src: &str,
     sroot: &str,
-) -> io::Result<()> {
+) -> io::Result<[u64; 4]> {
     let content = fs::read(src)?;
 
     let mut sha256 = Sha256::new();
@@ -156,7 +157,9 @@ fn deposit_module_inner(
     let f1 = "../".repeat(f0.bytes().filter(|&b| b == b'/').count() + 4) + unsafe { dest.get_unchecked(const { env!("OLEAN_ROOT").len() + 1 }..) };
     let f2 = sroot.to_owned() + f0;
 
-    std::os::unix::fs::symlink(&*f1, &*f2)
+    std::os::unix::fs::symlink(&*f1, &*f2)?;
+
+    Ok(unsafe { transmute::<[u8; 32], [u64; 4]>(hash) })
 }
 
 fn deposit_one(
@@ -165,7 +168,7 @@ fn deposit_one(
     hash: &[u8; 32],
     sroot: &str,
     is_module: bool,
-) -> io::Result<usize> {
+) -> io::Result<(usize, [u64; 4])> {
     let mut src = olean::𝑔𝑒𝑡_𝑜𝑙𝑒𝑎𝑛_𝑝𝑎𝑡ℎ(uid, module);
     let dest = cache_path(hash);
 
@@ -185,30 +188,37 @@ fn deposit_one(
     std::os::unix::fs::symlink(&*f1, &*f2)?;
 
     let mut tot_size = 0;
+    let mut Hash = [0; 4];
     if is_module {
         let l = src.len();
         src.push_str(".private");
-        deposit_module_inner(&src, sroot)?;
+        let hash = deposit_module_inner(&src, sroot)?;
         tot_size += fs::metadata(&src)?.len() as usize;
+        util::hash_add(&mut Hash, &hash);
 
         unsafe { src.as_mut_vec().set_len(l); }
         src.push_str(".server");
-        deposit_module_inner(&src, sroot)?;
+        let hash = deposit_module_inner(&src, sroot)?;
         tot_size += fs::metadata(&src)?.len() as usize;
+        util::hash_add(&mut Hash, &hash);
 
         unsafe { src.as_mut_vec().set_len(l - 5); }
         src.push_str("ir");
-        deposit_module_inner(&src, sroot)?;
+        let hash = deposit_module_inner(&src, sroot)?;
         tot_size += fs::metadata(&src)?.len() as usize;
+        util::hash_add(&mut Hash, &hash);
     }
-    Ok(tot_size)
+    Ok((tot_size, Hash))
 }
 
-fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, SubmissionMessageAction, usize)> {
+fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, SubmissionMessageAction, usize, [u8; 32])> {
     let sroot = submission_path(task.sid)?;
     let mut tot_size = task.tot_size;
+    let mut tot_hash = unsafe { transmute::<[u8; 32], [u64; 4]>(task.hash) };
 
-    tot_size += deposit_one(&task.uid, &task.module_name, &task.hash, &sroot, task.is_module)?;
+    let (size, hash) = deposit_one(&task.uid, &task.module_name, &task.hash, &sroot, task.is_module)?;
+    tot_size += size;
+    util::hash_add(&mut tot_hash, &hash);
 
     let mut queue = VecDeque::<CompactString>::from(task.imports);
     let mut visited = HashSet::<CompactString>::new();
@@ -218,11 +228,11 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
             // nothing
         } else if olean::is_std(&module) {
             if *module == *"Mathlib" || *module == *"Mathlib.Tactic" {
-                return Ok((InvalidImport, Replace(Cow::Owned(format!("Don't import {module} directly. Try using #min_imports for a lighter dependency set."))), task.tot_size));
+                return Ok((InvalidImport, Replace(Cow::Owned(format!("Don't import {module} directly. Try using #min_imports for a lighter dependency set."))), task.tot_size, task.hash));
             }
             continue;
         } else {
-            return Ok((InvalidImport, Replace(Cow::Owned(format!("{module}: invalid import"))), task.tot_size));
+            return Ok((InvalidImport, Replace(Cow::Owned(format!("{module}: invalid import"))), task.tot_size, task.hash));
         }
         let Entry::Vacant(e) = visited.entry(module) else { continue; };
         let module = unsafe { e.get().get_unchecked(task.uid.len() + 1..) };
@@ -230,17 +240,21 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
         let display_path = unsafe { olean_path.get_unchecked(const { env!("OLEAN_ROOT").len() }..) };
         let olean = match fs::read(&*olean_path) {
             Ok(r) => r,
-            Err(e) => return Ok((InvalidImport, Replace(Cow::Owned(e.to_string())), task.tot_size)),
+            Err(e) => return Ok((InvalidImport, Replace(Cow::Owned(e.to_string())), task.tot_size, task.hash)),
         };
-        let Some(meta) = olean::parse_meta(&olean) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: not a valid olean file"))), task.tot_size)); };
-        let Some(imports) = olean::parse_imports(meta) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: cannot parse imports"))), task.tot_size)); };
+        let Some(meta) = olean::parse_meta(&olean) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: not a valid olean file"))), task.tot_size, task.hash)); };
+        let Some(imports) = olean::parse_imports(meta) else { return Ok((InvalidImport, Replace(Cow::Owned(format!("{display_path}: cannot parse imports"))), task.tot_size, task.hash)); };
         tot_size += olean.len();
 
         let mut sha256 = Sha256::new();
         sha256.update(&olean);
         let hash = sha256.finish();
+        let hash64 = unsafe { transmute::<[u8; 32], [u64; 4]>(hash) };
+        util::hash_add(&mut tot_hash, &hash64);
 
-        tot_size += deposit_one(&task.uid, module, &hash, &sroot, meta.is_module())?;
+        let (size, hash) = deposit_one(&task.uid, module, &hash, &sroot, meta.is_module())?;
+        tot_size += size;
+        util::hash_add(&mut tot_hash, &hash);
 
         e.insert();
         imports.into_iter().filter(|import| !visited.contains(import)).collect_into(&mut queue);
@@ -248,7 +262,7 @@ fn deposit_inner(task: Task, checker: String) -> io::Result<(SubmissionStatus, S
 
     deposit_main_lean(&task.uid, &task.module_name, &task.const_name, &checker, &sroot)?;
 
-    Ok((Delivered, NoAction, tot_size))
+    Ok((Delivered, NoAction, tot_size, unsafe { transmute::<[u64; 4], [u8; 32]>(tot_hash) }))
 }
 
 #[allow(clippy::significant_drop_tightening)]
@@ -283,13 +297,13 @@ async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdE
     Submission::report_status(sid, Delivering, NoAction, &mut conn).await?;
     drop(conn);
 
-    let (status, action, tot_size) = tokio::task::spawn_blocking(|| deposit_inner(task, checker)).await??;
+    let (status, action, tot_size, tot_hash) = tokio::task::spawn_blocking(|| deposit_inner(task, checker)).await??;
 
     let mut conn = get_connection().await?;
-    Submission::report_size(sid, tot_size, &mut conn).await?;
+    Submission::report_size(sid, tot_size, tot_hash, &mut conn).await?;
     let final_status = if status == Delivered {
         #[allow(clippy::transmute_undefined_repr)]
-        let axioms = unsafe { core::mem::transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
+        let axioms = unsafe { transmute::<SmallVec<[LeanAxiom; 4]>, SmallVec<[CompactString; 4]>>(axioms) };
         notice(JudgeTask { sid, version: version.into(), axioms })
     } else {
         status

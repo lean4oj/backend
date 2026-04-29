@@ -156,12 +156,12 @@ impl Submission {
         Ok(())
     }
 
-    pub async fn report_size(sid: u32, tot_size: usize, db: &mut Client) -> DBResult<()> {
-        const SQL: &str = "update lean4oj.submissions set answer_size = $1 where sid = $2";
+    pub async fn report_size(sid: u32, tot_size: usize, tot_hash: [u8; 32], db: &mut Client) -> DBResult<()> {
+        const SQL: &str = "update lean4oj.submissions set answer_size = $1, answer_hash = $2 where sid = $3";
 
         let stmt = db.prepare_static(SQL.into()).await?;
         #[allow(clippy::cast_possible_wrap)]
-        let n = db.execute(&stmt, &[&(tot_size as i64), &sid.cast_signed()]).await?;
+        let n = db.execute(&stmt, &[&(tot_size as i64), &tot_hash.as_slice(), &sid.cast_signed()]).await?;
         if n != 1 {
             return Err(DBError::new(tokio_postgres::error::Kind::RowCount, Some("size update error".into())));
         }
