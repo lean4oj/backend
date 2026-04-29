@@ -75,10 +75,10 @@ impl const Default for Pagination {
 #[serde(rename_all = "camelCase")]
 pub struct Misc {
     app_logo_for_theme: UnitMap,
-    redirect_legacy_urls: bool,
     google_analytics_id: Option<&'static str>,
     plausible_api_endpoint: Option<&'static str>,
     gravatar_cdn: &'static str,
+    redirect_legacy_urls: bool,
     render_markdown_in_user_bio: bool,
     discussion_reaction_emojis: &'static [&'static str],
     discussion_reaction_allow_custom_emojis: bool,
@@ -90,10 +90,10 @@ impl const Default for Misc {
     fn default() -> Self {
         Self {
             app_logo_for_theme: UnitMap {},
-            redirect_legacy_urls: true,
             google_analytics_id: option_env!("GOOGLE_ANALYTICS_ID"),
             plausible_api_endpoint: option_env!("PLAUSIBLE_API_ENDPOINT"),
             gravatar_cdn: "https://gravatar.com",
+            redirect_legacy_urls: true,
             render_markdown_in_user_bio: true,
             discussion_reaction_emojis: &["👍", "👎", "😄", "😕", "❤", "🤔", "🤣", "🌿", "🍋", "🕊"],
             discussion_reaction_allow_custom_emojis: true,

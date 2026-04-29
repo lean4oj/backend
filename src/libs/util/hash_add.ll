@@ -1,6 +1,6 @@
 define void @hash_add(
-    ptr noundef nonnull align 8 captures(none) dereferenceable(32) %a,
-    ptr noundef nonnull readonly align 8 captures(none) dereferenceable(32) %b
+    ptr noalias noundef nonnull align 8 captures(none) dereferenceable(32) %a,
+    ptr noalias noundef nonnull readonly align 8 captures(none) dereferenceable(32) %b
 ) inlinehint nounwind alwaysinline {
     %c = load i256, ptr %a, align 8
     %d = load i256, ptr %b, align 8

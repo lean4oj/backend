@@ -42,7 +42,7 @@ fn query(ip: IpAddr) -> Result<LookupResult<'static, Vec<u8>>, MaxMindDbError> {
 }
 
 pub fn in_china(ip: IpAddr) -> bool {
-    const CHINA: usize = 1_814_991;
+    const CHINA: u32 = 1_814_991;
 
     let Ok(res) = query(ip) else { return false };
     let country_id = res.decode_path(&[

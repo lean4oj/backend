@@ -39,6 +39,6 @@ fn main() {
 
     let root = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap());
     let target = env::var("TARGET").unwrap();
-    // let path = format!("src/libs/util/hash_add.{target}.o");
-    println!("cargo::rustc-link-arg=src/libs/util/hash_add.o");
+    let path = format!("src/libs/util/hash_add.{target}.o");
+    println!("cargo::rustc-link-arg={}", root.join(path).display());
 }
