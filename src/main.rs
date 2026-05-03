@@ -134,11 +134,12 @@ async fn main() -> std::io::Result<!> {
 
     const SOCK: &str = "lean4oj.sock";
 
+    libs::logger::init();
+
     libs::auth::init();
     libs::db::init_db().await;
     libs::email::init_email();
     libs::emoji::init();
-    libs::logger::init();
     libs::geoip::init();
     libs::olean::init();
     libs::session::init();

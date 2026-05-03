@@ -13,6 +13,7 @@ pub mod fs;
 mod group;
 mod homepage;
 mod judge_client;
+mod leansearch;
 mod problem;
 mod submission;
 mod user;
@@ -37,6 +38,7 @@ pub fn all() -> Router {
         .nest("/group", group::router(header))
         .nest("/homepage", homepage::router(header))
         .nest("/judgeClient", judge_client::router(header))
+        .nest("/leansearch", leansearch::router(header))
         .nest("/problem", problem::router(header))
         .nest("/submission", submission::router(header))
         .nest("/user", user::router(header))

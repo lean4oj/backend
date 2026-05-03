@@ -156,8 +156,7 @@ async fn get_homepage(
         &mut conn,
     ).await?;
 
-    let mut announcements = Discussion::by_ids(ANNOUNCEMENT_IDS.into_iter(), &mut conn).await?;
-    for d in &mut announcements { d.backdoor(locale.as_deref()); }
+    let announcements = Discussion::by_ids(ANNOUNCEMENT_IDS.into_iter(), &mut conn).await?;
     let countdowns = Countdowns::countdowns(locale.as_deref());
     let links = links::friend_links(locale.as_deref());
     let mut latest_updated_problems = get_latest_updated_problems(locale.as_deref(), &mut conn).await?;

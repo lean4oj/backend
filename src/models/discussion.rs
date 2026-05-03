@@ -12,7 +12,7 @@ use crate::{
         db::{DBResult, ToSqlIter},
         util::get_millis,
     },
-    models::{localedict::LocaleDict, problem::Problem, user::User},
+    models::{problem::Problem, user::User},
 };
 
 mod query_replies_type;
@@ -85,18 +85,7 @@ fn 𝒢(row: Row) -> DBResult<(Discussion, Option<Problem>, User)> {
     Ok((row.clone().try_into()?, row.clone().try_into().ok(), row.try_into()?))
 }
 
-// example: {"zh_CN":"喵","en_US":"Meow","ja_JP":"にゃー"}
-fn backdoor_inner(s: &mut CompactString, locale: Option<&str>) {
-    if let Some(suffix) = s.strip_prefix(Discussion::MAGIC_PREFIX)
-    && let Ok(dict) = serde_json::from_str::<LocaleDict>(suffix)
-    && let Some(t) = dict.apply_owned(locale) {
-        *s = t;
-    }
-}
-
 impl Discussion {
-    pub const MAGIC_PREFIX: &str = "\u{ea97}";
-
     pub async fn by_id_aoe(id: u32, db: &mut Client) -> DBResult<Option<(Self, User)>> {
         const SQL: &str = "select id, title, content, publish, edit, update, reply_count, publisher, pid, uid, username, email, password, register_time, ac, nickname, bio, avatar_info from lean4oj.discussions inner join lean4oj.users on publisher = uid where id = $1";
 
@@ -182,10 +171,5 @@ impl Discussion {
         let stmt = db.prepare_static(SQL.into()).await?;
         let row = db.query_one(&stmt, &[&pid]).await?;
         row.try_get::<_, i64>(0).map(i64::cast_unsigned)
-    }
-
-    pub fn backdoor(&mut self, locale: Option<&str>) {
-        backdoor_inner(&mut self.title, locale);
-        backdoor_inner(&mut self.content, locale);
     }
 }

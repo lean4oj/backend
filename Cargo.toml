@@ -2,7 +2,7 @@ cargo-features = ["unstable-editions"]
 
 [package]
 name = "lean4oj_backend"
-version = "1.2.1"
+version = "1.3.0-alpha"
 edition = "future"
 
 [dependencies]
@@ -27,8 +27,8 @@ log = { version = "0.4.29", features = ["release_max_level_info"] }
 maxminddb = { version = "0.28.1", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
 nodejs-semver = { version = "4.2.0", features = ["serde"] }
-openssl = "0.10.78"
-openssl-sys = "0.9.114"
+openssl = "0.10.79"
+openssl-sys = "0.9.115"
 parking_lot = "0.12.5"
 pcre2 = "0.2.11"
 postgres-protocol = "0.6.11"

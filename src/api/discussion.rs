@@ -257,9 +257,7 @@ async fn query_discussions(
 
     let publisher__inner___ = publisher_id.as_deref();
     let buf;
-    let mut magic = false;
     let keyword__inner___ = if let Some(ref kw) = keyword {
-        magic = kw.contains(Discussion::MAGIC_PREFIX);
         buf = 𝑒𝑠𝑐𝑎𝑝𝑒(kw);
         Some(&*buf)
     } else { None };
@@ -314,32 +312,23 @@ async fn query_discussions(
 
     let mut res = r#"{"discussions":"#.to_owned();
     if title_only == Some(true) {
-        let discussions = if magic {
-            Vec::new()
-        } else {
-            let mut discussions = Discussion::search(skip, take, extend, &mut conn).await?;
-            for d in &mut discussions { d.backdoor(locale.as_deref()); }
-            #[allow(clippy::transmute_undefined_repr)]
-            unsafe { core::mem::transmute::<Vec<Discussion>, Vec<Inner1>>(discussions) }
-        };
+        let discussions = Discussion::search(skip, take, extend, &mut conn).await?;
+        #[allow(clippy::transmute_undefined_repr)]
+        let discussions = unsafe { core::mem::transmute::<Vec<Discussion>, Vec<Inner1>>(discussions) };
         serde_json::to_writer(unsafe { res.as_mut_vec() }, &discussions)?;
     } else {
-        let mut discussions = Vec::new();
-        if !magic {
-            discussions = Discussion::search_aoe(skip, take, extend, &mut conn)
-                .await?
-                .into_iter()
-                .map(|(meta, problem, publisher)| Inner3 {
-                    meta,
-                    problem: problem.map(|problem| Inner2 {
-                        problem,
-                        locale: locale.as_deref(),
-                    }),
-                    publisher,
-                })
-                .collect::<Vec<Inner3>>();
-            for d in &mut discussions { d.meta.backdoor(locale.as_deref()); }
-        }
+        let discussions = Discussion::search_aoe(skip, take, extend, &mut conn)
+            .await?
+            .into_iter()
+            .map(|(meta, problem, publisher)| Inner3 {
+                meta,
+                problem: problem.map(|problem| Inner2 {
+                    problem,
+                    locale: locale.as_deref(),
+                }),
+                publisher,
+            })
+            .collect::<Vec<Inner3>>();
         serde_json::to_writer(unsafe { res.as_mut_vec() }, &discussions)?;
         let count = Discussion::count_aoe(extend, &mut conn).await?;
         write!(&mut res, r#","permissions":{{"createDiscussion":{},"filterNonpublic":false}},"count":{count}"#, s_uid.is_some())?;
@@ -531,7 +520,6 @@ async fn get_discussion(
 
     if let Some(did) = 𝑘 {
         let Some((mut discussion, publisher)) = Discussion::by_id_aoe(did.cast_unsigned(), &mut conn).await? else { return NO_SUCH_DISCUSSION };
-        discussion.backdoor(locale.as_deref());
         let content = mem::take(&mut discussion.content);
         let privi = privilege::all(&publisher.uid, &mut conn).await?;
 

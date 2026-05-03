@@ -1,12 +1,12 @@
 diff --git a/src/lib.rs b/src/lib.rs
-index 0ab5bdf..d754a40 100644
+index 0ab5bdf..c673a08 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -155,6 +155,8 @@
  
  #![deny(warnings, missing_docs, missing_debug_implementations)]
  
-+#![feature(rustc_attrs)]
++#![feature(const_convert, const_trait_impl, pattern_types, pattern_type_macro, structural_match)]
 +
  //#![cfg_attr(not(feature = "std"), no_std)]
  #[cfg(not(feature = "std"))]
@@ -54,7 +54,7 @@ index b8fc9b2..abdbd92 100644
      /// return type of the passed in function.
      ///
 diff --git a/src/status.rs b/src/status.rs
-index bc58ba4..926e749 100644
+index bc58ba4..233c348 100644
 --- a/src/status.rs
 +++ b/src/status.rs
 @@ -17,7 +17,6 @@
@@ -65,38 +65,92 @@ index bc58ba4..926e749 100644
  use std::str::FromStr;
  
  /// An HTTP status code (`status-code` in RFC 9110 et al.).
-@@ -42,7 +41,9 @@ use std::str::FromStr;
+@@ -41,8 +40,41 @@ use std::str::FromStr;
+ /// assert_eq!(StatusCode::NOT_FOUND.as_u16(), 404);
  /// assert!(StatusCode::OK.is_success());
  /// ```
- #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 -pub struct StatusCode(NonZeroU16);
-+#[rustc_layout_scalar_valid_range_start(100)]
-+#[rustc_layout_scalar_valid_range_end(999)]
-+pub struct StatusCode(u16);
++#[derive(Clone, Copy)]//, PartialEq, Eq, PartialOrd, Ord, Hash)]
++#[repr(transparent)]
++pub struct StatusCode(pattern_type!(u16 is 100..=999));
++
++impl PartialEq for StatusCode {
++    #[inline]
++    fn eq(&self, other: &StatusCode) -> bool {
++        u16::from(*self) == u16::from(*other)
++    }
++}
++
++impl Eq for StatusCode {}
++
++impl PartialOrd for StatusCode {
++    #[inline]
++    fn partial_cmp(&self, other: &StatusCode) -> Option<core::cmp::Ordering> {
++        Some(self.cmp(other))
++    }
++}
++
++impl Ord for StatusCode {
++    #[inline]
++    fn cmp(&self, other: &StatusCode) -> core::cmp::Ordering {
++        u16::from(*self).cmp(&u16::from(*other))
++    }
++}
++
++impl core::hash::Hash for StatusCode {
++    #[inline]
++    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
++        u16::from(*self).hash(state)
++    }
++}
++
++impl core::marker::StructuralPartialEq for StatusCode {}
  
  /// A possible error value when converting a `StatusCode` from a `u16` or `&str`.
  ///
-@@ -72,13 +73,16 @@ impl StatusCode {
+@@ -52,6 +84,20 @@ pub struct InvalidStatusCode {
+     _priv: (),
+ }
+ 
++impl const AsRef<u16> for StatusCode {
++    #[inline]
++    fn as_ref(&self) -> &u16 {
++        unsafe { core::ptr::from_ref(&self.0).cast::<u16>().as_ref_unchecked() }
++    }
++}
++
++impl const AsMut<u16> for StatusCode {
++    #[inline]
++    fn as_mut(&mut self) -> &mut u16 {
++        unsafe { core::ptr::from_mut(&mut self.0).cast::<u16>().as_mut_unchecked() }
++    }
++}
++
+ impl StatusCode {
+     /// Converts a u16 to a status code.
+     ///
+@@ -72,13 +118,16 @@ impl StatusCode {
      #[inline]
      pub const fn from_u16(src: u16) -> Result<StatusCode, InvalidStatusCode> {
          if let 100..=999 = src {
 -            if let Some(code) = NonZeroU16::new(src) {
 -                return Ok(StatusCode(code));
 -            }
-+            return Ok(unsafe { StatusCode(src) });
++            return Ok(unsafe { Self::from_u16_unchecked(src) });
          }
          Err(InvalidStatusCode::new())
      }
  
 +    #[inline(always)]
 +    pub const unsafe fn from_u16_unchecked(src: u16) -> StatusCode {
-+        unsafe { StatusCode(src) }
++        StatusCode(unsafe { core::mem::transmute(src) })
 +    }
 +
      /// Converts a `&[u8]` to a status code.
      pub fn from_bytes(src: &[u8]) -> Result<StatusCode, InvalidStatusCode> {
          if src.len() != 3 {
-@@ -93,10 +97,7 @@ impl StatusCode {
+@@ -93,10 +142,7 @@ impl StatusCode {
              return Err(InvalidStatusCode::new());
          }
  
@@ -104,82 +158,93 @@ index bc58ba4..926e749 100644
 -        NonZeroU16::new(status)
 -            .map(StatusCode)
 -            .ok_or_else(InvalidStatusCode::new)
-+        Ok(unsafe { StatusCode((a * 100) + (b * 10) + c) })
++        Ok(unsafe { Self::from_u16_unchecked((a * 100) + (b * 10) + c) })
      }
  
      /// Returns the `u16` corresponding to this `StatusCode`.
-@@ -116,7 +117,7 @@ impl StatusCode {
+@@ -116,7 +162,7 @@ impl StatusCode {
      /// ```
      #[inline]
      pub const fn as_u16(&self) -> u16 {
 -        self.0.get()
-+        self.0
++        *self.as_ref()
      }
  
      /// Returns a &str representation of the `StatusCode`
-@@ -132,7 +133,7 @@ impl StatusCode {
+@@ -132,7 +178,7 @@ impl StatusCode {
      /// ```
      #[inline]
      pub fn as_str(&self) -> &str {
 -        let offset = (self.0.get() - 100) as usize;
-+        let offset = (self.0 - 100) as usize;
++        let offset = (self.as_u16() - 100) as usize;
          let offset = offset * 3;
  
          // Invariant: self has checked range [100, 999] and CODE_DIGITS is
-@@ -168,37 +169,37 @@ impl StatusCode {
+@@ -168,43 +214,43 @@ impl StatusCode {
      /// assert_eq!(status.canonical_reason(), Some("OK"));
      /// ```
      pub fn canonical_reason(&self) -> Option<&'static str> {
 -        canonical_reason(self.0.get())
-+        canonical_reason(self.0)
++        canonical_reason(self.as_u16())
      }
  
      /// Check if status is within 100-199.
      #[inline]
      pub fn is_informational(&self) -> bool {
 -        (100..200).contains(&self.0.get())
-+        (100..200).contains(&self.0)
++        (100..200).contains(self.as_ref())
      }
  
      /// Check if status is within 200-299.
      #[inline]
      pub fn is_success(&self) -> bool {
 -        (200..300).contains(&self.0.get())
-+        (200..300).contains(&self.0)
++        (200..300).contains(self.as_ref())
      }
  
      /// Check if status is within 300-399.
      #[inline]
      pub fn is_redirection(&self) -> bool {
 -        (300..400).contains(&self.0.get())
-+        (300..400).contains(&self.0)
++        (300..400).contains(self.as_ref())
      }
  
      /// Check if status is within 400-499.
      #[inline]
      pub fn is_client_error(&self) -> bool {
 -        (400..500).contains(&self.0.get())
-+        (400..500).contains(&self.0)
++        (400..500).contains(self.as_ref())
      }
  
      /// Check if status is within 500-599.
      #[inline]
      pub fn is_server_error(&self) -> bool {
 -        (500..600).contains(&self.0.get())
-+        (500..600).contains(&self.0)
++        (500..600).contains(self.as_ref())
      }
  }
  
-@@ -251,7 +252,7 @@ impl PartialEq<StatusCode> for u16 {
- impl From<StatusCode> for u16 {
+ impl fmt::Debug for StatusCode {
+     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+-        fmt::Debug::fmt(&self.0, f)
++        fmt::Debug::fmt(self.as_ref(), f)
+     }
+ }
+ 
+@@ -248,10 +294,10 @@ impl PartialEq<StatusCode> for u16 {
+     }
+ }
+ 
+-impl From<StatusCode> for u16 {
++impl const From<StatusCode> for u16 {
      #[inline]
      fn from(status: StatusCode) -> u16 {
 -        status.0.get()
-+        status.0
++        unsafe { core::mem::transmute(status) }
      }
  }
  
-@@ -307,7 +308,7 @@ macro_rules! status_codes {
+@@ -307,7 +353,7 @@ macro_rules! status_codes {
          impl StatusCode {
          $(
              $(#[$docs])*

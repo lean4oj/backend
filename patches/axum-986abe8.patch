@@ -267,7 +267,7 @@ index 5cb9187c..50e3d7ae 100644
  }
  
 diff --git a/axum-core/src/response/into_response_parts.rs b/axum-core/src/response/into_response_parts.rs
-index 6106b46d..05a10fd5 100644
+index 8423e0d8..e27f34aa 100644
 --- a/axum-core/src/response/into_response_parts.rs
 +++ b/axum-core/src/response/into_response_parts.rs
 @@ -1,7 +1,7 @@
@@ -279,7 +279,12 @@ index 6106b46d..05a10fd5 100644
  };
  use std::{convert::Infallible, fmt};
  
-@@ -107,6 +107,18 @@ pub struct ResponseParts {
+@@ -103,10 +103,22 @@ where
+ /// Used with [`IntoResponseParts`].
+ #[derive(Debug)]
+ pub struct ResponseParts {
+-    pub(crate) res: Response,
++    pub res: Response,
  }
  
  impl ResponseParts {
@@ -295,10 +300,10 @@ index 6106b46d..05a10fd5 100644
 +        self.res.version_mut()
 +    }
 +
-     /// Gets a reference to the response headers.
+     /// Gets the response status code.
      #[must_use]
-     pub fn headers(&self) -> &HeaderMap {
-@@ -268,6 +280,15 @@ impl IntoResponseParts for Extensions {
+     pub fn status(&self) -> StatusCode {
+@@ -280,6 +292,15 @@ impl IntoResponseParts for Extensions {
      }
  }
  
@@ -1148,7 +1153,7 @@ index deedb3a5..06b2452d 100644
      }
  
 diff --git a/axum/src/serve/mod.rs b/axum/src/serve/mod.rs
-index 3698934c..7daf9de3 100644
+index 3f42cfbc..0a9943fd 100644
 --- a/axum/src/serve/mod.rs
 +++ b/axum/src/serve/mod.rs
 @@ -368,7 +368,7 @@ where
