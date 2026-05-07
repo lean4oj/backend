@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#986abe8df66f7b22582cfb54d8891abb34452aae"
+source = "git+https://github.com/tokio-rs/axum#c853e44ffce77b771069b6df6bd5adc1b78f1b2f"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#986abe8df66f7b22582cfb54d8891abb34452aae"
+source = "git+https://github.com/tokio-rs/axum#c853e44ffce77b771069b6df6bd5adc1b78f1b2f"
 dependencies = [
  "bytes",
  "futures-core",
@@ -1767,9 +1767,9 @@ dependencies = [
 
 [[package]]
 name = "tower-http"
-version = "0.6.8"
+version = "0.6.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4e6559d53cc268e5031cd8429d05415bc4cb4aefc4aa5d6cc35fbf5b924a1f8"
+checksum = "68d6fdd9f81c2819c9a8b0e0cd91660e7746a8e6ea2ba7c6b2b057985f6bcb51"
 dependencies = [
  "bitflags",
  "bytes",
