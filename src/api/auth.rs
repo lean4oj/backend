@@ -268,7 +268,7 @@ async fn send_email(
     Extension(now): Extension<SystemTime>,
     req: JsonReqult<SendEmailRequest>,
 ) -> JkmxJsonResponse {
-    const SQL_EMAIL: &str = "select username from lean4oj.users where email = $1";
+    const SQL_EMAIL: &str = "select username from lean4oj.users where username != '' and email = $1";
 
     let Json(SendEmailRequest { email, r#type, locale }) = req?;
 
@@ -358,7 +358,7 @@ async fn reset_password(
     Extension(now): Extension<SystemTime>,
     req: JsonReqult<ResetPasswordRequest>,
 ) -> JkmxJsonResponse {
-    const SQL: &str = "update lean4oj.users set password = $1 where email = $2 returning uid";
+    const SQL: &str = "update lean4oj.users set password = $1 where username != '' and email = $2 returning uid";
 
     let Json(ResetPasswordRequest {
         email,
