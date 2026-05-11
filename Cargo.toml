@@ -15,7 +15,7 @@ dashmap = { version = "7.0.0-rc2", features = ["inline-more", "raw-api"] }
 env_logger = { version = "0.11.10", default-features = false, features = ["auto-color", "humantime"] }
 form_urlencoded = "1.2.2"
 futures-util = { version = "0.3.32", features = ["unstable"] }
-hashbrown = { version = "0.17.0", features = ["nightly", "serde"] }
+hashbrown = { version = "0.17.1", features = ["nightly", "serde"] }
 # html-escape = "0.2.13"
 http = "1.4.0"
 http-body-util = "0.1.3"
