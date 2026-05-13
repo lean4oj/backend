@@ -142,7 +142,7 @@ where
         match mode & libc::S_IFMT {
             | libc::S_IFREG => {
                 rx.read_exact(&mut sha1).await?;
-                if size as usize <= SINGLE_FILE_LIMIT {
+                if size != 0 && size as usize <= SINGLE_FILE_LIMIT {
                     enabled = check_path(&s, uid_with_slash);
                     if enabled != 0 {
                         acc += size as usize;

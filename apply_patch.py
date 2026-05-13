@@ -147,7 +147,6 @@ def main():
         pass
 
     if args.std_patch_server:
-        disable_warnings(InsecureRequestWarning)
         for std in STD:
             print(f'\x1b[35m======== Downloading \x1b[1;34m{std}\x1b[22;35m ========\x1b[0m\n')
             url = args.std_patch_server + ('' if args.std_patch_server.endswith('/') else '/') + std + '.patch'
