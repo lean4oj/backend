@@ -28,7 +28,7 @@ use crate::{
         },
         constants::{
             APPLICATION_JAVASCRIPT_UTF_8, APPLICATION_JSON_UTF_8, BYTES_EMPTY, BYTES_NULL,
-            PASSWORD_LENGTH,
+            DELAY_FOR_SECURITY, PASSWORD_LENGTH,
         },
         db::{DBError, JsonChecked, get_connection, insert_connection},
         email::{get_source, send_mail},
@@ -372,6 +372,8 @@ async fn reset_password(
     {
         bad!(BYTES_NULL)
     }
+
+    tokio::time::sleep(DELAY_FOR_SECURITY).await;
 
     if !email_check(&email, now, email_verification_code) {
         return JkmxJsonResponse::Response(

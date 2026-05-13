@@ -279,6 +279,7 @@ async fn create_problem(
     req: JsonReqult<CreateProblemRequest>,
 ) -> JkmxJsonResponse {
     let Json(CreateProblemRequest { statement: Inner1 { localized_contents, problem_tag_ids } }) = req?;
+    if localized_contents.is_empty() { bad!(BYTES_NULL); }
 
     let mut conn = get_connection().await?;
     exs!(user, session, &mut conn);
@@ -306,6 +307,7 @@ async fn update_problem(
     const SQL: &str = "update lean4oj.problems set pcontent = $1 where pid = $2 and owner = $3";
 
     let Json(UpdateProblemRequest { problem_id, localized_contents, problem_tag_ids }) = req?;
+    if localized_contents.is_empty() { bad!(BYTES_NULL); }
 
     let mut conn = get_connection().await?;
     exs!(user, session, &mut conn);

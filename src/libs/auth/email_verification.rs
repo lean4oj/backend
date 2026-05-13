@@ -28,7 +28,7 @@ pub struct SendRecord {
 impl SendRecord {
     #[inline]
     fn new_random(time: SystemTime) -> Self {
-        Self { time, code: ((u64::from(rand::rng().next_u32()) * 1_000_000) >> 32) as u32 }
+        Self { time, code: ((u64::from(rand::rng().next_u32()) * 1_000_000_000) >> 32) as u32 }
     }
 }
 
@@ -82,15 +82,15 @@ pub fn get_email_content(_type: CodeType, locale: Option<&str>, code: u32) -> (&
     match locale {
         Some("en_US") => (
             "Your reset password verification code for Lean4OJ",
-            format!("{PREAMBLE}<p>Your reset password verification code for Lean4OJ is <code>{code:06}</code>. It will expire in {VERIFY_EXPIRE_MIN} minutes.</p><p>If you are not resetting your password on Lean4OJ, please ignore this email. Your account is still safe.</p>"),
+            format!("{PREAMBLE}<p>Your reset password verification code for Lean4OJ is <code>{code:09}</code>. It will expire in {VERIFY_EXPIRE_MIN} minutes.</p><p>If you are not resetting your password on Lean4OJ, please ignore this email. Your account is still safe.</p>"),
         ),
         Some("ja_JP") => (
             "Lean4OJのパスワードリセット確認コード",
-            format!("{PREAMBLE}<p style=\"text-autospace: normal\">Lean4OJのパスワードリセット確認コードは<code>{code:06}</code>です。このコードは{VERIFY_EXPIRE_MIN}分で期限切れになります。</p><p style=\"text-autospace: normal\">Lean4OJでパスワードをリセットしていない場合は、このメールを無視してください。あなたのアカウントはまだ安全です。</p>"),
+            format!("{PREAMBLE}<p style=\"text-autospace: normal\">Lean4OJのパスワードリセット確認コードは<code>{code:09}</code>です。このコードは{VERIFY_EXPIRE_MIN}分で期限切れになります。</p><p style=\"text-autospace: normal\">Lean4OJでパスワードをリセットしていない場合は、このメールを無視してください。あなたのアカウントはまだ安全です。</p>"),
         ),
         _ => (
             "您在Lean4OJ的密码重置验证码",
-            format!("{PREAMBLE}<p style=\"text-autospace: normal\">您在Lean4OJ的密码重置验证码为<code>{code:06}</code>。此验证码在{VERIFY_EXPIRE_MIN}分钟内有效，请尽快完成密码重置。</p><p style=\"text-autospace: normal\">如果您没有尝试在Lean4OJ上进行密码重置，请忽略本邮件。您的账户仍然安全。</p>"),
+            format!("{PREAMBLE}<p style=\"text-autospace: normal\">您在Lean4OJ的密码重置验证码为<code>{code:09}</code>。此验证码在{VERIFY_EXPIRE_MIN}分钟内有效，请尽快完成密码重置。</p><p style=\"text-autospace: normal\">如果您没有尝试在Lean4OJ上进行密码重置，请忽略本邮件。您的账户仍然安全。</p>"),
         ),
     }
 }

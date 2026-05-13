@@ -52,6 +52,7 @@ pub async fn submission(
 
     let bytes = sid.to_le_bytes();
     let suffix = unsafe { path.get_unchecked(pos..) };
+    if suffix.bytes().any(|b| (b < 32 || b == 127) && b != 9) { return StatusCode::BAD_REQUEST.into_response(); }
     let redirect = format!(
         "/internal-bf9d9f9f9f1b0b0f/{:02x}/{:02x}/{:02x}/{:02x}{suffix}",
         bytes[3], bytes[2], bytes[1], bytes[0],

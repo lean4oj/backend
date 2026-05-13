@@ -266,6 +266,7 @@ where
         }
         let (mut buf, g) = unsafe {
             let raw = libc::mmap(ptr::null_mut(), entry.size, libc::PROT_WRITE, libc::MAP_SHARED, f.as_raw_fd(), 0);
+            if raw == libc::MAP_FAILED { return Err(io::Error::last_os_error().into()); }
             (
                 slice::from_raw_parts_mut(raw.cast(), entry.size),
                 DropGuard::new((raw as usize, entry.size), unmap_send),
