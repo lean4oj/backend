@@ -21,14 +21,14 @@ http = "1.4.0"
 http-body-util = "0.1.3"
 hyper = { version = "1.9.0", features = ["client", "nightly"] }
 hyper-util = "0.1.20"
-lettre = { version = "0.11.21", features = ["tokio1-native-tls", "tracing"] }
+lettre = { version = "0.11.22", features = ["tokio1-native-tls", "tracing"] }
 libc = "0.2.186"
 log = { version = "0.4.29", features = ["release_max_level_info"] }
 maxminddb = { version = "0.28.1", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
 nodejs-semver = { version = "4.2.0", features = ["serde"] }
-openssl = "0.10.79"
-openssl-sys = "0.9.115"
+openssl = "0.10.80"
+openssl-sys = "0.9.116"
 parking_lot = "0.12.5"
 pcre2 = "0.2.11"
 postgres-protocol = "0.6.11"
@@ -41,7 +41,7 @@ tempfile = "3.27.0"
 tokio = { version = "1.52.3", features = ["fs", "macros", "parking_lot", "process", "rt-multi-thread", "tracing"] }
 tokio-postgres = { version = "0.7.17", features = ["with-serde_json-1", "with-uuid-1"] }
 tracing = { version = "0.1.44", features = ["log", "release_max_level_info"] }
-tower-http = { version = "0.6.10", features = ["cors"] }
+tower-http = { version = "0.6.11", features = ["cors"] }
 tower-service = "0.3.3"
 tower-sessions-core = { version = "0.15.0", features = ["deletion-task"] }
 uuid = { version = "1.23.1", features = ["fast-rng", "serde", "v7"] }

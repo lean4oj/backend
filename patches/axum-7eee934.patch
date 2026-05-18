@@ -11,10 +11,10 @@ index f9f56a53..d0fac767 100644
  tower-service = "0.3"
  
 diff --git a/axum-core/src/body.rs b/axum-core/src/body.rs
-index cbc5606b..039256ea 100644
+index 4e921c1e..f9f4eddf 100644
 --- a/axum-core/src/body.rs
 +++ b/axum-core/src/body.rs
-@@ -8,10 +8,10 @@ use http_body_util::BodyExt;
+@@ -11,10 +11,10 @@ use http_body_util::BodyExt;
  use pin_project_lite::pin_project;
  use std::pin::Pin;
  use std::task::{ready, Context, Poll};
@@ -26,7 +26,7 @@ index cbc5606b..039256ea 100644
  fn boxed<B>(body: B) -> BoxBody
  where
      B: http_body::Body<Data = Bytes> + Send + 'static,
-@@ -20,6 +20,7 @@ where
+@@ -23,6 +23,7 @@ where
      try_downcast(body).unwrap_or_else(|body| body.map_err(Error::new).boxed_unsync())
  }
  
@@ -34,7 +34,7 @@ index cbc5606b..039256ea 100644
  pub(crate) fn try_downcast<T, K>(k: K) -> Result<T, K>
  where
      T: 'static,
-@@ -27,9 +28,9 @@ where
+@@ -30,9 +31,9 @@ where
  {
      let mut k = Some(k);
      if let Some(k) = <dyn std::any::Any>::downcast_mut::<Option<T>>(&mut k) {
@@ -46,7 +46,7 @@ index cbc5606b..039256ea 100644
      }
  }
  
-@@ -58,13 +59,10 @@ impl Body {
+@@ -85,13 +86,10 @@ impl Body {
      /// [`Stream`]: https://docs.rs/futures-core/latest/futures_core/stream/trait.Stream.html
      pub fn from_stream<S>(stream: S) -> Self
      where
@@ -62,7 +62,7 @@ index cbc5606b..039256ea 100644
      }
  
      /// Convert the body into a [`Stream`] of data frames.
-@@ -74,7 +72,7 @@ impl Body {
+@@ -101,7 +99,7 @@ impl Body {
      ///
      /// [`http_body_util::BodyStream`]: https://docs.rs/http-body-util/latest/http_body_util/struct.BodyStream.html
      pub fn into_data_stream(self) -> BodyDataStream {
@@ -71,7 +71,7 @@ index cbc5606b..039256ea 100644
      }
  }
  
-@@ -133,91 +131,8 @@ impl http_body::Body for Body {
+@@ -160,91 +158,8 @@ impl http_body::Body for Body {
      }
  }
  
@@ -205,7 +205,7 @@ index 1123fdd3..71152647 100644
  
      fn with_limited_body(self) -> Request {
 diff --git a/axum-core/src/extract/rejection.rs b/axum-core/src/extract/rejection.rs
-index c5c3b1db..0845ea1e 100644
+index ef71cae5..fb6119b0 100644
 --- a/axum-core/src/extract/rejection.rs
 +++ b/axum-core/src/extract/rejection.rs
 @@ -15,7 +15,7 @@ composite_rejection! {
@@ -254,7 +254,7 @@ index abbe181a..90ca82e1 100644
  
                      Ok(($($ty,)* $last,))
 diff --git a/axum-core/src/response/into_response.rs b/axum-core/src/response/into_response.rs
-index 5cb9187c..50e3d7ae 100644
+index 4fb4cf50..6168d564 100644
 --- a/axum-core/src/response/into_response.rs
 +++ b/axum-core/src/response/into_response.rs
 @@ -373,7 +373,7 @@ where
@@ -377,7 +377,7 @@ index 90da3e97..1d34f886 100644
                          Ok(res) => Ok(res.into_response()),
                          Err(err) => Ok(f($($ty),*, err).await.into_response()),
 diff --git a/axum/src/extract/path/mod.rs b/axum/src/extract/path/mod.rs
-index ffc345be..4a12e641 100644
+index 61bbef9b..7ebc9824 100644
 --- a/axum/src/extract/path/mod.rs
 +++ b/axum/src/extract/path/mod.rs
 @@ -161,10 +161,19 @@ where
@@ -412,41 +412,29 @@ index ffc345be..4a12e641 100644
              Ok(val) => Ok(Self(val)),
              Err(e) => Err(failed_to_deserialize_path_params(e)),
          }
-@@ -506,38 +515,30 @@ where
+@@ -506,8 +515,8 @@ where
  {
      type Rejection = RawPathParamsRejection;
  
 -    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+-        Self::from_request_extensions(&parts.extensions)
 +    fn from_request_parts(parts: &mut Parts, _state: &S) -> core::future::Ready<Result<Self, Self::Rejection>> {
-         let params = match parts.extensions.get::<UrlParams>() {
-             Some(UrlParams::Params(params)) => params,
-             Some(UrlParams::InvalidUtf8InPathParam { key }) => {
--                return Err(InvalidUtf8InPathParam {
-+                return core::future::ready(Err(InvalidUtf8InPathParam {
-                     key: Arc::clone(key),
-                 }
--                .into());
-+                .into()));
-             }
-             None => {
--                return Err(MissingPathParams.into());
-+                return core::future::ready(Err(MissingPathParams.into()));
-             }
-         };
- 
--        Ok(Self(params.clone()))
-+        core::future::ready(Ok(Self(params.clone())))
++        core::future::ready(Self::from_request_extensions(&parts.extensions))
      }
  }
  
--impl RawPathParams {
+@@ -528,20 +537,14 @@ impl RawPathParams {
+             None => Err(MissingPathParams.into()),
+         }
+     }
+-
 -    /// Get an iterator over the path parameters.
 -    #[must_use]
 -    pub fn iter(&self) -> RawPathParamsIter<'_> {
 -        self.into_iter()
 -    }
--}
--
+ }
+ 
 -impl<'a> IntoIterator for &'a RawPathParams {
 -    type Item = (&'a str, &'a str);
 -    type IntoIter = RawPathParamsIter<'a>;
@@ -460,7 +448,7 @@ index ffc345be..4a12e641 100644
      }
  }
  
-@@ -545,14 +546,18 @@ impl<'a> IntoIterator for &'a RawPathParams {
+@@ -549,14 +552,18 @@ impl<'a> IntoIterator for &'a RawPathParams {
  ///
  /// Created with [`RawPathParams::iter`].
  #[derive(Debug)]
@@ -852,7 +840,7 @@ index cee6b46f..77b70d4b 100644
          serde_path_to_error::deserialize(&mut deserializer)
              .map_err(make_rejection)
 diff --git a/axum/src/lib.rs b/axum/src/lib.rs
-index 3e3b4bd5..a117993f 100644
+index 3216d48a..2bac020e 100644
 --- a/axum/src/lib.rs
 +++ b/axum/src/lib.rs
 @@ -477,6 +477,7 @@
@@ -997,7 +985,7 @@ index c97b261e..24ce2084 100644
                          Ok(res) => {
                              f($($ty,)* res).await.into_response()
 diff --git a/axum/src/response/sse.rs b/axum/src/response/sse.rs
-index cb289219..99f8e4e4 100644
+index 75805d28..365f84a9 100644
 --- a/axum/src/response/sse.rs
 +++ b/axum/src/response/sse.rs
 @@ -43,10 +43,10 @@ use std::{
@@ -1139,7 +1127,7 @@ index b1abe82c..4a5ed81b 100644
  
  impl fmt::Debug for Node {
 diff --git a/axum/src/routing/route.rs b/axum/src/routing/route.rs
-index deedb3a5..06b2452d 100644
+index 775a6a5b..f37eb4ae 100644
 --- a/axum/src/routing/route.rs
 +++ b/axum/src/routing/route.rs
 @@ -41,8 +41,7 @@ impl<E> Route<E> {

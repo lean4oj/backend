@@ -1,5 +1,5 @@
 diff --git a/Cargo.toml b/Cargo.toml
-index 039f736..6297e64 100644
+index 67bec82..cb0e1ab 100644
 --- a/Cargo.toml
 +++ b/Cargo.toml
 @@ -56,7 +56,6 @@ boring = { version = "5", optional = true }
@@ -191,7 +191,7 @@ index 98f92b1..d61f321 100644
  }
  
 diff --git a/src/lib.rs b/src/lib.rs
-index 5ad63c5..8cd8ca1 100644
+index 6eb79b2..4252edc 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -237,6 +237,7 @@
@@ -304,7 +304,7 @@ index 12a5d60..099d188 100644
      type Ok = Response;
      type Error = Error;
 diff --git a/src/transport/smtp/client/async_net.rs b/src/transport/smtp/client/async_net.rs
-index d3612e0..1616743 100644
+index 40cc167..2199cdd 100644
 --- a/src/transport/smtp/client/async_net.rs
 +++ b/src/transport/smtp/client/async_net.rs
 @@ -173,7 +173,7 @@ impl AsyncNetworkStream {
