@@ -28,7 +28,7 @@ maxminddb = { version = "0.28.1", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
 nodejs-semver = { version = "4.2.0", features = ["serde"] }
 openssl = "0.10.79"
-openssl-sys = "0.9.115"
+openssl-sys = "0.9.116"
 parking_lot = "0.12.5"
 pcre2 = "0.2.11"
 postgres-protocol = "0.6.11"
