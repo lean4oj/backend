@@ -840,14 +840,14 @@ index cee6b46f..77b70d4b 100644
          serde_path_to_error::deserialize(&mut deserializer)
              .map_err(make_rejection)
 diff --git a/axum/src/lib.rs b/axum/src/lib.rs
-index 3216d48a..2bac020e 100644
+index 3216d48a..d2d6e6ed 100644
 --- a/axum/src/lib.rs
 +++ b/axum/src/lib.rs
 @@ -477,6 +477,7 @@
  #![cfg_attr(docsrs, feature(doc_cfg))]
  #![cfg_attr(test, allow(clippy::float_cmp))]
  #![cfg_attr(not(test), warn(clippy::print_stdout, clippy::dbg_macro))]
-+#![feature(exclusive_wrapper, impl_trait_in_assoc_type)]
++#![feature(ergonomic_clones, exclusive_wrapper, impl_trait_in_assoc_type)]
  
  #[macro_use]
  pub(crate) mod macros;
@@ -1037,10 +1037,27 @@ index 75805d28..365f84a9 100644
          assert_eq!(
              memchr::memchr2(b'\r', b'\n', value),
 diff --git a/axum/src/routing/mod.rs b/axum/src/routing/mod.rs
-index a76eee5d..3d1579a9 100644
+index a76eee5d..5417383d 100644
 --- a/axum/src/routing/mod.rs
 +++ b/axum/src/routing/mod.rs
-@@ -449,7 +449,7 @@ where
+@@ -16,6 +16,7 @@ use axum_core::{
+     response::{IntoResponse, Response},
+ };
+ use std::{
++    clone::UseCloned,
+     convert::Infallible,
+     fmt,
+     marker::PhantomData,
+@@ -95,6 +96,8 @@ impl<S> Clone for Router<S> {
+     }
+ }
+ 
++impl<S> UseCloned for Router<S> {}
++
+ struct RouterInner<S> {
+     path_router: PathRouter<S>,
+     default_fallback: bool,
+@@ -449,7 +452,7 @@ where
          })
      }
  

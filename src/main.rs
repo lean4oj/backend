@@ -31,6 +31,7 @@
     dir_entry_ext2,
     drop_guard,
     duration_constructors,
+    ergonomic_clones,
     error_type_id,
     // exact_div,
     // exact_size_is_empty,
@@ -173,7 +174,7 @@ async fn main() -> std::io::Result<!> {
 
         tokio::spawn(
             http_builder
-                .serve_connection(TokioIo::new(socket), RouterService(app.clone()))
+                .serve_connection(TokioIo::new(socket), RouterService(app.use))
                 .with_upgrades(),
         );
     }

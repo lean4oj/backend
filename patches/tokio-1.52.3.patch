@@ -26,6 +26,18 @@ index c89fe43..ce77d13 100644
  }
  
  impl<R: AsyncRead> AsyncRead for BufReader<R> {
+diff --git a/src/lib.rs b/src/lib.rs
+index 7da7e21..e36e260 100644
+--- a/src/lib.rs
++++ b/src/lib.rs
+@@ -22,6 +22,7 @@
+ #![cfg_attr(docsrs, allow(unused_attributes))]
+ #![cfg_attr(loom, allow(dead_code, unreachable_pub))]
+ #![cfg_attr(windows, allow(rustdoc::broken_intra_doc_links))]
++#![feature(ergonomic_clones)]
+ 
+ //! A runtime for writing reliable network applications without compromising speed.
+ //!
 diff --git a/src/loom/std/unsafe_cell.rs b/src/loom/std/unsafe_cell.rs
 index 3d6513b..433ee17 100644
 --- a/src/loom/std/unsafe_cell.rs
@@ -159,10 +171,18 @@ index 6447cef..d9a1ebd 100644
  
  impl Drop for Acquire<'_> {
 diff --git a/src/sync/broadcast.rs b/src/sync/broadcast.rs
-index 3ab9a2c..5a355ac 100644
+index 3ab9a2c..0f47fde 100644
 --- a/src/sync/broadcast.rs
 +++ b/src/sync/broadcast.rs
-@@ -394,7 +394,7 @@ struct Slot<T> {
+@@ -123,6 +123,7 @@ use crate::task::coop::cooperative;
+ use crate::util::linked_list::{self, GuardedLinkedList, LinkedList};
+ use crate::util::WakeList;
+ 
++use std::clone::UseCloned;
+ use std::fmt;
+ use std::future::Future;
+ use std::marker::PhantomPinned;
+@@ -394,7 +395,7 @@ struct Slot<T> {
  }
  
  /// An entry in the wait queue.
@@ -171,7 +191,7 @@ index 3ab9a2c..5a355ac 100644
      /// True if queued.
      queued: AtomicBool,
  
-@@ -427,12 +427,12 @@ generate_addr_of_methods! {
+@@ -427,12 +428,12 @@ generate_addr_of_methods! {
      }
  }
  
@@ -186,7 +206,25 @@ index 3ab9a2c..5a355ac 100644
      /// Receiver being waited on.
      receiver: &'a mut Receiver<T>,
  
-@@ -1220,7 +1220,7 @@ impl<T> Receiver<T> {
+@@ -1064,6 +1065,8 @@ impl<T> Clone for Sender<T> {
+     }
+ }
+ 
++impl<T> UseCloned for Sender<T> {}
++
+ impl<T> Drop for Sender<T> {
+     fn drop(&mut self) {
+         if 1 == self.shared.num_tx.fetch_sub(1, AcqRel) {
+@@ -1122,6 +1125,8 @@ impl<T> Clone for WeakSender<T> {
+     }
+ }
+ 
++impl<T> UseCloned for WeakSender<T> {}
++
+ impl<T> Drop for WeakSender<T> {
+     fn drop(&mut self) {
+         self.shared.num_weak_tx.fetch_sub(1, AcqRel);
+@@ -1220,7 +1225,7 @@ impl<T> Receiver<T> {
      }
  
      /// Locks the next value if there is one.
@@ -195,7 +233,7 @@ index 3ab9a2c..5a355ac 100644
          &mut self,
          waiter: Option<(&UnsafeCell<Waiter>, &Waker)>,
      ) -> Result<RecvGuard<'_, T>, TryRecvError> {
-@@ -1575,7 +1575,7 @@ impl<T> Drop for Receiver<T> {
+@@ -1575,7 +1580,7 @@ impl<T> Drop for Receiver<T> {
  }
  
  impl<'a, T> Recv<'a, T> {
@@ -204,7 +242,7 @@ index 3ab9a2c..5a355ac 100644
          Recv {
              receiver,
              waiter: WaiterCell(UnsafeCell::new(Waiter {
-@@ -1598,6 +1598,10 @@ impl<'a, T> Recv<'a, T> {
+@@ -1598,6 +1603,10 @@ impl<'a, T> Recv<'a, T> {
              (me.receiver, &me.waiter.0)
          }
      }
@@ -215,7 +253,7 @@ index 3ab9a2c..5a355ac 100644
  }
  
  impl<'a, T> Future for Recv<'a, T>
-@@ -1701,6 +1705,10 @@ impl<T> fmt::Debug for Receiver<T> {
+@@ -1701,6 +1710,10 @@ impl<T> fmt::Debug for Receiver<T> {
  }
  
  impl<'a, T> RecvGuard<'a, T> {

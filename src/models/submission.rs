@@ -381,7 +381,7 @@ impl UserSubscription {
             Entry::Occupied(e) => e.get().subscribe(),
             Entry::Vacant(e) => {
                 let (tx, rx) = broadcast::channel(16);
-                e.insert(tx.clone());
+                e.insert(tx.use);
                 tokio::spawn(Self::wait(sid, tx));
                 rx
             }
