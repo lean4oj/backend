@@ -73,7 +73,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#7eee934487c8752958063b4ba9c24fb536339541"
+source = "git+https://github.com/tokio-rs/axum#b99e25d01f2ffa29e5138a0cc337b6b831a41285"
 dependencies = [
  "axum-core",
  "bytes",
@@ -105,7 +105,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#7eee934487c8752958063b4ba9c24fb536339541"
+source = "git+https://github.com/tokio-rs/axum#b99e25d01f2ffa29e5138a0cc337b6b831a41285"
 dependencies = [
  "bytes",
  "futures-core",
@@ -165,9 +165,9 @@ dependencies = [
 
 [[package]]
 name = "bumpalo"
-version = "3.20.2"
+version = "3.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d20789868f4b01b2f2caec9f5c4e0213b41e3e5702a50157d699ae31ced2fcb"
+checksum = "72f5acc6cb2ba439de613abc23857ec3d78374d8ed5ac84e9d11336e87da8649"
 
 [[package]]
 name = "bytecount"
@@ -294,9 +294,9 @@ checksum = "d0a5c400df2834b80a4c3327b3aad3a4c4cd4de0629063962b03235697506a28"
 
 [[package]]
 name = "crypto-common"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "77727bb15fa921304124b128af125e7e3b968275d1b108b379190264f4423710"
+checksum = "ce6e4c961d6cd6c9a86db418387425e8bdeaf05b3c8bc1411e6dca4c252f1453"
 dependencies = [
  "hybrid-array",
 ]
@@ -386,7 +386,7 @@ checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
 [[package]]
 name = "env_filter"
 version = "1.0.1"
-source = "git+https://github.com/rust-cli/env_logger#5270d66653bc82e3d58249c8df658f1f646b78b1"
+source = "git+https://github.com/rust-cli/env_logger#1499f349896c4dbd1c9b48ce90e9cab1d271e0f2"
 dependencies = [
  "log",
 ]
@@ -394,7 +394,7 @@ dependencies = [
 [[package]]
 name = "env_logger"
 version = "0.11.10"
-source = "git+https://github.com/rust-cli/env_logger#5270d66653bc82e3d58249c8df658f1f646b78b1"
+source = "git+https://github.com/rust-cli/env_logger#1499f349896c4dbd1c9b48ce90e9cab1d271e0f2"
 dependencies = [
  "anstream",
  "anstyle",
@@ -1510,9 +1510,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.149"
+version = "1.0.150"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83fc039473c5595ace860d8c4fafa220ff474b3fc6bfdb4293327f1a37e94d86"
+checksum = "e8014e44b4736ed0538adeecded0fce2a272f22dc9578a7eb6b2d9993c74cfb9"
 dependencies = [
  "itoa",
  "memchr",
