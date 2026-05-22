@@ -34,7 +34,7 @@ pcre2 = "0.2.11"
 postgres-protocol = "0.6.11"
 rand = { version = "0.10.1", features = ["log"] }
 serde = { version = "1.0.228", features = ["derive"] }
-serde_json = { version = "1.0.149", features = ["float_roundtrip"] }
+serde_json = { version = "1.0.150", features = ["float_roundtrip"] }
 serde_path_to_error = "0.1.20"
 smallvec = { version = "1.15.1", features = ["const_new", "may_dangle", "serde", "specialization", "union"] }
 tempfile = "3.27.0"
