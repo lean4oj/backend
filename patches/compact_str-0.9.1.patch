@@ -1514,7 +1514,7 @@ index 0000000..eacab92
 +    }
 +}
 diff --git a/src/lib.rs b/src/lib.rs
-index 149530b..5f5b63e 100644
+index d648609..925bdd2 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -24,6 +24,9 @@ use core::{fmt, mem, slice};
