@@ -1,17 +1,17 @@
 diff --git a/l4judger.c b/l4judger.c
-index 65ce8e5..99a5d44 100644
+index a975e49..2103279 100644
 --- a/l4judger.c
 +++ b/l4judger.c
-@@ -261,7 +261,7 @@ LEAN_EXPORT lean_object* l_Lean_PersistentArray_foldlM___at___00main_spec__0___b
+@@ -262,7 +262,7 @@ LEAN_EXPORT lean_object* l_Lean_PersistentArray_foldlM___at___00main_spec__0___b
  LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(lean_object*, lean_object*);
  LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe_fold___at___00Lean_Language_SnapshotTree_foldM___at___00main_spec__3_spec__7(lean_object*, size_t, size_t, lean_object*);
  LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_foldlMUnsafe_fold___at___00Lean_Language_SnapshotTree_foldM___at___00main_spec__3_spec__7___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
 -LEAN_EXPORT lean_object* l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3___boxed(lean_object*, lean_object*, lean_object*);
 +lean_object *protect(lean_object*, lean_object*);
  LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object*, lean_object*);
- LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6(lean_object*, size_t, size_t, lean_object*);
- LEAN_EXPORT lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6___boxed(lean_object*, lean_object*, lean_object*, lean_object*, lean_object*);
-@@ -3278,14 +3278,14 @@ lean_dec_ref(v_as_959_);
+ static const lean_string_object l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6___closed__0_value = {.m_header = {.m_rc = 0, .m_cs_sz = 0, .m_other = 0, .m_tag = 249}, .m_size = 3, .m_capacity = 3, .m_length = 2, .m_data = ": "};
+ static const lean_object* l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6___closed__0 = (const lean_object*)&l___private_Init_Data_Array_Basic_0__Array_forIn_x27Unsafe_loop___at___00main_spec__6___closed__0_value;
+@@ -3295,14 +3295,14 @@ lean_dec_ref(v_as_959_);
  return v_res_966_;
  }
  }
@@ -34,25 +34,25 @@ index 65ce8e5..99a5d44 100644
  LEAN_EXPORT lean_object* l_List_mapTR_loop___at___00main_spec__1(lean_object* v_a_971_, lean_object* v_a_972_){
  _start:
  {
-@@ -5399,7 +5399,7 @@ goto v_reusejp_1594_;
- v_reusejp_1594_:
+@@ -5690,7 +5690,7 @@ goto v_reusejp_1678_;
+ v_reusejp_1678_:
  {
- lean_object* v___x_1596_; 
--v___x_1596_ = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(v___x_1595_, v___x_1552_);
-+v___x_1596_ = protect(v___x_1595_, v___x_1552_);
- if (lean_obj_tag(v___x_1596_) == 0)
+ lean_object* v___x_1680_; 
+-v___x_1680_ = l_Lean_Language_SnapshotTree_foldM___at___00main_spec__3(v___x_1679_, v___x_1634_);
++v___x_1680_ = protect(v___x_1679_, v___x_1634_);
+ if (lean_obj_tag(v___x_1680_) == 0)
  {
- lean_object* v_a_1597_; uint8_t v___x_1598_; 
-@@ -6291,7 +6291,7 @@ return v_res_1811_;
+ lean_object* v_a_1681_; uint8_t v___x_1682_; 
+@@ -6596,7 +6596,7 @@ return v_res_1897_;
  }
- }
+ lean_object* initialize_Init(uint8_t builtin);
  lean_object* initialize_Init(uint8_t builtin);
 -lean_object* initialize_batteries_Batteries_Tactic_OpenPrivate(uint8_t builtin);
 +
  lean_object* initialize_CollectUtils(uint8_t builtin);
  lean_object* initialize_Lean_Compiler_ImplementedByAttr(uint8_t builtin);
- lean_object* initialize_Lean_Elab_DefView(uint8_t builtin);
-@@ -6307,9 +6307,9 @@ _G_initialized = true;
+ lean_object* initialize_Lean_Language_Lean(uint8_t builtin);
+@@ -6612,9 +6612,9 @@ lean_dec_ref(res);
  res = initialize_Init(builtin);
  if (lean_io_result_is_error(res)) return res;
  lean_dec_ref(res);

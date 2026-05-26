@@ -12,7 +12,7 @@ index 0ab5bdf..c673a08 100644
  #[cfg(not(feature = "std"))]
  compile_error!("`std` feature currently required, support for `no_std` may be added later");
 diff --git a/src/request.rs b/src/request.rs
-index 0eb36b7..66d1462 100644
+index 7cf19fa..4d53cd0 100644
 --- a/src/request.rs
 +++ b/src/request.rs
 @@ -655,6 +655,16 @@ impl<T> Request<T> {
@@ -54,7 +54,7 @@ index b8fc9b2..abdbd92 100644
      /// return type of the passed in function.
      ///
 diff --git a/src/status.rs b/src/status.rs
-index bc58ba4..233c348 100644
+index aa9dc30..e6b425e 100644
 --- a/src/status.rs
 +++ b/src/status.rs
 @@ -17,7 +17,6 @@
@@ -254,10 +254,10 @@ index bc58ba4..233c348 100644
  
          }
 diff --git a/src/uri/path.rs b/src/uri/path.rs
-index 8f9356e..c88c43c 100644
+index dfbb2e9..f55e197 100644
 --- a/src/uri/path.rs
 +++ b/src/uri/path.rs
-@@ -377,6 +377,12 @@ impl hash::Hash for PathAndQuery {
+@@ -293,6 +293,12 @@ impl hash::Hash for PathAndQuery {
      }
  }
  
