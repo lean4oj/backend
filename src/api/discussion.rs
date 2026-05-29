@@ -471,12 +471,6 @@ async fn get_discussion(
 ) -> JkmxJsonResponse {
     let Json(GetDiscussionRequest { locale, discussion_id, query_replies_type, get_discussion }) = req?;
 
-    let mut res = GetDiscussionResponse {
-        discussion: None,
-        replies: None,
-        permission_create_new_discussion: true,
-    };
-
     let 𝑘 = if get_discussion == Some(true) {
         Some(discussion_id.cast_signed())
     } else {
@@ -485,6 +479,11 @@ async fn get_discussion(
 
     let mut conn = get_connection().await?;
     let maybe_user = User::from_session(session, &mut conn).await?;
+    let mut res = GetDiscussionResponse {
+        discussion: None,
+        replies: None,
+        permission_create_new_discussion: maybe_user.is_some(),
+    };
     let uid = maybe_user.as_ref().map(|u| &*u.uid);
 
     match query_replies_type {
