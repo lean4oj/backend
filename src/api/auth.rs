@@ -51,6 +51,10 @@ const NO_SUCH_USER: JkmxJsonResponse = JkmxJsonResponse::Response(
     StatusCode::OK,
     Bytes::from_static(br#"{"error":"NO_SUCH_USER"}"#),
 );
+const WRONG_PASSWORD: JkmxJsonResponse = JkmxJsonResponse::Response(
+    StatusCode::OK,
+    Bytes::from_static(br#"{"error":"WRONG_PASSWORD"}"#),
+);
 
 mod private {
     use bytes::Bytes;
@@ -216,10 +220,7 @@ async fn login(req: JsonReqult<LoginRequest>) -> JkmxJsonResponse {
         let stmt = conn.prepare_static(SQL_EMAIL.into()).await?;
         conn.query_one(&stmt, &[&&*email, &password]).await
     };
-    let row = match row {
-        Ok(r) => r,
-        Err(e) => return JkmxJsonResponse::Error(StatusCode::BAD_REQUEST, e.into()),
-    };
+    let Ok(row) = row else { return WRONG_PASSWORD };
 
     let uid = row.try_get(0)?;
     let username = row.try_get::<_, &str>(1)?;

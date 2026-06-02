@@ -226,7 +226,7 @@ where
 
         #[cfg(target_os = "linux")]
         if has_ac {
-            tokio::task::spawn_blocking(move || verified::mark(path_bank));
+            tokio::task::spawn_blocking(|| verified::mark(path_bank));
         }
     }
 

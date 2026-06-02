@@ -150,9 +150,9 @@ dependencies = [
 
 [[package]]
 name = "bitflags"
-version = "2.11.1"
+version = "2.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4512299f36f043ab09a583e57bceb5a5aab7a73db1805848e8fef3c9e8c78b3"
+checksum = "84d7ced0ae9557296835c32bf1b1e02b44c746701f898460fb000d7eaa84f00a"
 
 [[package]]
 name = "block-buffer"
@@ -386,7 +386,7 @@ checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
 [[package]]
 name = "env_filter"
 version = "1.0.1"
-source = "git+https://github.com/rust-cli/env_logger#91a43c1a2e910ef225567189494abec4db55a943"
+source = "git+https://github.com/rust-cli/env_logger#92f8d8d08343c30e60b5f54455d7e16c810fcf11"
 dependencies = [
  "log",
 ]
@@ -394,7 +394,7 @@ dependencies = [
 [[package]]
 name = "env_logger"
 version = "0.11.10"
-source = "git+https://github.com/rust-cli/env_logger#91a43c1a2e910ef225567189494abec4db55a943"
+source = "git+https://github.com/rust-cli/env_logger#92f8d8d08343c30e60b5f54455d7e16c810fcf11"
 dependencies = [
  "anstream",
  "anstyle",
@@ -991,9 +991,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.30"
+version = "0.4.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "616ec5685824bcc94416c6d4a7a446eea774a31efd7062c8480ba6fd06d7a6e5"
+checksum = "113b30b4cd05f7c06868fdb2854f66a7b9fece9a48425351cd532e810d74024f"
 
 [[package]]
 name = "matchit"
