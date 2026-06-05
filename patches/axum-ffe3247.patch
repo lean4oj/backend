@@ -493,7 +493,7 @@ index 192e1e58..ccf8ae11 100644
  }
  
 diff --git a/axum/src/extract/ws.rs b/axum/src/extract/ws.rs
-index 2eb3b2af..cbe42425 100644
+index d9e7adcd..6e08cc8f 100644
 --- a/axum/src/extract/ws.rs
 +++ b/axum/src/extract/ws.rs
 @@ -119,6 +119,10 @@ use tokio_tungstenite::{
@@ -507,10 +507,10 @@ index 2eb3b2af..cbe42425 100644
  
  /// Extractor for establishing WebSocket connections.
  ///
-@@ -549,8 +553,8 @@ impl WebSocket {
-     /// Receive another message.
+@@ -558,8 +562,8 @@ impl WebSocket {
+     /// another branch completes first, then no message is received.
      ///
-     /// Returns `None` if the stream has closed.
+     /// [`tokio::select!`]: https://docs.rs/tokio/latest/tokio/macro.select.html
 -    pub async fn recv(&mut self) -> Option<Result<Message, Error>> {
 -        self.next().await
 +    pub fn recv(&mut self) -> impl Future<Output = Option<Result<Message, Error>>> + Send + '_ {
@@ -518,7 +518,7 @@ index 2eb3b2af..cbe42425 100644
      }
  
      /// Send a message.
-@@ -565,6 +569,10 @@ impl WebSocket {
+@@ -576,6 +580,10 @@ impl WebSocket {
      pub fn protocol(&self) -> Option<&HeaderValue> {
          self.protocol.as_ref()
      }
@@ -529,7 +529,7 @@ index 2eb3b2af..cbe42425 100644
  }
  
  impl FusedStream for WebSocket {
-@@ -614,134 +622,6 @@ impl Sink<Message> for WebSocket {
+@@ -625,134 +633,6 @@ impl Sink<Message> for WebSocket {
      }
  }
  
@@ -664,7 +664,7 @@ index 2eb3b2af..cbe42425 100644
  /// A WebSocket message.
  //
  // This code comes from https://github.com/snapview/tungstenite-rs/blob/master/src/protocol/message.rs and is under following license:
-@@ -811,29 +691,21 @@ pub enum Message {
+@@ -822,29 +702,21 @@ pub enum Message {
  impl Message {
      fn into_tungstenite(self) -> ts::Message {
          match self {
