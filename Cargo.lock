@@ -84,7 +84,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#4a72e063b916f39e0698a345a99a755deb8f345b"
+source = "git+https://github.com/tokio-rs/axum#ffe32473ccd5e7dfa08aa5fde63d42c980377b53"
 dependencies = [
  "axum-core",
  "bytes",
@@ -117,7 +117,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#4a72e063b916f39e0698a345a99a755deb8f345b"
+source = "git+https://github.com/tokio-rs/axum#ffe32473ccd5e7dfa08aa5fde63d42c980377b53"
 dependencies = [
  "bytes",
  "futures-core",
@@ -2350,9 +2350,9 @@ checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
 
 [[package]]
 name = "yoke"
-version = "0.8.2"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abe8c5fda708d9ca3df187cae8bfb9ceda00dd96231bed36e445a1a48e66f9ca"
+checksum = "709fe23a0424b6a435d82152b1bd3fdfb0833487d5fa90d05d42762a9891fef5"
 dependencies = [
  "stable_deref_trait",
  "yoke-derive",
