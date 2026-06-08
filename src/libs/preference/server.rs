@@ -100,7 +100,8 @@ impl const Default for Misc {
             disabled_emoji_in_math: &["↔", "↪"],
             lean_versions: SliceMap::from_slice([
                 ("4.30.0", "4.30.0 (latest stable)"),
-                ("4.31.0-rc1", "4.31.0-rc1 (latest)"),
+                ("4.31.0-rc2", "4.31.0-rc2 (latest)"),
+                ("4.31.0-rc1", "4.31.0-rc1"),
                 ("4.30.0-rc2", "4.30.0-rc2"),
                 ("4.30.0-rc1", "4.30.0-rc1"),
                 ("4.29.1", "4.29.1"),

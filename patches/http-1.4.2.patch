@@ -254,7 +254,7 @@ index aa9dc30..e6b425e 100644
  
          }
 diff --git a/src/uri/path.rs b/src/uri/path.rs
-index dfbb2e9..f55e197 100644
+index 8cedaba..8449a6d 100644
 --- a/src/uri/path.rs
 +++ b/src/uri/path.rs
 @@ -293,6 +293,12 @@ impl hash::Hash for PathAndQuery {
