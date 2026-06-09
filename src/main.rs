@@ -81,7 +81,6 @@
     // postfix_match,
     ptr_cast_array,
     // ptr_metadata,
-    result_option_map_or_default,
     rustc_attrs,
     // setgroups,
     // simd_wasm64,
