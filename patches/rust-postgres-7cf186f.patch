@@ -9,7 +9,7 @@ index 1cad4dcf..9b233c9b 100644
 -stringprep = "0.1"
  getrandom = { version = "0.4", optional = true }
 diff --git a/postgres-protocol/src/authentication/sasl.rs b/postgres-protocol/src/authentication/sasl.rs
-index 8f2375b3..0f3c5457 100644
+index f55cd340..757006da 100644
 --- a/postgres-protocol/src/authentication/sasl.rs
 +++ b/postgres-protocol/src/authentication/sasl.rs
 @@ -20,21 +20,6 @@ pub const SCRAM_SHA_256: &str = "SCRAM-SHA-256";
