@@ -2,7 +2,6 @@
     core_intrinsics,
     deref_patterns,
     exit_status_error,
-    result_option_map_or_default,
     stmt_expr_attributes,
 )]
 #![cfg_attr(target_os = "linux", feature(setgroups))]

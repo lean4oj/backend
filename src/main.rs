@@ -52,7 +52,6 @@
     // half_open_range_patterns_in_slices,
     // if_let_guard,
     // impl_trait_in_assoc_type,
-    int_format_into,
     int_from_ascii,
     io_const_error,
     // io_error_more,

@@ -1,5 +1,5 @@
 diff --git a/postgres-protocol/Cargo.toml b/postgres-protocol/Cargo.toml
-index 1cad4dcf..9b233c9b 100644
+index db782d44..36d3a501 100644
 --- a/postgres-protocol/Cargo.toml
 +++ b/postgres-protocol/Cargo.toml
 @@ -23,5 +23,4 @@ md-5 = "0.11"
@@ -9,10 +9,10 @@ index 1cad4dcf..9b233c9b 100644
 -stringprep = "0.1"
  getrandom = { version = "0.4", optional = true }
 diff --git a/postgres-protocol/src/authentication/sasl.rs b/postgres-protocol/src/authentication/sasl.rs
-index f55cd340..757006da 100644
+index 51e3d181..73911e16 100644
 --- a/postgres-protocol/src/authentication/sasl.rs
 +++ b/postgres-protocol/src/authentication/sasl.rs
-@@ -20,21 +20,6 @@ pub const SCRAM_SHA_256: &str = "SCRAM-SHA-256";
+@@ -30,21 +30,6 @@ pub const SCRAM_SHA_256: &str = "SCRAM-SHA-256";
  /// The identifier of the SCRAM-SHA-256-PLUS SASL authentication mechanism.
  pub const SCRAM_SHA_256_PLUS: &str = "SCRAM-SHA-256-PLUS";
  
@@ -34,7 +34,7 @@ index f55cd340..757006da 100644
  pub(crate) fn hi(str: &[u8], salt: &[u8], i: u32) -> [u8; 32] {
      let mut hmac =
          Hmac::<Sha256>::new_from_slice(str).expect("HMAC is able to accept all key sizes");
-@@ -99,10 +84,10 @@ impl ChannelBinding {
+@@ -109,10 +94,10 @@ impl ChannelBinding {
      }
  }
  
@@ -47,7 +47,7 @@ index f55cd340..757006da 100644
          channel_binding: ChannelBinding,
      },
      Finish {
-@@ -127,14 +112,14 @@ enum State {
+@@ -137,14 +122,14 @@ enum State {
  ///
  /// The server will reply with an `AuthenticationSASLFinal` message. Its contents should be passed
  /// to the `finish()` method, after which the authentication process is complete.
@@ -66,7 +66,7 @@ index f55cd340..757006da 100644
          // rand 0.5's ThreadRng is cryptographically secure
          let mut rng = rand::rng();
          let nonce = (0..NONCE_LENGTH)
-@@ -150,12 +135,12 @@ impl ScramSha256 {
+@@ -160,12 +145,12 @@ impl ScramSha256 {
          ScramSha256::new_inner(password, channel_binding, nonce)
      }
  
@@ -81,7 +81,7 @@ index f55cd340..757006da 100644
                  channel_binding,
              },
          }
-@@ -180,7 +165,7 @@ impl ScramSha256 {
+@@ -190,7 +175,7 @@ impl ScramSha256 {
                      password,
                      channel_binding,
                  } => (nonce, password, channel_binding),
@@ -90,7 +90,7 @@ index f55cd340..757006da 100644
              };
  
          let message =
-@@ -189,7 +174,7 @@ impl ScramSha256 {
+@@ -199,7 +184,7 @@ impl ScramSha256 {
          let parsed = Parser::new(message).server_first_message()?;
  
          if !parsed.nonce.starts_with(&client_nonce) {
@@ -98,8 +98,8 @@ index f55cd340..757006da 100644
 +            return Err(io::const_error!(io::ErrorKind::InvalidInput, "invalid nonce"));
          }
  
-         let salt = match STANDARD.decode(parsed.salt) {
-@@ -197,7 +182,7 @@ impl ScramSha256 {
+         if parsed.iteration_count > MAX_ITERATION_COUNT {
+@@ -214,7 +199,7 @@ impl ScramSha256 {
              Err(e) => return Err(io::Error::new(io::ErrorKind::InvalidInput, e)),
          };
  
@@ -108,7 +108,7 @@ index f55cd340..757006da 100644
  
          let mut hmac = Hmac::<Sha256>::new_from_slice(&salted_password)
              .expect("HMAC is able to accept all key sizes");
-@@ -252,7 +237,7 @@ impl ScramSha256 {
+@@ -269,7 +254,7 @@ impl ScramSha256 {
                  salted_password,
                  auth_message,
              } => (salted_password, auth_message),
@@ -117,7 +117,7 @@ index f55cd340..757006da 100644
          };
  
          let message =
-@@ -281,7 +266,7 @@ impl ScramSha256 {
+@@ -298,7 +283,7 @@ impl ScramSha256 {
              .expect("HMAC is able to accept all key sizes");
          hmac.update(auth_message.as_bytes());
          hmac.verify_slice(&verifier)
@@ -126,7 +126,7 @@ index f55cd340..757006da 100644
      }
  }
  
-@@ -306,7 +291,7 @@ impl<'a> Parser<'a> {
+@@ -323,7 +308,7 @@ impl<'a> Parser<'a> {
                      format!("unexpected character at byte {i}: expected `{target}` but got `{c}");
                  Err(io::Error::new(io::ErrorKind::InvalidInput, m))
              }
@@ -352,7 +352,7 @@ index f4676ae4..fb1d39dc 100644
      }
  
 diff --git a/tokio-postgres/Cargo.toml b/tokio-postgres/Cargo.toml
-index e5da5f6c..fc857fc4 100644
+index 76cf4891..7a1da578 100644
 --- a/tokio-postgres/Cargo.toml
 +++ b/tokio-postgres/Cargo.toml
 @@ -48,7 +48,6 @@ with-time-0_3 = ["postgres-types/with-time-0_3"]
@@ -1460,10 +1460,10 @@ index a9dfda7b..45234d2e 100644
      portal: &Portal,
      max_rows: i32,
 diff --git a/tokio-postgres/src/row.rs b/tokio-postgres/src/row.rs
-index 3726a5e8..228d5302 100644
+index 0b772f81..5e22f0e7 100644
 --- a/tokio-postgres/src/row.rs
 +++ b/tokio-postgres/src/row.rs
-@@ -194,6 +194,10 @@ impl Row {
+@@ -205,6 +205,10 @@ impl Row {
          let range = self.ranges[idx].to_owned()?;
          Some(&self.body.buffer()[range])
      }
@@ -1474,7 +1474,7 @@ index 3726a5e8..228d5302 100644
  }
  
  impl AsName for SimpleColumn {
-@@ -277,4 +281,8 @@ impl SimpleQueryRow {
+@@ -298,6 +302,10 @@ impl SimpleQueryRow {
          let buf = self.ranges[idx].clone().map(|r| &self.body.buffer()[r]);
          FromSql::from_sql_nullable(&Type::TEXT, buf).map_err(|e| Error::from_sql(e, idx))
      }
@@ -1483,6 +1483,8 @@ index 3726a5e8..228d5302 100644
 +        self.body.buffer_bytes()
 +    }
  }
+ 
+ #[cfg(test)]
 diff --git a/tokio-postgres/src/simple_query.rs b/tokio-postgres/src/simple_query.rs
 index 1ae55df1..8d6f7349 100644
 --- a/tokio-postgres/src/simple_query.rs
