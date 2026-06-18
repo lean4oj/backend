@@ -317,7 +317,7 @@ index 80076843..eb355240 100644
      // client key
      let mut hmac = Hmac::<Sha256>::new_from_slice(&salted_password)
 diff --git a/postgres-types/src/lib.rs b/postgres-types/src/lib.rs
-index 760acd23..46dcee2f 100644
+index 760acd23..4a0eef0a 100644
 --- a/postgres-types/src/lib.rs
 +++ b/postgres-types/src/lib.rs
 @@ -768,7 +768,7 @@ simple_from!(bool, bool_from_sql, BOOL);
@@ -329,6 +329,21 @@ index 760acd23..46dcee2f 100644
  simple_from!(i64, int8_from_sql, INT8);
  simple_from!(f32, float4_from_sql, FLOAT4);
  simple_from!(f64, float8_from_sql, FLOAT8);
+@@ -1333,6 +1333,14 @@ impl BorrowToSql for &(dyn ToSql + Sync) {
+     }
+ }
+ 
++impl sealed::Sealed for &(dyn ToSql + Sync + Send) {}
++impl BorrowToSql for &(dyn ToSql + Sync + Send) {
++    #[inline]
++    fn borrow_to_sql(&self) -> &dyn ToSql {
++        *self
++    }
++}
++
+ impl<T> sealed::Sealed for T where T: ToSql {}
+ 
+ impl<T> BorrowToSql for T
 diff --git a/postgres/src/transaction.rs b/postgres/src/transaction.rs
 index f4676ae4..fb1d39dc 100644
 --- a/postgres/src/transaction.rs
@@ -873,7 +888,7 @@ index a5fc9607..bcba9bb8 100644
      }
  
 diff --git a/tokio-postgres/src/generic_client.rs b/tokio-postgres/src/generic_client.rs
-index 4106a973..cafa839c 100644
+index 4106a973..e4204025 100644
 --- a/tokio-postgres/src/generic_client.rs
 +++ b/tokio-postgres/src/generic_client.rs
 @@ -1,7 +1,7 @@
@@ -897,7 +912,7 @@ index 4106a973..cafa839c 100644
 +        &self,
 +        query: &T,
 +        params: &[&(dyn ToSql + Sync)],
-+    ) -> impl Future<Output = Result<u64, Error>> + Send
++    ) -> impl Future<Output = Result<u64, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send;
  
@@ -907,7 +922,7 @@ index 4106a973..cafa839c 100644
 +        &self,
 +        statement: &T,
 +        params: I,
-+    ) -> impl Future<Output = Result<u64, Error>> + Send
++    ) -> impl Future<Output = Result<u64, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send,
          P: BorrowToSql,
@@ -921,7 +936,7 @@ index 4106a973..cafa839c 100644
          statement: &str,
          params: &[(&(dyn ToSql + Sync), Type)],
 -    ) -> Result<u64, Error>;
-+    ) -> impl Future<Output = Result<u64, Error>> + Send;
++    ) -> impl Future<Output = Result<u64, Error>> + Send + Sync;
  
      /// Like [`Client::query`].
 -    async fn query<T>(&self, query: &T, params: &[&(dyn ToSql + Sync)]) -> Result<Vec<Row>, Error>
@@ -929,7 +944,7 @@ index 4106a973..cafa839c 100644
 +        &self,
 +        query: &T,
 +        params: &[&(dyn ToSql + Sync)],
-+    ) -> impl Future<Output = Result<Vec<Row>, Error>> + Send
++    ) -> impl Future<Output = Result<Vec<Row>, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send;
  
@@ -940,7 +955,7 @@ index 4106a973..cafa839c 100644
          statement: &T,
          params: &[&(dyn ToSql + Sync)],
 -    ) -> Result<Row, Error>
-+    ) -> impl Future<Output = Result<Row, Error>> + Send
++    ) -> impl Future<Output = Result<Row, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send;
  
@@ -951,7 +966,7 @@ index 4106a973..cafa839c 100644
          statement: &T,
          params: &[&(dyn ToSql + Sync)],
 -    ) -> Result<Option<Row>, Error>
-+    ) -> impl Future<Output = Result<Option<Row>, Error>> + Send
++    ) -> impl Future<Output = Result<Option<Row>, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send;
  
@@ -961,11 +976,11 @@ index 4106a973..cafa839c 100644
 +        &self,
 +        statement: &T,
 +        params: I,
-+    ) -> impl Future<Output = Result<RowStream, Error>> + Send
++    ) -> impl Future<Output = Result<RowStream, Error>> + Send + Sync
      where
          T: ?Sized + ToStatement + Sync + Send,
          P: BorrowToSql,
-@@ -64,50 +79,57 @@ pub trait GenericClient: private::Sealed {
+@@ -64,313 +79,374 @@ pub trait GenericClient: private::Sealed {
          I::IntoIter: ExactSizeIterator;
  
      /// Like [`Client::query_typed`]
@@ -975,7 +990,7 @@ index 4106a973..cafa839c 100644
          statement: &str,
          params: &[(&(dyn ToSql + Sync), Type)],
 -    ) -> Result<Vec<Row>, Error>;
-+    ) -> impl Future<Output = Result<Vec<Row>, Error>> + Send;
++    ) -> impl Future<Output = Result<Vec<Row>, Error>> + Send + Sync;
  
      /// Like [`Client::query_one_typed`].
 -    async fn query_typed_one(
@@ -984,7 +999,7 @@ index 4106a973..cafa839c 100644
          statement: &str,
          params: &[(&(dyn ToSql + Sync), Type)],
 -    ) -> Result<Row, Error>;
-+    ) -> impl Future<Output = Result<Row, Error>> + Send;
++    ) -> impl Future<Output = Result<Row, Error>> + Send + Sync;
  
      /// Like [`Client::query_opt_typed`].
 -    async fn query_typed_opt(
@@ -993,7 +1008,7 @@ index 4106a973..cafa839c 100644
          statement: &str,
          params: &[(&(dyn ToSql + Sync), Type)],
 -    ) -> Result<Option<Row>, Error>;
-+    ) -> impl Future<Output = Result<Option<Row>, Error>> + Send;
++    ) -> impl Future<Output = Result<Option<Row>, Error>> + Send + Sync;
  
      /// Like [`Client::query_typed_raw`]
 -    async fn query_typed_raw<P, I>(&self, statement: &str, params: I) -> Result<RowStream, Error>
@@ -1001,14 +1016,14 @@ index 4106a973..cafa839c 100644
 +        &self,
 +        statement: &str,
 +        params: I,
-+    ) -> impl Future<Output = Result<RowStream, Error>> + Send
++    ) -> impl Future<Output = Result<RowStream, Error>> + Send + Sync
      where
          P: BorrowToSql,
          I: IntoIterator<Item = (P, Type)> + Sync + Send;
  
      /// Like [`Client::prepare`].
 -    async fn prepare(&self, query: &str) -> Result<Statement, Error>;
-+    fn prepare(&self, query: &str) -> impl Future<Output = Result<Statement, Error>> + Send;
++    fn prepare(&self, query: &str) -> impl Future<Output = Result<Statement, Error>> + Send + Sync;
  
      /// Like [`Client::prepare_typed`].
 -    async fn prepare_typed(
@@ -1017,26 +1032,29 @@ index 4106a973..cafa839c 100644
          query: &str,
          parameter_types: &[Type],
 -    ) -> Result<Statement, Error>;
-+    ) -> impl Future<Output = Result<Statement, Error>> + Send;
++    ) -> impl Future<Output = Result<Statement, Error>> + Send + Sync;
  
      /// Like [`Client::transaction`].
 -    async fn transaction<'a>(&'a mut self) -> Result<Transaction<'a>, Error>;
-+    fn transaction<'a>(&'a mut self) -> impl Future<Output = Result<Transaction<'a>, Error>> + Send;
++    fn transaction<'a>(&'a mut self) -> impl Future<Output = Result<Transaction<'a>, Error>> + Send + Sync;
  
      /// Like [`Client::batch_execute`].
 -    async fn batch_execute(&self, query: &str) -> Result<(), Error>;
-+    fn batch_execute(&self, query: &str) -> impl Future<Output = Result<(), Error>> + Send;
++    fn batch_execute(&self, query: &str) -> impl Future<Output = Result<(), Error>> + Send + Sync;
  
      /// Like [`Client::simple_query`].
 -    async fn simple_query(&self, query: &str) -> Result<Vec<SimpleQueryMessage>, Error>;
 +    fn simple_query(
 +        &self,
 +        query: &str,
-+    ) -> impl Future<Output = Result<Vec<SimpleQueryMessage>, Error>> + Send;
++    ) -> impl Future<Output = Result<Vec<SimpleQueryMessage>, Error>> + Send + Sync;
  
      /// Returns a reference to the underlying [`Client`].
      fn client(&self) -> &Client;
-@@ -115,127 +137,149 @@ pub trait GenericClient: private::Sealed {
++
++    /// Returns a mutable reference to the underlying [`Client`].
++    fn client_mut(&mut self) -> &mut Client;
+ }
  
  impl private::Sealed for Client {}
  
@@ -1226,7 +1244,13 @@ index 4106a973..cafa839c 100644
      }
  
      fn client(&self) -> &Client {
-@@ -245,132 +289,153 @@ impl GenericClient for Client {
+         self
+     }
++
++    fn client_mut(&mut self) -> &mut Client {
++        self
++    }
+ }
  
  impl private::Sealed for Transaction<'_> {}
  
@@ -1411,6 +1435,10 @@ index 4106a973..cafa839c 100644
      }
  
 -    async fn execute_typed(
++    fn client_mut(&mut self) -> &mut Client {
++        self.client_mut()
++    }
++
 +    fn execute_typed(
          &self,
          statement: &str,
@@ -1434,10 +1462,50 @@ index a41bb35a..469369cf 100644
  pub use crate::cancel_token::CancelToken;
  pub use crate::client::Client;
 diff --git a/tokio-postgres/src/prepare.rs b/tokio-postgres/src/prepare.rs
-index 8484fa33..e5a0ecb7 100644
+index 8484fa33..c67ca7f3 100644
 --- a/tokio-postgres/src/prepare.rs
 +++ b/tokio-postgres/src/prepare.rs
-@@ -132,7 +132,7 @@ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Resu
+@@ -7,7 +7,7 @@ use crate::{Column, Error, Statement};
+ use crate::{query, slice_iter};
+ use bytes::Bytes;
+ use fallible_iterator::FallibleIterator;
+-use futures_util::TryStreamExt;
++use futures_util::{FutureExt, TryStreamExt};
+ use log::debug;
+ use postgres_protocol::message::backend::Message;
+ use postgres_protocol::message::frontend;
+@@ -109,14 +109,28 @@ pub async fn prepare(
+     Ok(Statement::new(client, name, parameters, columns))
+ }
+ 
++struct PrepareRec<'a> {
++    fut: Pin<Box<dyn Future<Output = Result<Statement, Error>> + Send + 'a>>,
++}
++
+ fn prepare_rec<'a>(
+     client: &'a Arc<InnerClient>,
+     query: &'a str,
+     types: &'a [Type],
+-) -> Pin<Box<dyn Future<Output = Result<Statement, Error>> + 'a + Send>> {
+-    Box::pin(prepare(client, query, types))
++) -> PrepareRec<'a> {
++    PrepareRec { fut: Box::pin(prepare(client, query, types)) }
++}
++
++impl Future for PrepareRec<'_> {
++    type Output = Result<Statement, Error>;
++
++    fn poll(mut self: Pin<&mut Self>, cx: &mut core::task::Context<'_>) -> core::task::Poll<Self::Output> {
++        self.fut.as_mut().poll(cx)
++    }
+ }
+ 
++unsafe impl Sync for PrepareRec<'_> {}
++
+ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Result<Bytes, Error> {
+     if types.is_empty() {
+         debug!("preparing query {name}: {query}");
+@@ -132,7 +146,7 @@ fn encode(client: &InnerClient, name: &str, query: &str, types: &[Type]) -> Resu
      })
  }
  
@@ -1446,6 +1514,36 @@ index 8484fa33..e5a0ecb7 100644
      if let Some(type_) = Type::from_oid(oid) {
          return Ok(type_);
      }
+@@ -185,13 +199,24 @@ pub(crate) async fn get_type(client: &Arc<InnerClient>, oid: Oid) -> Result<Type
+     Ok(type_)
+ }
+ 
+-fn get_type_rec<'a>(
+-    client: &'a Arc<InnerClient>,
+-    oid: Oid,
+-) -> Pin<Box<dyn Future<Output = Result<Type, Error>> + Send + 'a>> {
+-    Box::pin(get_type(client, oid))
++struct GetTypeRec<'a> {
++    fut: Pin<Box<dyn Future<Output = Result<Type, Error>> + Send + 'a>>,
+ }
+ 
++fn get_type_rec<'a>(client: &'a Arc<InnerClient>, oid: Oid) -> GetTypeRec<'a> {
++    GetTypeRec { fut: Box::pin(get_type(client, oid)) }
++}
++
++impl Future for GetTypeRec<'_> {
++    type Output = Result<Type, Error>;
++
++    fn poll(mut self: Pin<&mut Self>, cx: &mut core::task::Context<'_>) -> core::task::Poll<Self::Output> {
++        self.fut.as_mut().poll(cx)
++    }
++}
++
++unsafe impl Sync for GetTypeRec<'_> {}
++
+ async fn typeinfo_statement(client: &Arc<InnerClient>) -> Result<Statement, Error> {
+     if let Some(stmt) = client.typeinfo() {
+         return Ok(stmt);
 diff --git a/tokio-postgres/src/query.rs b/tokio-postgres/src/query.rs
 index a9dfda7b..45234d2e 100644
 --- a/tokio-postgres/src/query.rs

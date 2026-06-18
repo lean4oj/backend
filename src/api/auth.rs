@@ -96,7 +96,7 @@ struct ServerVersion {
     date: u64,
 }
 
-impl const Default for ServerVersion {
+const impl Default for ServerVersion {
     fn default() -> Self {
         Self {
             hash: env!("SERVER_VERSION_HASH"),

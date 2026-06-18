@@ -17,7 +17,7 @@ pub struct Security {
     pub max_api_tokens: usize,
 }
 
-impl const Default for Security {
+const impl Default for Security {
     fn default() -> Self {
         Self {
             recaptcha_enabled: false,
@@ -51,7 +51,7 @@ pub struct Pagination {
     discussion_replies_more: u32,
 }
 
-impl const Default for Pagination {
+const impl Default for Pagination {
     fn default() -> Self {
         Self {
             homepage_user_list: 10,
@@ -86,7 +86,7 @@ pub struct Misc {
     lean_versions: &'static SliceMap<&'static str, &'static str>,
 }
 
-impl const Default for Misc {
+const impl Default for Misc {
     fn default() -> Self {
         Self {
             app_logo_for_theme: UnitMap {},
@@ -99,7 +99,8 @@ impl const Default for Misc {
             discussion_reaction_allow_custom_emojis: true,
             disabled_emoji_in_math: &["↔", "↪"],
             lean_versions: SliceMap::from_slice([
-                ("4.31.0", "4.31.0 (latest)"),
+                ("4.31.0", "4.31.0 (latest stable)"),
+                ("4.32.0-rc1", "4.32.0-rc1 (latest)"),
                 ("4.31.0-rc2", "4.31.0-rc2"),
                 ("4.31.0-rc1", "4.31.0-rc1"),
                 ("4.30.0", "4.30.0"),
@@ -134,7 +135,7 @@ pub struct PreferenceConfig {
     misc: Misc,
 }
 
-impl const Default for PreferenceConfig {
+const impl Default for PreferenceConfig {
     fn default() -> Self {
         Self {
             security: Security::default(),

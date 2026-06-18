@@ -5,7 +5,7 @@ use futures_util::TryFutureExt;
 use tokio::io::{AsyncRead, AsyncReadExt};
 
 #[inline]
-fn emit_inner(value: u32, origin: u32, dest: &mut [u8]) -> &mut [u8] {
+const fn emit_inner(value: u32, origin: u32, dest: &mut [u8]) -> &mut [u8] {
     match value.wrapping_sub(origin) {
         delta @ ..254 => {
             unsafe { core::hint::assert_unchecked(!dest.is_empty()); }
@@ -60,7 +60,7 @@ pub struct Jumping {
 
 impl Jumping {
     #[inline]
-    pub fn emit<'a>(&mut self, idx: u32, dest: &'a mut [u8]) -> &'a mut [u8] {
+    pub const fn emit<'a>(&mut self, idx: u32, dest: &'a mut [u8]) -> &'a mut [u8] {
         emit_inner(idx, mem::replace(&mut self.state, idx), dest)
     }
 

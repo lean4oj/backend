@@ -143,7 +143,7 @@ impl TryFrom<&[u8]> for Encoded {
     }
 }
 
-impl const AsRef<[u8]> for Encoded {
+const impl AsRef<[u8]> for Encoded {
     fn as_ref(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(ptr::from_ref(self).cast(), mem::size_of::<Self>()) }
     }

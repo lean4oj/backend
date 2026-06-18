@@ -36,7 +36,7 @@ struct HitokotoConfig {
     api_url: &'static str,
 }
 
-impl const Default for HitokotoConfig {
+const impl Default for HitokotoConfig {
     fn default() -> Self {
         Self {
             api_url: "https://43.138.56.99/turnabout-hitokoto/api",

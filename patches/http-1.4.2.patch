@@ -54,7 +54,7 @@ index b8fc9b2..abdbd92 100644
      /// return type of the passed in function.
      ///
 diff --git a/src/status.rs b/src/status.rs
-index aa9dc30..e6b425e 100644
+index aa9dc30..232a062 100644
 --- a/src/status.rs
 +++ b/src/status.rs
 @@ -17,7 +17,6 @@
@@ -113,14 +113,14 @@ index aa9dc30..e6b425e 100644
      _priv: (),
  }
  
-+impl const AsRef<u16> for StatusCode {
++const impl AsRef<u16> for StatusCode {
 +    #[inline]
 +    fn as_ref(&self) -> &u16 {
 +        unsafe { core::ptr::from_ref(&self.0).cast::<u16>().as_ref_unchecked() }
 +    }
 +}
 +
-+impl const AsMut<u16> for StatusCode {
++const impl AsMut<u16> for StatusCode {
 +    #[inline]
 +    fn as_mut(&mut self) -> &mut u16 {
 +        unsafe { core::ptr::from_mut(&mut self.0).cast::<u16>().as_mut_unchecked() }
@@ -236,7 +236,7 @@ index aa9dc30..e6b425e 100644
  }
  
 -impl From<StatusCode> for u16 {
-+impl const From<StatusCode> for u16 {
++const impl From<StatusCode> for u16 {
      #[inline]
      fn from(status: StatusCode) -> u16 {
 -        status.0.get()
