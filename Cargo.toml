@@ -26,7 +26,7 @@ libc = "0.2.186"
 log = { version = "0.4.32", features = ["release_max_level_info"] }
 maxminddb = { version = "0.28.1", features = ["unsafe-str-decode"] }
 memchr = "2.7.6"
-nodejs-semver = { version = "4.2.0", features = ["serde"] }
+nodejs-semver = { version = "5.0.0", features = ["serde"] }
 openssl = "0.10.81"
 openssl-sys = "0.9.117"
 parking_lot = "0.12.5"
