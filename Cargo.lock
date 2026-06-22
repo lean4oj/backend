@@ -67,7 +67,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#485c603dddcee45bb4bc40aab492b47576e2a2f8"
+source = "git+https://github.com/tokio-rs/axum#ef349f82c9d056c0ece5474d5b64249675cd1940"
 dependencies = [
  "axum-core",
  "bytes",
@@ -99,7 +99,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#485c603dddcee45bb4bc40aab492b47576e2a2f8"
+source = "git+https://github.com/tokio-rs/axum#ef349f82c9d056c0ece5474d5b64249675cd1940"
 dependencies = [
  "bytes",
  "futures-core",
@@ -195,9 +195,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.64"
+version = "1.2.65"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dad887fd958be91b5098c0248def011f4523ab786cd411be668777e55063501f"
+checksum = "e228eec9be7c17ccb640b59b36a5cd805ea2a564a4c5e162c2f659fea30d3b96"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -947,9 +947,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.32"
+version = "0.4.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "953f07c43838f8e6f9758cab68bf5bed85465e7587ebe0b823f1bcd81978ad3a"
+checksum = "0ceec5bc11778974d1bcb055b18002eba7f4b3518b6a0081b3af5f21666da9ad"
 
 [[package]]
 name = "matchit"
@@ -1044,13 +1044,14 @@ dependencies = [
 
 [[package]]
 name = "nodejs-semver"
-version = "4.2.0"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a29bc3430baa1e00e10d9aa5f4ed19ce4433eecb40e3926ade5ff2954cc2f3a"
+checksum = "364dd919c4d6feef8c3a3f3e2b64af729187902156e17481618622cbbf1353a1"
 dependencies = [
  "bytecount",
  "miette",
  "serde",
+ "smallvec",
  "thiserror",
  "winnow",
 ]
@@ -1280,9 +1281,9 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.45"
+version = "1.0.46"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41f2619966050689382d2b44f664f4bc593e129785a36d6ee376ddf37259b924"
+checksum = "dfbc457d0c7a0759a614551b11a6409e5951f6c7537be1f1b7682b9ae9230368"
 dependencies = [
  "proc-macro2",
 ]

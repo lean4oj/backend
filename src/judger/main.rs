@@ -95,9 +95,9 @@ where
     #[inline]
     fn is_legacy(version: &str) -> bool {
         let Ok(version) = Version::parse(version) else { return false };
-        match core::intrinsics::three_way_compare(version.minor, 30) {
+        match core::intrinsics::three_way_compare(version.minor(), 30) {
             std::cmp::Ordering::Less => true,
-            std::cmp::Ordering::Equal => version.patch == 0 && matches!(*version.pre_release, [Identifier::AlphaNumeric(deref!("rc1"))]),
+            std::cmp::Ordering::Equal => version.patch() == 0 && matches!(*version.pre_release(), [Identifier::AlphaNumeric(deref!("rc1"))]),
             std::cmp::Ordering::Greater => false,
         }
     }
