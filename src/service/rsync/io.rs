@@ -1,8 +1,8 @@
 use core::{
+    io,
     num::NonZero,
     slice::{self, SliceIndex},
 };
-use std::io;
 
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, BufReader};
 

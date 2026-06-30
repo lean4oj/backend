@@ -1,6 +1,7 @@
+use core::io;
+use std::os::fd::RawFd;
 #[cfg(target_os = "linux")]
 use std::path::Path;
-use std::{io, os::fd::RawFd};
 
 pub fn mkdir(path: &mut [u8], dir: RawFd) -> io::Result<()> {
     let p = path.as_ptr().cast();

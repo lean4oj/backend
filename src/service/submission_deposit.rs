@@ -1,6 +1,7 @@
 use core::{
     ffi::CStr,
     fmt::Write,
+    io,
     mem::transmute,
     pin::Pin,
     task::{Context, Poll, ready},
@@ -8,7 +9,7 @@ use core::{
 use std::{
     borrow::Cow,
     collections::VecDeque,
-    fs, io,
+    fs,
     os::unix::fs::DirBuilderExt,
     str::pattern::{Pattern, Searcher},
     sync::OnceLock,

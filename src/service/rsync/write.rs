@@ -1,6 +1,7 @@
 use core::{
     fmt::Arguments,
     index::Last,
+    io,
     mem::{DropGuard, MaybeUninit},
     ptr, slice,
     str::pattern::Pattern,
@@ -8,7 +9,6 @@ use core::{
 use std::{
     ffi::OsStr,
     fs::{Permissions, ReadDir},
-    io,
     os::{
         fd::{AsRawFd, RawFd},
         unix::fs::{DirEntryExt2, PermissionsExt},

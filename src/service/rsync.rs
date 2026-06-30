@@ -149,10 +149,10 @@ async fn handle(mut socket: UnixStream) {
     let _ = socket.shutdown().await;
 }
 
-pub async fn main() -> std::io::Result<!> {
+pub async fn main() -> core::io::Result<!> {
     const SOCK: &str = "lean4rsync.sock";
 
-    if let Err(err) = std::fs::remove_file(SOCK) && err.kind() != std::io::ErrorKind::NotFound {
+    if let Err(err) = std::fs::remove_file(SOCK) && err.kind() != core::io::ErrorKind::NotFound {
         return Err(err);
     }
 

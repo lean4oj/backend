@@ -54,6 +54,6 @@ pub fn in_china(ip: IpAddr) -> bool {
 
 pub fn init() {
     let db = Reader::open_readfile("GeoLite2-Country.mmdb").unwrap();
-    tracing::info!("GeoIP database loaded: {:?}", db.metadata);
+    tracing::info!("GeoIP database loaded: {:?}", db.metadata());
     DB.get_or_init(|| db);
 }

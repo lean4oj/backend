@@ -1,5 +1,5 @@
-use core::slice;
-use std::{borrow::Cow, io, process::Stdio};
+use core::{io, slice};
+use std::{borrow::Cow, process::Stdio};
 
 use http::{Request, header};
 use http_body_util::BodyExt;

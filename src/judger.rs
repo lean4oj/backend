@@ -1,5 +1,6 @@
 #![feature(
     core_intrinsics,
+    core_io,
     deref_patterns,
     exit_status_error,
     stmt_expr_attributes,

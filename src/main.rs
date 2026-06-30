@@ -20,6 +20,7 @@
     // const_slice_make_iter,
     const_trait_impl,
     // core_intrinsics,
+    core_io,
     // coroutine_clone,
     // coroutine_trait,
     // coroutines,
@@ -122,7 +123,7 @@ mod models;
 mod service;
 
 #[tokio::main]
-async fn main() -> std::io::Result<!> {
+async fn main() -> core::io::Result<!> {
     use axum::{Router, extract::DefaultBodyLimit, routing::get};
     use futures_util::FutureExt;
     use hyper::server::conn;
@@ -152,7 +153,7 @@ async fn main() -> std::io::Result<!> {
 
     app = app.layer(DefaultBodyLimit::disable());
 
-    if let Err(err) = std::fs::remove_file(SOCK) && err.kind() != std::io::ErrorKind::NotFound {
+    if let Err(err) = std::fs::remove_file(SOCK) && err.kind() != core::io::ErrorKind::NotFound {
         return Err(err);
     }
 

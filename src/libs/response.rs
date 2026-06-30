@@ -56,7 +56,7 @@ impl_lsz!(BoxedStdError);
 impl_lsz!(serde::de::value::Error);
 impl_lsz!(serde_json::Error);
 impl_lsz!(core::str::Utf8Error);
-impl_lsz!(std::io::Error, StatusCode::INTERNAL_SERVER_ERROR);
+impl_lsz!(core::io::Error, StatusCode::INTERNAL_SERVER_ERROR);
 
 impl_lsz!(core::fmt::Error);
 impl_lsz!(DBError, StatusCode::INTERNAL_SERVER_ERROR);

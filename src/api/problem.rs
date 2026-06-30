@@ -60,16 +60,16 @@ mod private {
         }.parse().ok()
     }
 
-    pub(super) fn 𝝴(res: &mut String, p: &super::Problem, locale: Option<&str>) -> std::io::Result<()> {
+    pub(super) fn 𝝴(res: &mut String, p: &super::Problem, locale: Option<&str>) -> core::io::Result<()> {
         if let Some((locale_key, content)) = p.content.apply_with_key(locale) {
             write!(
                 res, r#"{{"meta":{},"title":{},"resultLocale":{}}},"#,
                 WithJson(p),
                 WithJson(&*content.title),
                 WithJson(&**locale_key),
-            ).map_err(std::io::Error::other)
+            ).map_err(core::io::Error::other)
         } else {
-            Err(std::io::const_error!(std::io::ErrorKind::Other, "No content for locale"))
+            Err(core::io::const_error!(core::io::ErrorKind::Other, "No content for locale"))
         }
     }
 
@@ -80,7 +80,7 @@ mod private {
         tids: &[u32],
         lookup: &super::HashMap<u32, Option<super::Tag>>,
         lookup_sub: &super::HashMap<i32, (u32, super::SubmissionStatus)>,
-    ) -> std::io::Result<()> {
+    ) -> core::io::Result<()> {
         if let Some((locale_key, content)) = p.content.apply_with_key(locale) {
             let ltags = super::LTags {
                 tags: tids.iter().filter_map(|tid| lookup.get(tid).and_then(Option::as_ref)),
@@ -92,14 +92,14 @@ mod private {
                 WithJson(&*content.title),
                 WithJson(ltags),
                 WithJson(&**locale_key),
-            ).map_err(std::io::Error::other)?;
+            ).map_err(core::io::Error::other)?;
             if let Some(&(sid, status)) = lookup_sub.get(&p.pid) {
-                write!(res, r#","submission":{{"id":{sid},"status":"{status:?}"}}"#).map_err(std::io::Error::other)?;
+                write!(res, r#","submission":{{"id":{sid},"status":"{status:?}"}}"#).map_err(core::io::Error::other)?;
             }
             res.push_str("},");
             Ok(())
         } else {
-            Err(std::io::const_error!(std::io::ErrorKind::Other, "No content for locale"))
+            Err(core::io::const_error!(core::io::ErrorKind::Other, "No content for locale"))
         }
     }
 }

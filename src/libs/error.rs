@@ -101,7 +101,7 @@ impl SerializeTupleExt for Compound<'_, &mut Vec<u8>, CompactFormatter> {
 
 #[inline]
 #[must_use]
-pub fn box_io_error(e: std::io::Error) -> BoxedStdError {
+pub fn box_io_error(e: core::io::Error) -> BoxedStdError {
     if e.get_ref().is_some() {
         unsafe { e.into_inner().unwrap_unchecked() }
     } else {

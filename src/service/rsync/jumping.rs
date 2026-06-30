@@ -1,5 +1,4 @@
-use core::{mem, slice};
-use std::io;
+use core::{io, mem, slice};
 
 use futures_util::TryFutureExt;
 use tokio::io::{AsyncRead, AsyncReadExt};

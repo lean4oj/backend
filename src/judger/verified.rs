@@ -1,5 +1,4 @@
-use core::{ffi::CStr, slice};
-use std::io;
+use core::{ffi::CStr, io, slice};
 
 use tokio::io::{AsyncRead, AsyncReadExt};
 

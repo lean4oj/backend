@@ -76,7 +76,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#600e762b30dba5d1b9e253fabd36d0d23333e5d5"
+source = "git+https://github.com/tokio-rs/axum#b90b8e02d0f761ce36a13610acd2afa60984a5e2"
 dependencies = [
  "axum-core",
  "bytes",
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#600e762b30dba5d1b9e253fabd36d0d23333e5d5"
+source = "git+https://github.com/tokio-rs/axum#b90b8e02d0f761ce36a13610acd2afa60984a5e2"
 dependencies = [
  "bytes",
  "futures-core",
@@ -653,9 +653,9 @@ checksum = "135b12329e5e3ce057a9f972339ea52bc954fe1e9358ef27f95e89716fbc5424"
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.12"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9155a582abd142abc056962c29e3ce5ff2ad5469f4246b537ed42c5deba857da"
+checksum = "818356c5132c1fede50f837ca96afbe78ff42413047f4abb886217845e1b6c8c"
 dependencies = [
  "typenum",
 ]
@@ -969,9 +969,9 @@ checksum = "8863b587001c1b9a8a4e36008cebc6b3612cb1226fe2de94858e06092687b608"
 
 [[package]]
 name = "maxminddb"
-version = "0.28.1"
+version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "faf6467428ad055b71e588bcedcbaf2ff605b3251deb0c52be4a04b674c546dd"
+checksum = "65e84ef32bcbf18a95548989e880db4af6fafd563463753afb4b9a149fb2782c"
 dependencies = [
  "ipnetwork",
  "log",

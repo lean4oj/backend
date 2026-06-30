@@ -1,5 +1,4 @@
-use core::{error, fmt};
-use std::io;
+use core::{error, fmt, io};
 
 use tokio::{
     io::{BufReader, BufWriter},
