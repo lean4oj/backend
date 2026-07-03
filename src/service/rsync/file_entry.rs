@@ -24,7 +24,7 @@ impl FileEntry {
         let _f = unsafe { fs::File::from_raw_fd(fd) };
         if unsafe { libc::fstat(fd, stat.as_mut_ptr()) } != 0 { return false; }
         #[allow(clippy::cast_sign_loss)]
-        if unsafe { stat.assume_init_ref() }.st_size as usize != self.size { return false; }
+        if unsafe { stat.assume_init_ref() }.st_size.wrapping_cast::<usize>() != self.size { return false; }
         let mut sha1 = Sha1::new();
         let raw = unsafe { libc::mmap(ptr::null_mut(), self.size, libc::PROT_READ, libc::MAP_PRIVATE, fd, 0) };
         if raw == libc::MAP_FAILED { return false; }

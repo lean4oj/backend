@@ -218,13 +218,13 @@ async fn get_user_detail(req: JsonReqult<GetUserDetailRequest>) -> JkmxJsonRespo
     let mut submission_count_per_day = unsafe { Box::new_zeroed_slice(SUBMISSION_COUNT_PER_DAY_COUNT).assume_init() };
 
     let stmt = conn.prepare_static(SQL_PER_DAY.into()).await?;
-    let params: [&(dyn ToSql + Sync); 4] = [&now, &&*timezone, &&*uid, &(SUBMISSION_COUNT_PER_DAY_COUNT as i32 - 1)];
+    let params: [&(dyn ToSql + Sync); 4] = [&now, &&*timezone, &&*uid, &(SUBMISSION_COUNT_PER_DAY_COUNT.wrapping_cast::<i32>() - 1)];
     let stream = conn.query_raw(&stmt, params).await?;
     stream.try_for_each(|row| ready(try {
         let d = row.try_get::<_, i32>(0)?;
         let c = row.try_get::<_, i64>(1)?;
         if let Some(r) = submission_count_per_day.get_mut(SUBMISSION_COUNT_PER_DAY_COUNT - 1 - d as usize) {
-            *r = c as u32;
+            *r = c.wrapping_cast();
         }
     })).await?;
 
@@ -437,7 +437,7 @@ pub async fn create_api_token(
         .start()
         .await?;
     let row = txn.query_one(&stmt_pre, &[&&*t_user.uid]).await?;
-    let n = row.try_get::<_, i64>(0)?.cast_unsigned() as usize;
+    let n = row.try_get::<_, i64>(0)?.wrapping_cast::<usize>();
     if n >= const { Security::default().max_api_tokens } {
         return JkmxJsonResponse::Response(
             StatusCode::OK,

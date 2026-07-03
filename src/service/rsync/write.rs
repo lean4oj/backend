@@ -116,9 +116,9 @@ where
         }
         unsafe { s.set_len(plen); }
         let len = if flag & 0x40 != 0 {
-            rx.read_varint::<0>().await? as usize
+            rx.read_varint::<0>().await?.wrapping_cast()
         } else {
-            rx.read_u8().await? as usize
+            rx.read_u8().await?.into()
         };
         if plen + len > 4096 {
             return Err(format!("path too long: {}", plen + len).into());
@@ -142,10 +142,10 @@ where
         match mode & libc::S_IFMT {
             | libc::S_IFREG => {
                 rx.read_exact(&mut sha1).await?;
-                if size != 0 && size as usize <= SINGLE_FILE_LIMIT {
+                if size != 0 && size.wrapping_cast::<usize>() <= SINGLE_FILE_LIMIT {
                     enabled = check_path(&s, uid_with_slash);
                     if enabled != 0 {
-                        acc += size as usize;
+                        acc += size.wrapping_cast::<usize>();
                         if acc > limit { return Err(TOTAL_EXCEEDED.into()); }
                     }
                 }
@@ -157,7 +157,7 @@ where
         let mut path = Vec::with_capacity(s.len() + 1);
         path.extend_from_slice(&s);
         unsafe { path.as_mut_ptr().add(path.len()).write(0); } // make it NUL-terminated to be friendly with C.
-        ret.push(FileEntry { path, size: size as usize, sha1, enabled, mode });
+        ret.push(FileEntry { path, size: size.wrapping_cast(), sha1, enabled, mode });
         if ret.len() > TOTAL_FILE_NUM {
             return Err("too many files".into());
         }
@@ -211,7 +211,7 @@ fn do_delete(
             match mode {
                 Mode::Read => #[allow(clippy::cast_sign_loss)] {
                     if unsafe { libc::fstatat(dir, pname.cast(), stat.as_mut_ptr(), 0) } != 0 { return Err(io::Error::last_os_error()); }
-                    delcnt += unsafe { stat.assume_init_ref() }.st_size as usize;
+                    delcnt += unsafe { stat.assume_init_ref() }.st_size.wrapping_cast::<usize>();
                 }
                 Mode::Write => {
                     if unsafe { libc::unlinkat(dir, pname.cast(), 0) } != 0 { return Err(io::Error::last_os_error()); }
@@ -257,11 +257,11 @@ where
         cfg_select! {
             target_os = "linux" => {
                 let f = tempfile::tempfile_in(env!("LEAN4OJ_RSYNC_TMPDIR"))?;
-                f.set_len(entry.size as u64)?;
+                f.set_len(entry.size.wrapping_cast())?;
             }
             _ => {
                 let f = tb.tempfile_in(env!("LEAN4OJ_RSYNC_TMPDIR"))?;
-                f.as_file().set_len(entry.size as u64)?;
+                f.as_file().set_len(entry.size.wrapping_cast())?;
             }
         }
         let (mut buf, g) = unsafe {
@@ -277,7 +277,7 @@ where
             if size == 0 {
                 break;
             }
-            let Some(chunk) = buf.split_off_mut(..size as usize) else {
+            let Some(chunk) = buf.split_off_mut(..size.wrapping_cast()) else {
                 return Err(format!("chunk too large: {size} / {}", buf.len()).into());
             };
             rx.read_exact(chunk).await?;
@@ -401,7 +401,7 @@ pub async fn main(
             continue;
         }
         tracing::debug!(target: "lean4rsync-writer", "\x1b[36mfile wanted: {file:?}\x1b[0m");
-        buf.extend_from_slice(state.emit(idx as u32, &mut [0; 5]));
+        buf.extend_from_slice(state.emit(idx.wrapping_cast(), &mut [0; 5]));
         buf.push(0);
         buf.push(0x80);
         buf.reserve(16);
@@ -410,14 +410,14 @@ pub async fn main(
             buf.set_len(buf.len() + 16);
         }
         if buf.len() >= 0x80_0000 {
-            s2c.write_u32_le(buf.len() as u32 | 0x0700_0000).await?;
+            s2c.write_u32_le(buf.len().wrapping_cast::<u32>() | 0x0700_0000).await?;
             s2c.write_all(&buf).await?;
             buf.clear();
         }
         exp_tot += 1;
     }
     buf.push(0);
-    s2c.write_u32_le(buf.len() as u32 | 0x0700_0000).await?;
+    s2c.write_u32_le(buf.len().wrapping_cast::<u32>() | 0x0700_0000).await?;
     s2c.write_all(&buf).await?;
     s2c.flush().await?;
 
@@ -436,7 +436,7 @@ pub async fn main(
         };
         format!("======== {tot}/{exp_tot} file(s) received{dl}. Go to {sni}/lean/{}/ for further check. ========\n", user.uid)
     };
-    let flag = s.len() as u32 | 0x0a00_0000;
+    let flag = s.len().wrapping_cast::<u32>() | 0x0a00_0000;
     s2c.write_u32_le(flag).await?;
     s2c.write_all(s.as_bytes()).await?;
 

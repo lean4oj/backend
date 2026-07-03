@@ -142,7 +142,7 @@ async fn handle(mut socket: UnixStream) {
         let mut e = serialize_err(&*e);
         e.truncate(0x00ff_fffe);
         e.push(b'\n');
-        let flag = e.len() as u32 | 0x0a00_0000;
+        let flag = e.len().wrapping_cast::<u32>() | 0x0a00_0000;
         let _ = socket.write_u32_le(flag).await;
         let _ = socket.write_all(&e).await;
     }

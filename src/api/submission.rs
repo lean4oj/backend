@@ -291,8 +291,8 @@ async fn query_submission(
 
     let mut res = r#"{"submissions":["#.to_owned();
     let iter: &mut dyn Iterator<Item = (Submission, Problem, User)> = match aoe_style {
-        SubmissionAoe::After(_) => &mut submissions.into_iter().take(take as usize).rev(),
-        _ => &mut submissions.into_iter().take(take as usize),
+        SubmissionAoe::After(_) => &mut submissions.into_iter().take(take.wrapping_cast()).rev(),
+        _ => &mut submissions.into_iter().take(take.wrapping_cast()),
     };
     for (submission, problem, submitter) in iter {
         let meta = SubmissionMeta {
