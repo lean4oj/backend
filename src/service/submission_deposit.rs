@@ -194,19 +194,19 @@ fn deposit_one(
         let l = src.len();
         src.push_str(".private");
         let hash = deposit_module_inner(&src, sroot)?;
-        tot_size += fs::metadata(&src)?.len() as usize;
+        tot_size += fs::metadata(&src)?.len().wrapping_cast::<usize>();
         util::hash_add(&mut Hash, &hash);
 
         unsafe { src.as_mut_vec().set_len(l); }
         src.push_str(".server");
         let hash = deposit_module_inner(&src, sroot)?;
-        tot_size += fs::metadata(&src)?.len() as usize;
+        tot_size += fs::metadata(&src)?.len().wrapping_cast::<usize>();
         util::hash_add(&mut Hash, &hash);
 
         unsafe { src.as_mut_vec().set_len(l - 5); }
         src.push_str("ir");
         let hash = deposit_module_inner(&src, sroot)?;
-        tot_size += fs::metadata(&src)?.len() as usize;
+        tot_size += fs::metadata(&src)?.len().wrapping_cast::<usize>();
         util::hash_add(&mut Hash, &hash);
     }
     Ok((tot_size, Hash))

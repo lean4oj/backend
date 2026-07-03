@@ -55,7 +55,7 @@ pub fn gen_random_ascii<const N: usize>() -> [Char; N] {
     // const SAMPLER: UniformInt<u32> = UniformInt::new_inclusive(33, 126).unwrap();
     #[inline]
     fn g(rng: &mut impl Rng) -> Char {
-        unsafe { Char::from_u8_unchecked((((u64::from(rng.next_u32()) * 94) >> 32) + 33) as _) }
+        unsafe { Char::from_u8_unchecked((((u64::from(rng.next_u32()) * 94) >> 32) + 33).wrapping_cast()) }
     }
     let mut rng = rand::rng();
     core::array::from_fn(|_| g(&mut rng))

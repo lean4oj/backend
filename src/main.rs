@@ -54,6 +54,7 @@
     // if_let_guard,
     // impl_trait_in_assoc_type,
     int_from_ascii,
+    integer_casts,
     io_const_error,
     // io_error_more,
     // ip_as_octets,

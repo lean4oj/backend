@@ -8,23 +8,23 @@ const fn emit_inner(value: u32, origin: u32, dest: &mut [u8]) -> &mut [u8] {
     match value.wrapping_sub(origin) {
         delta @ ..254 => {
             unsafe { core::hint::assert_unchecked(!dest.is_empty()); }
-            dest[0] = delta as u8;
+            dest[0] = delta.wrapping_cast();
             &mut dest[..1]
         }
         delta @ ..0x8000 => {
             unsafe { core::hint::assert_unchecked(dest.len() >= 3); }
             dest[0] = 254;
-            dest[1] = (delta >> 8) as u8;
-            dest[2] = delta as u8;
+            dest[1] = (delta >> 8).wrapping_cast();
+            dest[2] = delta.wrapping_cast();
             &mut dest[..3]
         },
         _ => {
             unsafe { core::hint::assert_unchecked(dest.len() >= 5); }
             dest[0] = 254;
-            dest[1] = (value >> 24 | 0x80) as u8;
-            dest[2] = value as u8;
-            dest[3] = (value >> 8) as u8;
-            dest[4] = (value >> 16) as u8;
+            dest[1] = (value >> 24 | 0x80).wrapping_cast();
+            dest[2] = value.wrapping_cast();
+            dest[3] = (value >> 8).wrapping_cast();
+            dest[4] = (value >> 16).wrapping_cast();
             &mut dest[..5]
         }
     }
