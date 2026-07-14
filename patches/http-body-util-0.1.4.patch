@@ -22,12 +22,12 @@ index a78f395..d922f53 100644
  impl<B: Buf> Body for Collected<B> {
      type Data = B;
      type Error = Infallible;
-diff --git a/src/either.rs b/src/either.rs
+diff --git a/src/either.rs
 deleted file mode 100644
-index 9e0cc43..0000000
+index 9537326..0000000
 --- a/src/either.rs
 +++ /dev/null
-@@ -1,186 +0,0 @@
+@@ -1,187 +0,0 @@
 -use std::error::Error;
 -use std::fmt::Debug;
 -use std::pin::Pin;
@@ -54,7 +54,7 @@ index 9e0cc43..0000000
 -    /// This function is part of the generated code from `pin-project-lite`,
 -    /// for a more in depth explanation and the rest of the generated code refer
 -    /// to the [`proj`] module.
--    pub(crate) fn project(self: Pin<&mut Self>) -> EitherProj<L, R> {
+-    pub(crate) fn project(self: Pin<&mut Self>) -> EitherProj<'_, L, R> {
 -        unsafe {
 -            match self.get_unchecked_mut() {
 -                Self::Left(left) => EitherProj::Left(Pin::new_unchecked(left)),
@@ -168,6 +168,7 @@ index 9e0cc43..0000000
 -        }
 -        impl<'__pin, L, R> Unpin for Either<L, R> where __Origin<'__pin, L, R>: Unpin {}
 -
+-        #[allow(unused)]
 -        trait MustNotImplDrop {}
 -        #[allow(drop_bounds)]
 -        impl<T: Drop> MustNotImplDrop for T {}
@@ -215,10 +216,10 @@ index 9e0cc43..0000000
 -    }
 -}
 diff --git a/src/lib.rs b/src/lib.rs
-index 28709fb..cbf8bd3 100644
+index 4332426..85e0d2f 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
-@@ -9,7 +9,6 @@
+@@ -10,7 +10,6 @@
  
  mod collected;
  pub mod combinators;
@@ -226,7 +227,7 @@ index 28709fb..cbf8bd3 100644
  mod empty;
  mod full;
  mod limited;
-@@ -23,7 +22,6 @@ mod util;
+@@ -24,7 +23,6 @@ mod util;
  use self::combinators::{BoxBody, MapErr, MapFrame, UnsyncBoxBody};
  
  pub use self::collected::Collected;

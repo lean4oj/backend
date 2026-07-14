@@ -58,8 +58,8 @@ const WRONG_PASSWORD: JkmxJsonResponse = JkmxJsonResponse::Response(
 
 mod private {
     use bytes::Bytes;
+    use core::io::Write;
     use serde_json::{Serializer as JSerializer, ser::CompactFormatter};
-    use std::io::Write;
 
     pub(super) trait Δ: serde::Serializer {
         fn δ(_: &Bytes, _: Self) -> Result<Self::Ok, Self::Error>;

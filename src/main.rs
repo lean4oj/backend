@@ -21,6 +21,7 @@
     const_trait_impl,
     // core_intrinsics,
     core_io,
+    core_io_internals,
     // coroutine_clone,
     // coroutine_trait,
     // coroutines,

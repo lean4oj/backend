@@ -320,7 +320,7 @@ index 8423e0d8..e27f34aa 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index 54e01bf5..969efd92 100644
+index 54e01bf5..2a619dc4 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
 @@ -122,7 +122,6 @@ mime = "0.3.16"
@@ -331,7 +331,7 @@ index 54e01bf5..969efd92 100644
  tower = { version = "0.5.2", default-features = false, features = ["util"] }
  tower-layer = "0.3.2"
  tower-service = "0.3"
-@@ -137,9 +136,9 @@ hyper-util = { version = "0.1.4", features = ["tokio", "server", "service"], opt
+@@ -137,10 +136,10 @@ hyper-util = { version = "0.1.4", features = ["tokio", "server", "service"], opt
  multer = { version = "3.0.0", optional = true }
  reqwest = { version = "0.12", optional = true, default-features = false, features = ["json", "stream", "multipart"] }
  serde_html_form = { version = "0.4.0", optional = true, default-features = false, features = ["std"] }
@@ -339,10 +339,12 @@ index 54e01bf5..969efd92 100644
 +serde_json = { version = "1.0.29", optional = true }
  serde_path_to_error = { version = "0.1.8", optional = true }
 -sha1 = { version = "0.10", optional = true }
+-tokio-tungstenite = { version = "0.29.0", optional = true }
 +sha1 = { version = "0.11", optional = true }
- tokio-tungstenite = { version = "0.29.0", optional = true }
++tokio-tungstenite = { version = "0.30.0", optional = true }
  tracing = { version = "0.1", default-features = false, optional = true }
  
+ # doc dependencies
 diff --git a/axum/src/error_handling/mod.rs b/axum/src/error_handling/mod.rs
 index 90da3e97..1d34f886 100644
 --- a/axum/src/error_handling/mod.rs

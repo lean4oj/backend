@@ -1,5 +1,5 @@
-use core::{fmt, time::Duration};
-use std::{io, time::SystemTime};
+use core::{fmt, io, time::Duration};
+use std::time::SystemTime;
 
 use serde::{Serialize, Serializer, ser::SerializeMap};
 use serde_json::Serializer as JSerializer;

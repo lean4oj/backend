@@ -1,5 +1,5 @@
 diff --git a/src/bytes.rs b/src/bytes.rs
-index 9b8e279..9115a36 100644
+index 0f1aaed..ed7526e 100644
 --- a/src/bytes.rs
 +++ b/src/bytes.rs
 @@ -646,7 +646,7 @@ impl Bytes {
@@ -12,10 +12,10 @@ index 9b8e279..9115a36 100644
          debug_assert!(self.len >= by, "internal: inc_start out of bounds");
          self.len -= by;
 diff --git a/src/bytes_mut.rs b/src/bytes_mut.rs
-index 689f4b4..096804e 100644
+index b983bd1..1288e78 100644
 --- a/src/bytes_mut.rs
 +++ b/src/bytes_mut.rs
-@@ -972,7 +972,7 @@ impl BytesMut {
+@@ -981,7 +981,7 @@ impl BytesMut {
      // internal change could make a simple pattern (`BytesMut::from(vec)`)
      // suddenly a lot more expensive.
      #[inline]
@@ -24,7 +24,7 @@ index 689f4b4..096804e 100644
          let mut vec = ManuallyDrop::new(vec);
          let ptr = vptr(vec.as_mut_ptr());
          let len = vec.len();
-@@ -1004,7 +1004,7 @@ impl BytesMut {
+@@ -1013,7 +1013,7 @@ impl BytesMut {
      /// # SAFETY
      ///
      /// The caller must ensure that `count` <= `self.cap`.
@@ -33,7 +33,7 @@ index 689f4b4..096804e 100644
          // Setting the start to 0 is a no-op, so return early if this is the
          // case.
          if count == 0 {
-@@ -1197,6 +1197,10 @@ impl BytesMut {
+@@ -1211,6 +1211,10 @@ impl BytesMut {
              slice::from_raw_parts_mut(ptr.cast(), len)
          }
      }

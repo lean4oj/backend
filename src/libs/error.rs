@@ -1,5 +1,7 @@
-use core::fmt::Display;
-use std::io::Write;
+use core::{
+    fmt::Display,
+    io::{self, Write},
+};
 
 use serde::{Serialize, Serializer};
 use serde_json::{
@@ -12,7 +14,7 @@ pub type DynStdError = dyn StdError + 'static;
 pub type BoxedStdError = Box<dyn StdError + Send + Sync + 'static>;
 
 pub fn grad_source(e: &DynStdError) -> Option<&DynStdError> {
-    if let Some(e) = e.downcast_ref::<std::io::Error>() {
+    if let Some(e) = e.downcast_ref::<io::Error>() {
         e.get_ref().map(|x| x as &DynStdError)
     } else if let Some(e) = e.downcast_ref::<serde_json::Error>() {
         e.io_ref().map(|x| x as &DynStdError)
@@ -86,11 +88,11 @@ impl<S: serde::ser::SerializeTuple> SerializeTupleExt for S {
 }
 
 impl SerializeTupleExt for Compound<'_, &mut Vec<u8>, CompactFormatter> {
-    fn collect_str<T>(mut self: &mut Self, value: &T) -> Result<Self::Ok, Self::Error>
+    fn collect_str<T>(&mut self, value: &T) -> Result<Self::Ok, Self::Error>
     where
         T: ?Sized + Display,
     {
-        match &mut self {
+        match &mut *self {
             Compound::Map { ser, .. } => {
                 ser.as_inner().0.write_all(b",").map_err(serde_json::Error::io)?;
                 ser.collect_str(value)

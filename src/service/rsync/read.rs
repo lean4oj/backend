@@ -1,4 +1,4 @@
-use core::{error, fmt, io};
+use core::fmt;
 
 use tokio::{
     io::{BufReader, BufWriter},
@@ -6,8 +6,6 @@ use tokio::{
 };
 
 use crate::libs::error::{BoxedStdError, DynStdError};
-
-const INNER: io::Error = io::const_error!(io::ErrorKind::Unsupported, "operation not supported on this platform");
 
 #[derive(Debug)]
 struct UnsupportedReadError {
@@ -21,9 +19,9 @@ impl fmt::Display for UnsupportedReadError {
     }
 }
 
-impl error::Error for UnsupportedReadError {
+impl core::error::Error for UnsupportedReadError {
     fn source(&self) -> Option<&DynStdError> {
-        Some(const { &INNER })
+        Some(const { &core::io::Error::UNSUPPORTED_PLATFORM })
     }
 }
 
