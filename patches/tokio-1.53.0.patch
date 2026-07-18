@@ -27,7 +27,7 @@ index c89fe43..ce77d13 100644
  
  impl<R: AsyncRead> AsyncRead for BufReader<R> {
 diff --git a/src/lib.rs b/src/lib.rs
-index 7da7e21..e36e260 100644
+index efa5276..a0f44fe 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -22,6 +22,7 @@
@@ -74,7 +74,7 @@ index d1c6f93..9dd406e 100644
  
  pub(crate) fn split_owned(stream: UnixStream) -> (OwnedReadHalf, OwnedWriteHalf) {
 diff --git a/src/net/unix/stream.rs b/src/net/unix/stream.rs
-index 2391d54..60ea2db 100644
+index 071ebad..9d8e1e7 100644
 --- a/src/net/unix/stream.rs
 +++ b/src/net/unix/stream.rs
 @@ -19,6 +19,7 @@ use std::os::unix::io::{AsFd, AsRawFd, BorrowedFd, FromRawFd, IntoRawFd, RawFd};
@@ -85,7 +85,7 @@ index 2391d54..60ea2db 100644
  use std::task::{Context, Poll};
  
  cfg_io_util! {
-@@ -982,6 +983,18 @@ impl UnixStream {
+@@ -1010,6 +1011,18 @@ impl UnixStream {
      pub fn into_split(self) -> (OwnedReadHalf, OwnedWriteHalf) {
          split_owned(self)
      }
@@ -105,7 +105,7 @@ index 2391d54..60ea2db 100644
  
  impl TryFrom<net::UnixStream> for UnixStream {
 diff --git a/src/sync/batch_semaphore.rs b/src/sync/batch_semaphore.rs
-index 6447cef..d9a1ebd 100644
+index 2029000..1572de0 100644
 --- a/src/sync/batch_semaphore.rs
 +++ b/src/sync/batch_semaphore.rs
 @@ -68,7 +68,7 @@ pub enum TryAcquireError {
@@ -171,10 +171,10 @@ index 6447cef..d9a1ebd 100644
  
  impl Drop for Acquire<'_> {
 diff --git a/src/sync/broadcast.rs b/src/sync/broadcast.rs
-index 3ab9a2c..0f47fde 100644
+index f88972b..277cfc6 100644
 --- a/src/sync/broadcast.rs
 +++ b/src/sync/broadcast.rs
-@@ -123,6 +123,7 @@ use crate::task::coop::cooperative;
+@@ -137,6 +137,7 @@ use crate::task::coop::cooperative;
  use crate::util::linked_list::{self, GuardedLinkedList, LinkedList};
  use crate::util::WakeList;
  
@@ -182,7 +182,7 @@ index 3ab9a2c..0f47fde 100644
  use std::fmt;
  use std::future::Future;
  use std::marker::PhantomPinned;
-@@ -394,7 +395,7 @@ struct Slot<T> {
+@@ -423,7 +424,7 @@ struct Slot<T> {
  }
  
  /// An entry in the wait queue.
@@ -191,7 +191,7 @@ index 3ab9a2c..0f47fde 100644
      /// True if queued.
      queued: AtomicBool,
  
-@@ -427,12 +428,12 @@ generate_addr_of_methods! {
+@@ -456,12 +457,12 @@ generate_addr_of_methods! {
      }
  }
  
@@ -206,7 +206,7 @@ index 3ab9a2c..0f47fde 100644
      /// Receiver being waited on.
      receiver: &'a mut Receiver<T>,
  
-@@ -1064,6 +1065,8 @@ impl<T> Clone for Sender<T> {
+@@ -1094,6 +1095,8 @@ impl<T> Clone for Sender<T> {
      }
  }
  
@@ -215,7 +215,7 @@ index 3ab9a2c..0f47fde 100644
  impl<T> Drop for Sender<T> {
      fn drop(&mut self) {
          if 1 == self.shared.num_tx.fetch_sub(1, AcqRel) {
-@@ -1122,6 +1125,8 @@ impl<T> Clone for WeakSender<T> {
+@@ -1152,6 +1155,8 @@ impl<T> Clone for WeakSender<T> {
      }
  }
  
@@ -224,7 +224,7 @@ index 3ab9a2c..0f47fde 100644
  impl<T> Drop for WeakSender<T> {
      fn drop(&mut self) {
          self.shared.num_weak_tx.fetch_sub(1, AcqRel);
-@@ -1220,7 +1225,7 @@ impl<T> Receiver<T> {
+@@ -1254,7 +1259,7 @@ impl<T> Receiver<T> {
      }
  
      /// Locks the next value if there is one.
@@ -233,7 +233,7 @@ index 3ab9a2c..0f47fde 100644
          &mut self,
          waiter: Option<(&UnsafeCell<Waiter>, &Waker)>,
      ) -> Result<RecvGuard<'_, T>, TryRecvError> {
-@@ -1575,7 +1580,7 @@ impl<T> Drop for Receiver<T> {
+@@ -1613,7 +1618,7 @@ impl<T> Drop for Receiver<T> {
  }
  
  impl<'a, T> Recv<'a, T> {
@@ -242,7 +242,7 @@ index 3ab9a2c..0f47fde 100644
          Recv {
              receiver,
              waiter: WaiterCell(UnsafeCell::new(Waiter {
-@@ -1598,6 +1603,10 @@ impl<'a, T> Recv<'a, T> {
+@@ -1636,6 +1641,10 @@ impl<'a, T> Recv<'a, T> {
              (me.receiver, &me.waiter.0)
          }
      }
@@ -253,7 +253,7 @@ index 3ab9a2c..0f47fde 100644
  }
  
  impl<'a, T> Future for Recv<'a, T>
-@@ -1701,6 +1710,10 @@ impl<T> fmt::Debug for Receiver<T> {
+@@ -1739,6 +1748,10 @@ impl<T> fmt::Debug for Receiver<T> {
  }
  
  impl<'a, T> RecvGuard<'a, T> {
@@ -265,10 +265,10 @@ index 3ab9a2c..0f47fde 100644
      where
          T: Clone,
 diff --git a/src/sync/semaphore.rs b/src/sync/semaphore.rs
-index 8af5b54..1b7fa21 100644
+index 8b23aa3..637b1be 100644
 --- a/src/sync/semaphore.rs
 +++ b/src/sync/semaphore.rs
-@@ -411,8 +411,8 @@ pub struct Semaphore {
+@@ -440,8 +440,8 @@ pub struct Semaphore {
  #[clippy::has_significant_drop]
  #[derive(Debug)]
  pub struct SemaphorePermit<'a> {
@@ -279,7 +279,7 @@ index 8af5b54..1b7fa21 100644
  }
  
  /// An owned permit from the semaphore.
-@@ -968,6 +968,10 @@ impl Semaphore {
+@@ -997,6 +997,10 @@ impl Semaphore {
      pub fn is_closed(&self) -> bool {
          self.ll_sem.is_closed()
      }
@@ -291,10 +291,10 @@ index 8af5b54..1b7fa21 100644
  
  impl<'a> SemaphorePermit<'a> {
 diff --git a/src/util/linked_list.rs b/src/util/linked_list.rs
-index eba767f..ca8be05 100644
+index 602526a..e868dd0 100644
 --- a/src/util/linked_list.rs
 +++ b/src/util/linked_list.rs
-@@ -196,6 +196,16 @@ impl<L: Link> LinkedList<L, L::Target> {
+@@ -189,6 +189,16 @@ impl<L: Link> LinkedList<L> {
          true
      }
  
