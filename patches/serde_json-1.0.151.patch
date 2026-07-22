@@ -66,7 +66,7 @@ index b74f444..d164757 100644
              err: Box::new(ErrorImpl { code, line, column }),
          }
 diff --git a/src/lib.rs b/src/lib.rs
-index c663f8a..4e2fe7e 100644
+index ad2820b..841a44d 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -368,6 +368,7 @@
@@ -169,7 +169,7 @@ index 7c562f8..1eeafd6 100644
  
          let alternate = f.alternate();
 diff --git a/tests/test.rs b/tests/test.rs
-index 4e15da7..bdea92e 100644
+index 28dcfdb..c443151 100644
 --- a/tests/test.rs
 +++ b/tests/test.rs
 @@ -2199,7 +2199,7 @@ struct FailReader(io::ErrorKind);
