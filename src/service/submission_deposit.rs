@@ -284,7 +284,7 @@ pub fn notice(mut task: JudgeTask) -> SubmissionStatus {
 }
 
 async fn deposit(task @ Task { sid, version, .. }: Task) -> Result<(), BoxedStdError> {
-    #[derive(Deserialize)]
+    #[derive_const(Deserialize)]
     struct Jb {
         axioms: SmallVec<[LeanAxiom; 4]>,
         checker: String,

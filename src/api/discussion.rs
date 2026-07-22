@@ -68,7 +68,7 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateDiscussionRequest {
     problem_id: Option<i32>,
@@ -91,7 +91,7 @@ async fn create_discussion(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateReplyRequest {
     discussion_id: u32,
@@ -146,7 +146,7 @@ async fn create_reply(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct ReactionRequest {
     r#type: DiscussionReactionType,
     id: u32,
@@ -192,7 +192,7 @@ async fn reaction(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QueryDiscussionRequest {
     locale: Option<CompactString>,
@@ -204,7 +204,7 @@ struct QueryDiscussionRequest {
     take_count: u64,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[repr(transparent)]
 struct Inner1 {
     meta: Discussion,
@@ -233,7 +233,7 @@ impl Serialize for Inner2<'_> {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Inner3<'a> {
     meta: Discussion,
     problem: Option<Inner2<'a>>,
@@ -371,7 +371,7 @@ const fn get_discussion_permissions(header: &'static Parts) -> RawPayload {
     RawPayload { header, body: br#"{"permissions":{"userPermissions":[],"groupPermissions":[]},"haveManagePermissionsPermission":true}"# }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetDiscussionRequest {
     locale: Option<CompactString>,
@@ -381,7 +381,7 @@ struct GetDiscussionRequest {
     get_discussion: Option<bool>,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Inner4<'a> {
     meta: Discussion,
     content: CompactString,
@@ -456,7 +456,7 @@ impl Serialize for Inner6 {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GetDiscussionResponse<'a> {
     discussion: Option<Inner4<'a>>,
@@ -565,7 +565,7 @@ async fn get_discussion(
     JkmxJsonResponse::Response(StatusCode::OK, serde_json::to_vec(&res)?.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateDiscussionRequest {
     discussion_id: u32,
@@ -598,7 +598,7 @@ async fn update_discussion(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateReplyRequest {
     discussion_reply_id: u32,
@@ -635,7 +635,7 @@ async fn update_reply(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DeleteDiscussionRequest {
     discussion_id: u32,
@@ -665,7 +665,7 @@ async fn delete_discussion(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DeleteReplyRequest {
     discussion_reply_id: u32,

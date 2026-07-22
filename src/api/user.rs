@@ -67,7 +67,7 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct SearchUserRequest {
     query: CompactString,
 }
@@ -84,14 +84,14 @@ async fn search_user(req: Repult<Query<SearchUserRequest>>) -> JkmxJsonResponse 
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetUserMetaRequest {
     uid: CompactString,
     get_privileges: Option<bool>,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct GetUserMetaResponse {
     meta: UserA,
     privileges: privilege::Privileges,
@@ -119,7 +119,7 @@ async fn get_user_meta(req: JsonReqult<GetUserMetaRequest>) -> JkmxJsonResponse 
     JkmxJsonResponse::Response(StatusCode::OK, serde_json::to_vec(&res)?.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateUserProfileRequest {
     user_id: CompactString,
@@ -161,7 +161,7 @@ async fn update_user_profile(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetUserListRequest {
     skip_count: u64,
@@ -184,14 +184,14 @@ async fn get_user_list(req: JsonReqult<GetUserListRequest>) -> JkmxJsonResponse 
 
 const SUBMISSION_COUNT_PER_DAY_COUNT: usize = 53 * 7;
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct GetUserDetailRequest {
     uid: CompactString,
     timezone: CompactString,
     now: u64,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GetUserDetailResponse {
     meta: User,
@@ -239,12 +239,12 @@ async fn get_user_detail(req: JsonReqult<GetUserDetailRequest>) -> JkmxJsonRespo
     JkmxJsonResponse::Response(StatusCode::OK, serde_json::to_vec(&res)?.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct GetSingleUserRequest {
     uid: CompactString,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct GetUserProfileResponse {
     meta: User,
@@ -294,7 +294,7 @@ async fn get_user_preference(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateUserPreferenceRequest {
     user_id: CompactString,
@@ -337,7 +337,7 @@ const fn query_audit_logs(header: &'static Parts) -> RawPayload {
     RawPayload { header, body: br#"{"count":0,"results":[]}"# }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdatePasswordRequest {
     user_id: CompactString,
@@ -373,7 +373,7 @@ async fn update_password(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct UpdateEmailRequest {
     email: CompactString,
 }
@@ -398,7 +398,7 @@ async fn update_email(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct CreateApiTokenRequest {
     name: CompactString,
     uid: CompactString,
@@ -455,7 +455,7 @@ pub async fn create_api_token(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TokenInfo {
     id: Uuid,
@@ -498,7 +498,7 @@ pub async fn list_api_tokens(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct DeleteApiTokenRequest {
     #[serde(rename = "tokenUUID")]
     token_uuid: Uuid,

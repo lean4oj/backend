@@ -64,7 +64,7 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct SearchGroupRequest {
     query: CompactString,
 }
@@ -81,7 +81,7 @@ async fn search_group(req: Repult<Query<SearchGroupRequest>>) -> JkmxJsonRespons
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateGroupRequest {
     group_name: CompactString,
@@ -115,7 +115,7 @@ async fn create_group(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DeleteGroupRequest {
     group_id: CompactString,
@@ -142,7 +142,7 @@ async fn delete_group(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RenameGroupRequest {
     group_id: CompactString,
@@ -170,7 +170,7 @@ async fn rename_group(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UidGidRequest {
     user_id: CompactString,
@@ -227,7 +227,7 @@ async fn remove_member(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SetGroupAdminRequest {
     user_id: CompactString,
@@ -277,7 +277,7 @@ async fn get_group_list(session: Session_) -> JkmxJsonResponse {
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetGroupMemberListRequest {
     group_id: CompactString,

@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
-#[derive(Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Copy)]
+#[derive_const(Clone, PartialEq, Eq, Deserialize)]
 pub enum Type {
     Fastest,
     MinMemory,

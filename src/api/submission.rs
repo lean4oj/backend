@@ -66,7 +66,7 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetOleanMetaRequest {
     module_name: CompactString,
@@ -102,20 +102,20 @@ async fn get_olean_meta(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Inner1 {
     module_name: CompactString,
     const_name: CompactString,
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct JbAxiomsVersion {
     axioms: SmallVec<[LeanAxiom; 4]>,
     version: Option<Range>,
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SubmitRequest {
     problem_id: i32,
@@ -190,7 +190,7 @@ async fn submit(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QuerySubmissionRequest {
     locale: Option<CompactString>,
@@ -309,7 +309,7 @@ async fn query_submission(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetSubmissionRequest {
     locale: Option<CompactString>,
@@ -372,7 +372,7 @@ async fn get_submission(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QuerySubmissionStatisticsRequest {
     locale: Option<CompactString>,
@@ -428,7 +428,7 @@ async fn query_submission_statistics(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct RejudgeSubmissionRequest {
     submission_id: u32,
@@ -569,7 +569,7 @@ async fn rejudge_submission(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SingleSubmissionRequest {
     submission_id: u32,
@@ -646,7 +646,7 @@ async fn delete_submission(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct SubscibeSubmissionsRequest {
     ids: Vec<u32>,
 }
@@ -696,7 +696,7 @@ async fn subscribe_submissions(
     Sse::new(st).keep_alive(KeepAlive::new()).into_response()
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct JudgerGetTaskRequest {
     uid: CompactString,
     password: CompactString,
@@ -749,7 +749,7 @@ async fn judger_get_task(
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct JudgerReportStatusRequest {
     uid: CompactString,
     password: CompactString,

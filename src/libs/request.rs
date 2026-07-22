@@ -95,7 +95,8 @@ impl fmt::Display for SizeHint {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy)]
+#[derive_const(Clone)]
 pub struct RawPayload {
     pub header: &'static Parts,
     pub body: &'static [u8],

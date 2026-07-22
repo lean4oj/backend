@@ -1,7 +1,10 @@
 #![feature(
+    const_clone,
+    const_cmp,
     core_intrinsics,
     core_io,
     deref_patterns,
+    derive_const,
     exit_status_error,
     stmt_expr_attributes,
 )]

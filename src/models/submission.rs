@@ -340,7 +340,8 @@ impl Serialize for SubmissionMeta<'_> {
 }
 
 
-#[derive(Clone, Serialize)]
+#[derive(Clone)]
+#[derive_const(Serialize)]
 enum UserUpdate {
     Status(SubmissionStatus, SubmissionMessageAction),
     Answer(CompactString),

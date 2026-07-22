@@ -52,7 +52,7 @@ where
     }
 }
 
-#[derive(Default)]
+#[derive_const(Default)]
 pub struct Jumping {
     state: u32 = u32::MAX,
 }

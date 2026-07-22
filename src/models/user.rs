@@ -18,7 +18,7 @@ use crate::libs::{
 mod information;
 pub use information::Information as UserInformation;
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct User {
     #[serde(rename = "id")]
     pub uid: CompactString,
@@ -112,7 +112,7 @@ impl User {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct UserA {
     #[serde(flatten)]
     pub user: User,
@@ -121,7 +121,7 @@ pub struct UserA {
 }
 
 #[allow(clippy::struct_excessive_bools)]
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserAOE {
     #[serde(flatten)]

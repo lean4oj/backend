@@ -2,76 +2,40 @@ use serde::Serialize;
 
 use super::super::serde::{SliceMap, UnitMap};
 
-#[derive(Serialize)]
+#[derive_const(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Security {
-    recaptcha_enabled: bool,
-    allow_user_change_username: bool,
-    allow_non_privileged_user_edit_public_problem: bool,
-    allow_owner_manage_problem_permission: bool,
-    allow_owner_delete_problem: bool,
-    discussion_default_public: bool,
-    discussion_reply_default_public: bool,
-    allow_everyone_create_discussion: bool,
-    pub max_api_tokens: usize,
+    recaptcha_enabled: bool = false,
+    allow_user_change_username: bool = true,
+    allow_non_privileged_user_edit_public_problem: bool = true,
+    allow_owner_manage_problem_permission: bool = true,
+    allow_owner_delete_problem: bool = true,
+    discussion_default_public: bool = true,
+    discussion_reply_default_public: bool = true,
+    allow_everyone_create_discussion: bool = true,
+    pub max_api_tokens: usize = 20,
 }
 
-const impl Default for Security {
-    fn default() -> Self {
-        Self {
-            recaptcha_enabled: false,
-            allow_user_change_username: true,
-            allow_non_privileged_user_edit_public_problem: true,
-            allow_owner_manage_problem_permission: true,
-            allow_owner_delete_problem: true,
-            discussion_default_public: true,
-            discussion_reply_default_public: true,
-            allow_everyone_create_discussion: true,
-            max_api_tokens: 20,
-        }
-    }
-}
-
-#[derive(Serialize)]
+#[derive_const(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Pagination {
-    pub homepage_user_list: u32,
-    pub homepage_problem_list: u32,
-    problem_set: u32,
-    search_problems_preview: u32,
-    submissions: u32,
-    submission_statistics: u32,
-    user_list: u32,
-    user_audit_logs: u32,
-    discussions: u32,
-    search_discussions_preview: u32,
-    discussion_replies: u32,
-    discussion_replies_head: u32,
-    discussion_replies_more: u32,
+    pub homepage_user_list: u32 = 10,
+    pub homepage_problem_list: u32 = 10,
+    problem_set: u32 = 50,
+    search_problems_preview: u32 = 7,
+    submissions: u32 = 10,
+    submission_statistics: u32 = 10,
+    user_list: u32 = 30,
+    user_audit_logs: u32 = 10,
+    discussions: u32 = 10,
+    search_discussions_preview: u32 = 7,
+    discussion_replies: u32 = 40,
+    discussion_replies_head: u32 = 20,
+    discussion_replies_more: u32 = 20,
 }
 
-const impl Default for Pagination {
-    fn default() -> Self {
-        Self {
-            homepage_user_list: 10,
-            homepage_problem_list: 10,
-            problem_set: 50,
-            search_problems_preview: 7,
-            submissions: 10,
-            submission_statistics: 10,
-            user_list: 30,
-            user_audit_logs: 10,
-            discussions: 10,
-            search_discussions_preview: 7,
-            discussion_replies: 40,
-            discussion_replies_head: 20,
-            discussion_replies_more: 20,
-        }
-    }
-}
-
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Misc {
     app_logo_for_theme: UnitMap,
@@ -129,22 +93,12 @@ const impl Default for Misc {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreferenceConfig {
     security: Security,
     pagination: Pagination,
     misc: Misc,
-}
-
-const impl Default for PreferenceConfig {
-    fn default() -> Self {
-        Self {
-            security: Security::default(),
-            pagination: Pagination::default(),
-            misc: Misc::default(),
-        }
-    }
 }
 
 impl PreferenceConfig {

@@ -20,7 +20,7 @@ use crate::{
     },
 };
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct GetAllTagsRequest {
     locale: Option<CompactString>,
 }
@@ -36,7 +36,7 @@ async fn all_tags(req: JsonReqult<GetAllTagsRequest>) -> JkmxJsonResponse {
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct CreateTagRequest {
     localized_names: Vec<LocaleDictEntryOwned>,
@@ -59,7 +59,7 @@ async fn create_tag(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateTagRequest {
     id: u32,
@@ -82,7 +82,7 @@ async fn update_tag(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct DeleteTagRequest {
     id: u32,
 }

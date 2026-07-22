@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use compact_str::CompactString;
 use serde::{Deserialize, Serialize, ser::SerializeSeq};
 
-#[derive(Default, Deserialize)]
+#[derive_const(Default, Deserialize)]
 #[repr(transparent)]
 pub struct LocaleDict<T = CompactString>(pub BTreeMap<CompactString, T>);
 
@@ -39,26 +39,26 @@ impl<T> LocaleDict<T> {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct LocaleDictEntry<'a, T> {
     pub locale: &'a str,
     pub name: &'a T,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct LocaleDictEntryFlatten<'a, T> {
     pub locale: &'a str,
     #[serde(flatten)]
     pub field: &'a T,
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct LocaleDictEntryOwned {
     pub locale: CompactString,
     pub name: CompactString,
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 pub struct LocaleDictEntryOwnedFlatten<T> {
     pub locale: CompactString,
     #[serde(flatten)]

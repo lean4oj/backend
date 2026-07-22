@@ -75,7 +75,8 @@ impl io::Write for Adapter<'_, '_> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy)]
+#[derive_const(Clone)]
 #[repr(transparent)]
 pub struct JsonFormatArg<'a>(pub fmt::Arguments<'a>);
 
@@ -87,7 +88,8 @@ impl fmt::Display for JsonFormatArg<'_> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy)]
+#[derive_const(Clone)]
 #[repr(transparent)]
 pub struct WithJson<T>(pub T);
 
@@ -102,7 +104,7 @@ where
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct UnitMap {}
 
 #[repr(transparent)]

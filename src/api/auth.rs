@@ -84,13 +84,13 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct SessionInfoRequest {
     jsonp: Option<CompactString>,
     token: Option<String>,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct ServerVersion {
     hash: &'static str,
     date: u64,
@@ -111,7 +111,7 @@ const impl Default for ServerVersion {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct SessionInfoResponse {
     server_preference: PreferenceConfig,
@@ -197,7 +197,7 @@ async fn get_session_info(
     res
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct LoginRequest {
     identifier: Option<CompactString>,
     email: Option<CompactString>,
@@ -258,7 +258,7 @@ async fn check_availability(req: Uri) -> JkmxJsonResponse {
     JkmxJsonResponse::Response(StatusCode::OK, res)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct SendEmailRequest {
     email: CompactString,
     r#type: EmailVerificationCodeType,
@@ -301,7 +301,7 @@ async fn send_email(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct RegisterRequest {
     username: CompactString,
     identifier: CompactString,
@@ -347,7 +347,7 @@ async fn register(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ResetPasswordRequest {
     email: CompactString,

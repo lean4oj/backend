@@ -52,13 +52,13 @@ impl fmt::Debug for FileEntry {
     }
 }
 
-impl PartialEq for FileEntry {
+const impl PartialEq for FileEntry {
     fn eq(&self, other: &Self) -> bool {
         *self.path == *other.path
     }
 }
 
-impl Eq for FileEntry {}
+const impl Eq for FileEntry {}
 
 impl PartialOrd for FileEntry {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {

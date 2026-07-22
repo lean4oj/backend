@@ -3,7 +3,8 @@ use core::mem;
 use serde::{Deserialize, Serialize};
 use tokio_postgres::types::{FromSql, Type, accepts};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Copy, Debug)]
+#[derive_const(Clone, PartialEq, Eq, Deserialize, Serialize)]
 pub enum Status {
     Pending,
 

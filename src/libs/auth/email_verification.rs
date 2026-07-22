@@ -15,7 +15,8 @@ use crate::libs::{
     util::get_cooldown,
 };
 
-#[derive(Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Copy)]
+#[derive_const(Clone, PartialEq, Eq, Deserialize)]
 pub enum CodeType {
     ResetPassword,
 }

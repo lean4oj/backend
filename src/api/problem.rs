@@ -104,7 +104,7 @@ mod private {
     }
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct QueryProblemSetRequest {
     locale: Option<CompactString>,
@@ -262,14 +262,14 @@ async fn query_problem_set(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct Inner1 {
     localized_contents: Vec<LocaleDictEntryOwnedFlatten<ProblemInner>>,
     problem_tag_ids: Vec<u32>,
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct CreateProblemRequest {
     statement: Inner1,
 }
@@ -291,7 +291,7 @@ async fn create_problem(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateProblemRequest {
     problem_id: i32,
@@ -328,7 +328,7 @@ async fn update_problem(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct GetProblemRequest {
     id: Option<i32>,
@@ -463,7 +463,7 @@ async fn get_problem(
     JkmxJsonResponse::Response(StatusCode::OK, res.into())
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SetProblemIdRequest {
     problem_id: i32, // old ID
@@ -496,7 +496,7 @@ async fn set_problem_id(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SetProblemPublicnessRequest {
     problem_id: i32,
@@ -531,7 +531,7 @@ async fn set_problem_publicness(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UpdateJudgeInfoRequest {
     problem_id: i32,
@@ -563,7 +563,7 @@ async fn update_judge_info(
     JkmxJsonResponse::Response(StatusCode::OK, BYTES_EMPTY)
 }
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DeleteProblemRequest {
     problem_id: i32,

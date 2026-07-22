@@ -102,7 +102,7 @@ impl GroupA {
 
 /// Query all members in a group.
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AUV {
     pub user_meta: User,

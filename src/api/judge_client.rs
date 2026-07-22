@@ -8,7 +8,7 @@ use crate::{
     models::group::AUV,
 };
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct IdAndName<'a> {
     id: &'a str,
     name: &'a str,

@@ -16,7 +16,7 @@ use tokio_postgres::{
 use super::localedict::LocaleDict;
 use crate::libs::db::{DBError, DBResult, ToSqlIter};
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct Tag {
     pub id: u32,
     pub color: CompactString,

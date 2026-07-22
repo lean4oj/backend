@@ -28,7 +28,7 @@ impl IntoResponse for JkmxJsonResponse {
     }
 }
 
-impl FromResidual<Self> for JkmxJsonResponse {
+const impl FromResidual<Self> for JkmxJsonResponse {
     #[inline(always)]
     fn from_residual(residual: Self) -> Self {
         residual

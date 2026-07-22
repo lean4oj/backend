@@ -2,13 +2,13 @@ use compact_str::CompactString;
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 #[repr(transparent)]
 pub struct LeanAxiom {
     name: CompactString,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive_const(Deserialize, Serialize)]
 #[cfg_attr(debug_assertions, derive(Debug))]
 pub struct Task {
     pub sid: u32,

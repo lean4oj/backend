@@ -4,7 +4,7 @@ use tokio_postgres::{Client, Row};
 
 use crate::libs::db::DBResult;
 
-#[derive(Deserialize, Serialize)]
+#[derive_const(Deserialize, Serialize)]
 pub struct Information {
     pub organization: CompactString,
     pub location: CompactString,

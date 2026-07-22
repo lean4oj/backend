@@ -75,7 +75,7 @@ impl Reply {
     }
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 pub struct ReplyAOE<'a> {
     #[serde(flatten)]
     pub reply: &'a Reply,

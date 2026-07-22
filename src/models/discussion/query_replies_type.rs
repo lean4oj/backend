@@ -1,6 +1,7 @@
 use serde::Deserialize;
 
-#[derive(Clone, Copy, Deserialize)]
+#[derive(Copy)]
+#[derive_const(Clone, Deserialize)]
 #[serde(tag = "queryRepliesType")]
 pub enum QueryRepliesType {
     #[serde(rename_all = "camelCase")]

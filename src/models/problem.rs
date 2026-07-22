@@ -28,7 +28,8 @@ use crate::{
     models::localedict::LocaleDict,
 };
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
+#[derive_const(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProblemContentSection {
     pub section_title: CompactString,
@@ -49,10 +50,11 @@ impl Serialize for ProblemContentSection {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug)]
+#[derive_const(Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ProblemInner {
-    pub title: CompactString,
+    pub title: CompactString = CompactString::const_new(""),
     pub content_sections: Vec<ProblemContentSection>,
 }
 

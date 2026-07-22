@@ -30,22 +30,14 @@ use crate::{
 };
 
 #[repr(transparent)]
-#[derive(Serialize)]
+#[derive_const(Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct HitokotoConfig {
-    api_url: &'static str,
-}
-
-const impl Default for HitokotoConfig {
-    fn default() -> Self {
-        Self {
-            api_url: "https://43.138.56.99/turnabout-hitokoto/api",
-        }
-    }
+    api_url: &'static str = "https://43.138.56.99/turnabout-hitokoto/api",
 }
 
 #[repr(transparent)]
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Countdowns<'a> {
     items: &'a SliceMap<&'static str, u64>,
 }
@@ -88,27 +80,27 @@ impl Countdowns<'_> {
 }
 
 #[repr(transparent)]
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct FriendLinks<'a> {
     links: &'a SliceMap<&'static str, &'static str>,
 }
 
 mod links;
 
-#[derive(Deserialize)]
+#[derive_const(Deserialize)]
 struct HomepageRequest {
     locale: Option<CompactString>,
 }
 
 const ANNOUNCEMENT_IDS: [u32; 6] = [1, 2, 3, 5, 4, 12];
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Inner1 {
     id: u32,
     status: SubmissionStatus,
 }
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Inner2 {
     meta: Problem,
     title: CompactString,
@@ -123,7 +115,7 @@ impl fmt::Debug for Inner2 {
 
 const N_PROBLEMS: usize = Pagination::default().homepage_problem_list as usize;
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct HomepageResponse<'a> {
     announcements: Vec<Discussion>,

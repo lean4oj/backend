@@ -111,7 +111,8 @@ pub fn 𝑔𝑒𝑡_𝑜𝑙𝑒𝑎𝑛_𝑝𝑎𝑡ℎ(uid: &str, name: &str) 
     s
 }
 
-#[derive(Clone, Copy)]
+#[derive(Copy)]
+#[derive_const(Clone)]
 pub struct OleanMeta<'a> {
     data: &'a [u8],
     pub version: &'static str,
@@ -178,7 +179,7 @@ mod detail {
         is_hcongr_reserved_name_suffix(s)
     }
 
-    pub(super) fn array(payload: &[u8], offset: usize) -> Option<&[usize]> {
+    pub(super) const fn array(payload: &[u8], offset: usize) -> Option<&[usize]> {
         let header = unsafe { &*payload.get(offset..offset + 24)?.as_ptr().cast::<[usize; 3]>() };
         if header[0] != 0xf600_0001_0000_0000 || header[1] != header[2] { return None; }
         let n = header[1];

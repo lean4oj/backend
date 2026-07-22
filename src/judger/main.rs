@@ -24,7 +24,7 @@ mod message;
 #[path = "../models/submission/status.rs"]
 mod status;
 
-#[derive(Serialize)]
+#[derive_const(Serialize)]
 struct Report<'a> {
     uid: &'a str,
     password: &'a str,

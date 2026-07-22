@@ -1,4 +1,5 @@
-#[derive(Clone, Copy)]
+#[derive(Copy)]
+#[derive_const(Clone)]
 pub enum Aoe {
     Global,
     After(u32),

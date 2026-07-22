@@ -8,17 +8,20 @@ use tokio_postgres::{Client, types::ToSql};
 
 use crate::libs::db::{DBResult, ToSqlIterUnsafe};
 
-#[derive(Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Copy)]
+#[derive_const(Clone, PartialEq, Eq, Deserialize)]
 pub enum ReactionType {
     Discussion,
     DiscussionReply,
 }
 
-#[derive(Default, Serialize)]
+#[derive(Default)]
+#[derive_const(Serialize)]
 #[repr(transparent)]
 pub struct Reaction(pub HashMap<CompactString, u64>);
 
-#[derive(Default, Serialize)]
+#[derive(Default)]
+#[derive_const(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReactionAOE {
     pub count: Reaction,
