@@ -320,10 +320,10 @@ index 8423e0d8..e27f34aa 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index 54e01bf5..2a619dc4 100644
+index 54e01bf5..c323b2e7 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
-@@ -122,7 +122,6 @@ mime = "0.3.16"
+@@ -122,14 +122,13 @@ mime = "0.3.16"
  percent-encoding = "2.1"
  pin-project-lite = "0.2.7"
  serde_core = "1.0.221"
@@ -331,6 +331,14 @@ index 54e01bf5..2a619dc4 100644
  tower = { version = "0.5.2", default-features = false, features = ["util"] }
  tower-layer = "0.3.2"
  tower-service = "0.3"
+ 
+ # optional dependencies
+ axum-macros = { path = "../axum-macros", version = "0.5.1", optional = true }
+-base64 = { version = "0.22.1", optional = true }
++base64 = { version = "0.23", optional = true }
+ form_urlencoded = { version = "1.1.0", optional = true }
+ futures-sink = { version = "0.3", optional = true }
+ hyper = { version = "1.4.0", optional = true }
 @@ -137,10 +136,10 @@ hyper-util = { version = "0.1.4", features = ["tokio", "server", "service"], opt
  multer = { version = "3.0.0", optional = true }
  reqwest = { version = "0.12", optional = true, default-features = false, features = ["json", "stream", "multipart"] }
@@ -842,7 +850,7 @@ index cee6b46f..77b70d4b 100644
          serde_path_to_error::deserialize(&mut deserializer)
              .map_err(make_rejection)
 diff --git a/axum/src/lib.rs b/axum/src/lib.rs
-index 3216d48a..d2d6e6ed 100644
+index ba32651b..faf0a705 100644
 --- a/axum/src/lib.rs
 +++ b/axum/src/lib.rs
 @@ -477,6 +477,7 @@
