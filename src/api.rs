@@ -15,6 +15,7 @@ mod homepage;
 mod judge_client;
 mod leansearch;
 mod problem;
+mod proof_of_work;
 mod submission;
 mod user;
 
@@ -40,6 +41,7 @@ pub fn all() -> Router {
         .nest("/judgeClient", judge_client::router(header))
         .nest("/leansearch", leansearch::router(header))
         .nest("/problem", problem::router(header))
+        .nest("/proofOfWork", proof_of_work::router(header))
         .nest("/submission", submission::router(header))
         .nest("/user", user::router(header))
         .layer(cors)

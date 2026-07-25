@@ -76,7 +76,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#0704574455272caa79ff3ae8207adf8f620516c9"
+source = "git+https://github.com/tokio-rs/axum#14e353d0bde85816bf7d1836cbd2d10bed7ff3d9"
 dependencies = [
  "axum-core",
  "bytes",
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#0704574455272caa79ff3ae8207adf8f620516c9"
+source = "git+https://github.com/tokio-rs/axum#14e353d0bde85816bf7d1836cbd2d10bed7ff3d9"
 dependencies = [
  "bytes",
  "futures-core",
@@ -127,6 +127,12 @@ name = "base64"
 version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
+
+[[package]]
+name = "base64"
+version = "0.23.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b25655df2c3cdd83c5e5b293b88acd880332b2ddadd7c30ac43144fdc0033da9"
 
 [[package]]
 name = "bb8"
@@ -204,9 +210,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c89588d05638b5b4594a3348a2d6c20277e43a7f5c5202b05cc56888475a47b8"
+checksum = "5add81bb678e6cb321aff7fa0dc7689ad82b112dbc032cea19f91d6b8e3582b9"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -375,7 +381,7 @@ version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9298e6504d9b9e780ed3f7dfd43a61be8cd0e09eb07f7706a945b0072b6670b6"
 dependencies = [
- "base64",
+ "base64 0.22.1",
  "memchr",
 ]
 
@@ -833,7 +839,7 @@ name = "lean4oj_backend"
 version = "1.3.0-alpha"
 dependencies = [
  "axum",
- "base64",
+ "base64 0.23.0",
  "bb8-postgres",
  "bytes",
  "compact_str",
@@ -878,7 +884,7 @@ name = "lettre"
 version = "0.11.22"
 source = "git+https://github.com/lettre/lettre#80782a0e7ba26a845bdb50d48694552bcf36e67b"
 dependencies = [
- "base64",
+ "base64 0.23.0",
  "email-encoding",
  "email_address",
  "fastrand",
@@ -1226,7 +1232,7 @@ name = "postgres-protocol"
 version = "0.6.12"
 source = "git+https://github.com/rust-postgres/rust-postgres#6bf367c3ac9552f5fcba95659b6ffc1a8a35f494"
 dependencies = [
- "base64",
+ "base64 0.23.0",
  "byteorder",
  "bytes",
  "fallible-iterator",
@@ -1756,7 +1762,7 @@ name = "tower-sessions-core"
 version = "0.15.0"
 source = "git+https://github.com/maxcountryman/tower-sessions#06f1dbbda94f0aef14c6315edd58c81fffe1e67c"
 dependencies = [
- "base64",
+ "base64 0.23.0",
  "futures-util",
  "http",
  "parking_lot",
