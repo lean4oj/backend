@@ -33,7 +33,7 @@ mod write;
 fn protocol_version(s: &str) -> Option<u32> {
     let suffix = s.strip_prefix("@RSYNCD: ")?.as_bytes();
     let n = suffix.iter().position(|&b| !b.is_ascii_digit()).unwrap_or(suffix.len());
-    u32::from_ascii(unsafe { suffix.get_unchecked(..n) }).ok()
+    u32::from_ascii_bytes(unsafe { suffix.get_unchecked(..n) }).ok()
 }
 
 #[inline]

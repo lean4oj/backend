@@ -1,16 +1,7 @@
 diff --git a/postgres-protocol/Cargo.toml b/postgres-protocol/Cargo.toml
-index db782d44..992ffd03 100644
+index d1b4289f..992ffd03 100644
 --- a/postgres-protocol/Cargo.toml
 +++ b/postgres-protocol/Cargo.toml
-@@ -14,7 +14,7 @@ default = []
- js = ["getrandom/wasm_js"]
- 
- [dependencies]
--base64 = "0.22"
-+base64 = "0.23"
- byteorder = "1.0"
- bytes = "1.11"
- fallible-iterator = "0.2"
 @@ -23,5 +23,4 @@ md-5 = "0.11"
  memchr = "2.0"
  rand = "0.10"

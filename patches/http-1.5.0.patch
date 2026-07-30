@@ -12,10 +12,10 @@ index 0ab5bdf..c673a08 100644
  #[cfg(not(feature = "std"))]
  compile_error!("`std` feature currently required, support for `no_std` may be added later");
 diff --git a/src/request.rs b/src/request.rs
-index 7cf19fa..4d53cd0 100644
+index f47c663..cc802d1 100644
 --- a/src/request.rs
 +++ b/src/request.rs
-@@ -655,6 +655,16 @@ impl<T> Request<T> {
+@@ -659,6 +659,16 @@ impl<T> Request<T> {
          (self.head, self.body)
      }
  
@@ -254,10 +254,10 @@ index aa9dc30..232a062 100644
  
          }
 diff --git a/src/uri/path.rs b/src/uri/path.rs
-index 8cedaba..8449a6d 100644
+index f62a686..f151125 100644
 --- a/src/uri/path.rs
 +++ b/src/uri/path.rs
-@@ -293,6 +293,12 @@ impl hash::Hash for PathAndQuery {
+@@ -296,6 +296,12 @@ impl hash::Hash for PathAndQuery {
      }
  }
  
