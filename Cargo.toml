@@ -16,8 +16,8 @@ env_logger = { version = "0.11.11", default-features = false, features = ["auto-
 form_urlencoded = "1.2.2"
 futures-util = { version = "0.3.33", features = ["unstable"] }
 hashbrown = { version = "0.17.1", features = ["nightly", "serde"] }
-# html-escape = "0.2.13"
-http = "1.4.2"
+# html-escape = "0.2.15"
+http = "1.5.0"
 http-body-util = "0.1.4"
 hyper = { version = "1.11.0", features = ["client", "nightly"] }
 hyper-util = "0.1.20"

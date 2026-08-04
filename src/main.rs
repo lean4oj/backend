@@ -7,7 +7,6 @@
     // associated_type_defaults,
     // async_for_loop,
     // async_iterator,
-    // box_vec_non_null,
     // bstr,
     // const_array,
     const_clone,

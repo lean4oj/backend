@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "aho-corasick"
-version = "1.1.4"
+version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ddd31a130427c27518df266943a5308ed92d4b226cc639f5a8f1002816174301"
+checksum = "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba"
 dependencies = [
  "memchr",
 ]
@@ -76,7 +76,7 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 [[package]]
 name = "axum"
 version = "0.8.9"
-source = "git+https://github.com/tokio-rs/axum#3f06eadb1da3a6d8aa6c6b9caf4bb9d09606c7af"
+source = "git+https://github.com/tokio-rs/axum#a5116d6b1bcabdfd7039279e4957b4a9c0b50587"
 dependencies = [
  "axum-core",
  "bytes",
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "axum-core"
 version = "0.5.6"
-source = "git+https://github.com/tokio-rs/axum#3f06eadb1da3a6d8aa6c6b9caf4bb9d09606c7af"
+source = "git+https://github.com/tokio-rs/axum#a5116d6b1bcabdfd7039279e4957b4a9c0b50587"
 dependencies = [
  "bytes",
  "futures-core",
@@ -388,7 +388,7 @@ checksum = "e079f19b08ca6239f47f8ba8509c11cf3ea30095831f7fed61441475edd8c449"
 [[package]]
 name = "env_filter"
 version = "2.0.0"
-source = "git+https://github.com/rust-cli/env_logger#d4aea17cff49886eba4da300b06f019134322f90"
+source = "git+https://github.com/rust-cli/env_logger#346039da69e38efb08e8f3f53008a6a14e2621cc"
 dependencies = [
  "log",
  "regex",
@@ -397,7 +397,7 @@ dependencies = [
 [[package]]
 name = "env_logger"
 version = "0.11.11"
-source = "git+https://github.com/rust-cli/env_logger#d4aea17cff49886eba4da300b06f019134322f90"
+source = "git+https://github.com/rust-cli/env_logger#346039da69e38efb08e8f3f53008a6a14e2621cc"
 dependencies = [
  "anstream",
  "anstyle",
@@ -633,9 +633,9 @@ checksum = "15cdd26707701c53297e2fa6afb323d55fbc1d0810c3aec078ae3ef0424c3c15"
 
 [[package]]
 name = "hybrid-array"
-version = "0.4.13"
+version = "0.4.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "818356c5132c1fede50f837ca96afbe78ff42413047f4abb886217845e1b6c8c"
+checksum = "707114b52a152fa7bdb290cd7cd5912d9467273b6d74e21b8d81aca1f8533f6b"
 dependencies = [
  "typenum",
 ]
@@ -875,8 +875,8 @@ dependencies = [
 
 [[package]]
 name = "lettre"
-version = "0.11.22"
-source = "git+https://github.com/lettre/lettre#c692519dfe87502c1722e8e924c7997d08871242"
+version = "0.11.23"
+source = "git+https://github.com/lettre/lettre#eb6136a06f1aba9432f73ef8f02a06aa0afc8f9c"
 dependencies = [
  "base64",
  "email-encoding",
@@ -907,9 +907,9 @@ checksum = "3eaf3ede3fee6db1a4c2ee091bf8a8b4dccdc6d17f656fb07896ee72867612f2"
 
 [[package]]
 name = "libredox"
-version = "0.1.18"
+version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c943259e342f1e06ff2da7a83eabdfe7f92ce10262688dbf1895ff0b3e6e4652"
+checksum = "2026a5056764a10b2bf5d56488cba40da507f5493a6a429340e2004d9ed085fa"
 dependencies = [
  "libc",
 ]
@@ -1754,7 +1754,7 @@ checksum = "8df9b6e13f2d32c91b9bd719c00d1958837bc7dec474d94952798cc8e69eeec3"
 [[package]]
 name = "tower-sessions-core"
 version = "0.15.0"
-source = "git+https://github.com/maxcountryman/tower-sessions#06f1dbbda94f0aef14c6315edd58c81fffe1e67c"
+source = "git+https://github.com/maxcountryman/tower-sessions#65ca76fbe57b8d3aab367274b126224903ddcb4a"
 dependencies = [
  "base64",
  "futures-util",
