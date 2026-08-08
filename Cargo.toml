@@ -2,7 +2,7 @@ cargo-features = ["unstable-editions"]
 
 [package]
 name = "lean4oj_backend"
-version = "1.3.0-alpha"
+version = "1.3.0-alpha.1"
 edition = "future"
 
 [dependencies]

@@ -52,27 +52,46 @@ fn check_password(password: &[u8; PASSWORD_LENGTH], salt: &[Char; 16], response:
     b64hash == *found
 }
 
+pub fn extract_sni_from_proxy_protocol_v2_payload(mut buf: Vec<u8>) -> Option<String> {
+    let mut slice = buf.get(36..)?; // skip IPv6 + port
+    while let Some((&ty, rem)) = slice.split_first() {
+        let (&len, payload) = rem.split_first_chunk::<2>()?;
+        let len = usize::from(u16::from_be_bytes(len));
+        let (payload, next) = payload.split_at_checked(len)?;
+        if ty == 2 {
+            let src = payload.as_ptr();
+            unsafe {
+                // We first skipped 36 bytes, so writing https:// is safe.
+                core::ptr::copy_nonoverlapping(b"https://".as_ptr(), buf.as_mut_ptr(), 8);
+                core::ptr::copy(src, buf.as_mut_ptr().add(8), len);
+                core::ptr::copy(":1349".as_ptr(), buf.as_mut_ptr().add(8 + len), 5);
+                buf.set_len(13 + len);
+                return Some(String::from_utf8_unchecked(buf));
+            }
+        }
+        slice = next;
+    }
+    None
+}
+
 async fn main_inner(
     c2s: OwnedReadHalf,
     s2c: OwnedWriteHalf,
     #[cfg_attr(debug_assertions, allow(unused_variables))]
     salt: [Char; 16],
 ) -> Result<(), BoxedStdError> {
+    let mut buf = [mem::MaybeUninit::<u8>::uninit(); 16];
+    let buf16 = unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr().cast(), 16) };
+
     let mut c2s = BufReader::new(c2s);
     let s2c = BufWriter::new(s2c);
 
-    let ss = c2s.read_u32_le().await?;
-    if ss > 1024 { return Err("reverse proxy error".into()); }
-    let sni = if ss != 0 {
-        let mut buf = String::with_capacity((ss + 13) as usize);
-        buf.push_str("https://");
-        c2s.read_exact(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr().add(8), ss as usize) }).await?;
-        unsafe { buf.as_mut_vec().set_len((ss + 8) as usize); }
-        buf.push_str(":1349");
-        buf
-    } else {
-        String::new()
-    };
+    c2s.read_exact(buf16).await?;
+    let ss = u16::from_be_bytes(unsafe { *buf.as_ptr().cast::<[u8; 2]>() });
+    if ss > 4096 { return Err("reverse proxy error".into()); }
+    let mut buf = Vec::with_capacity(ss.into());
+    c2s.read_exact(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr(), ss.into()) }).await?;
+    let sni = extract_sni_from_proxy_protocol_v2_payload(buf).unwrap_or_default();
 
     let mut s = String::new();
     (&mut c2s).take(1024).read_line(&mut s).await?;

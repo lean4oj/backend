@@ -104,6 +104,37 @@ index 071ebad..9d8e1e7 100644
  }
  
  impl TryFrom<net::UnixStream> for UnixStream {
+diff --git a/src/process/mod.rs b/src/process/mod.rs
+index fb233cb..66ac1c6 100644
+--- a/src/process/mod.rs
++++ b/src/process/mod.rs
+@@ -1251,6 +1251,13 @@ impl Child {
+         }
+     }
+ 
++    pub fn std_mut(&mut self) -> Option<&mut StdChild> {
++        match &mut self.child {
++            FusedChild::Child(child) => Some(child.inner.std_child()),
++            FusedChild::Done(_) => None,
++        }
++    }
++
+     /// Forces the child to exit.
+     ///
+     /// This is equivalent to sending a `SIGKILL` on unix platforms
+diff --git a/src/process/unix/mod.rs b/src/process/unix/mod.rs
+index 03cc7fd..bba8880 100644
+--- a/src/process/unix/mod.rs
++++ b/src/process/unix/mod.rs
+@@ -153,7 +153,7 @@ impl Child {
+         }
+     }
+ 
+-    fn std_child(&mut self) -> &mut StdChild {
++    pub(crate) fn std_child(&mut self) -> &mut StdChild {
+         match self {
+             Self::SignalReaper(signal_reaper) => signal_reaper.inner_mut(),
+             #[cfg(all(target_os = "linux", feature = "rt"))]
 diff --git a/src/sync/batch_semaphore.rs b/src/sync/batch_semaphore.rs
 index 2029000..1572de0 100644
 --- a/src/sync/batch_semaphore.rs
