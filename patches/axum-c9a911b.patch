@@ -205,7 +205,7 @@ index 1123fdd3..71152647 100644
  
      fn with_limited_body(self) -> Request {
 diff --git a/axum-core/src/extract/rejection.rs b/axum-core/src/extract/rejection.rs
-index ef71cae5..fb6119b0 100644
+index 6a1f90f0..6ed97124 100644
 --- a/axum-core/src/extract/rejection.rs
 +++ b/axum-core/src/extract/rejection.rs
 @@ -15,7 +15,7 @@ composite_rejection! {
@@ -1168,10 +1168,10 @@ index 775a6a5b..f37eb4ae 100644
      }
  
 diff --git a/axum/src/serve/mod.rs b/axum/src/serve/mod.rs
-index 3f42cfbc..0a9943fd 100644
+index ab42dd97..e2cd89f3 100644
 --- a/axum/src/serve/mod.rs
 +++ b/axum/src/serve/mod.rs
-@@ -368,7 +368,7 @@ where
+@@ -371,7 +371,7 @@ where
      }
  }
  
@@ -1180,7 +1180,7 @@ index 3f42cfbc..0a9943fd 100644
  impl<L, M, S, B, E> IntoFuture for Serve<L, M, S, B, E>
  where
      L: Listener,
-@@ -519,7 +519,7 @@ where
+@@ -523,7 +523,7 @@ where
      }
  }
  
