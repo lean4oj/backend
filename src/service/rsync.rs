@@ -52,8 +52,8 @@ fn check_password(password: &[u8; PASSWORD_LENGTH], salt: &[Char; 16], response:
     b64hash == *found
 }
 
-pub fn extract_sni_from_proxy_protocol_v2_payload(mut buf: Vec<u8>) -> Option<String> {
-    let mut slice = buf.get(36..)?; // skip IPv6 + port
+pub fn extract_sni_from_proxy_protocol_v2_payload(mut buf: Vec<u8>, skip: usize) -> Option<String> {
+    let mut slice = buf.get(skip..)?; // skip IPv6 + port
     while let Some((&ty, rem)) = slice.split_first() {
         let (&len, payload) = rem.split_first_chunk::<2>()?;
         let len = usize::from(u16::from_be_bytes(len));
@@ -61,7 +61,7 @@ pub fn extract_sni_from_proxy_protocol_v2_payload(mut buf: Vec<u8>) -> Option<St
         if ty == 2 {
             let src = payload.as_ptr();
             unsafe {
-                // We first skipped 36 bytes, so writing https:// is safe.
+                // We first skipped `skip` ≥ 8 bytes, so writing https:// is safe.
                 core::ptr::copy_nonoverlapping(b"https://".as_ptr(), buf.as_mut_ptr(), 8);
                 core::ptr::copy(src, buf.as_mut_ptr().add(8), len);
                 core::ptr::copy(":1349".as_ptr(), buf.as_mut_ptr().add(8 + len), 5);
@@ -87,11 +87,19 @@ async fn main_inner(
     let s2c = BufWriter::new(s2c);
 
     c2s.read_exact(buf16).await?;
-    let ss = u16::from_be_bytes(unsafe { *buf.as_ptr().cast::<[u8; 2]>() });
+    let family = unsafe { *buf16.get_unchecked(13) } >> 4;
+    let ss = usize::from(u16::from_be_bytes(unsafe { *buf.as_ptr().add(14).cast::<[u8; 2]>() }));
     if ss > 4096 { return Err("reverse proxy error".into()); }
-    let mut buf = Vec::with_capacity(ss.into());
-    c2s.read_exact(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr(), ss.into()) }).await?;
-    let sni = extract_sni_from_proxy_protocol_v2_payload(buf).unwrap_or_default();
+    let mut buf = Vec::with_capacity(ss);
+    c2s.read_exact(unsafe { slice::from_raw_parts_mut(buf.as_mut_ptr(), ss) }).await?;
+    unsafe { buf.set_len(ss); }
+    let skip = match family {
+        1 => 12,
+        2 => 36,
+        3 => 216,
+        _ => 0,
+    };
+    let sni = extract_sni_from_proxy_protocol_v2_payload(buf, skip).unwrap_or_default();
 
     let mut s = String::new();
     (&mut c2s).take(1024).read_line(&mut s).await?;
