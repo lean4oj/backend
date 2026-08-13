@@ -18,7 +18,7 @@ futures-util = { version = "0.3.33", features = ["unstable"] }
 hashbrown = { version = "0.17.1", features = ["nightly", "serde"] }
 # html-escape = "0.2.15"
 http = "1.5.0"
-http-body-util = "0.1.4"
+http-body-util = "0.1.5"
 hyper = { version = "1.11.0", features = ["client", "nightly"] }
 hyper-util = "0.1.20"
 lettre = { version = "0.11.22", features = ["tokio1-native-tls", "tracing"] }
@@ -44,7 +44,7 @@ tower-http = { version = "0.7.0", features = ["cors"] }
 tower-service = "0.3.3"
 tower-sessions-core = { version = "0.15.0", features = ["deletion-task"] }
 tracing = { version = "0.1.44", features = ["log", "release_max_level_info"] }
-uuid = { version = "1.24.0", features = ["fast-rng", "serde", "v7"] }
+uuid = { version = "1.24.1", features = ["fast-rng", "serde", "v7"] }
 
 [build-dependencies]
 directories = "6.0.0"

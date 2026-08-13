@@ -320,10 +320,10 @@ index 8423e0d8..e27f34aa 100644
      type Error = Infallible;
  
 diff --git a/axum/Cargo.toml b/axum/Cargo.toml
-index 8d02eb26..7f09fa85 100644
+index 9c7b5224..b4fca238 100644
 --- a/axum/Cargo.toml
 +++ b/axum/Cargo.toml
-@@ -122,14 +122,13 @@ mime = "0.3.16"
+@@ -120,14 +120,13 @@ mime = "0.3.16"
  percent-encoding = "2.1"
  pin-project-lite = "0.2.7"
  serde_core = "1.0.221"
@@ -339,7 +339,7 @@ index 8d02eb26..7f09fa85 100644
  form_urlencoded = { version = "1.1.0", optional = true }
  futures-sink = { version = "0.3", optional = true }
  hyper = { version = "1.4.0", optional = true }
-@@ -137,10 +136,10 @@ hyper-util = { version = "0.1.4", features = ["tokio", "server", "service"], opt
+@@ -135,10 +134,10 @@ hyper-util = { version = "0.1.4", features = ["tokio", "server", "service"], opt
  multer = { version = "3.0.0", optional = true }
  reqwest = { version = "0.12", optional = true, default-features = false, features = ["json", "stream", "multipart"] }
  serde_html_form = { version = "0.4.0", optional = true, default-features = false, features = ["std"] }

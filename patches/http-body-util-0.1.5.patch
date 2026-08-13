@@ -22,7 +22,7 @@ index a78f395..d922f53 100644
  impl<B: Buf> Body for Collected<B> {
      type Data = B;
      type Error = Infallible;
-diff --git a/src/either.rs
+diff --git a/src/either.rs b/src/either.rs
 deleted file mode 100644
 index 9537326..0000000
 --- a/src/either.rs
@@ -216,7 +216,7 @@ index 9537326..0000000
 -    }
 -}
 diff --git a/src/lib.rs b/src/lib.rs
-index 4332426..85e0d2f 100644
+index de4239b..7172a5b 100644
 --- a/src/lib.rs
 +++ b/src/lib.rs
 @@ -10,7 +10,6 @@

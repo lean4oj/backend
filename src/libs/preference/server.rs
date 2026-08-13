@@ -63,9 +63,10 @@ const impl Default for Misc {
             discussion_reaction_allow_custom_emojis: true,
             disabled_emoji_in_math: &["↔", "↪"],
             lean_versions: SliceMap::from_slice([
-                ("4.32.2", "4.32.2 (latest stable)"),
-                ("4.33.0-rc2", "4.33.0-rc2 (latest)"),
+                ("4.33.0", "4.33.0 (latest stable)"),
+                ("4.34.0-rc1", "4.34.0-rc1 (latest)"),
                 ("4.33.0-rc1", "4.33.0-rc1"),
+                ("4.32.2", "4.32.2"),
                 ("4.32.1", "4.32.1"),
                 ("4.32.0", "4.32.0"),
                 ("4.32.0-rc1", "4.32.0-rc1"),
